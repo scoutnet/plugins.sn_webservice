@@ -1,4 +1,6 @@
-plugins.sn_webservice
-=====================
+ScoutNet Api Webservice
+=======================
 
-This Is the official Scoutnet Webservice Lib
+With this lib you can read and write ScoutNet Kalender Events and read ScoutNet Index Elements. It is used by different Plugins for Typo3, Joomla, Wordpress and MediaWiki.
+
+For examples please see the testclient.php
