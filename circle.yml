@@ -11,4 +11,5 @@ machine:
 ## Customize test commands
 test:
   override:
-    - phpunit -c Tests/Builds/UnitTests.xml # use PHPunit for testing
+    - mkdir -p $CIRCLE_TEST_REPORTS/phpunit
+    - phpunit --log-junit $CIRCLE_TEST_REPORTS/phpunit/junit.xml -c Tests/Builds/UnitTests.xml
