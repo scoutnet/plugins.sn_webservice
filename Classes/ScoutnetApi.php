@@ -10,13 +10,10 @@ use ScoutNet\Api\Models\User;
 use ScoutNet\Api\Helpers\AesHelper;
 use ScoutNet\Api\Helpers\JsonRPCClientHelper;
 
-// TODO: fixe this
-define('SNK_USE_CURL', false);
-
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2009 Stefan Horst <s.horst@dpsg-koeln.de>
+*  (c) 2009 Stefan Horst <muetze@scoutnet.de>
 *  All rights reserved
 *
 *  The GNU General Public License can be found at
@@ -41,23 +38,70 @@ class ScoutnetApi {
 
 	var $snData;
 
+	private $provider = null;
+	private $aes_key = null;
+	private $aes_iv = null;
+
+	private $login_url = null;
+
     /**
      *
      * @param string $api_url
+     * @param string $login_url
+     * @param string $provider
+     * @param string $aes_key
+     * @param string $aes_iv
      */
-	public function __construct($api_url = "https://www.scoutnet.de/jsonrpc/server.php") {
-		ini_set('default_socket_timeout',1);
+	public function __construct($api_url = "https://www.scoutnet.de/jsonrpc/server.php", $login_url = 'https://www.scoutnet.de/community/scoutnetConnect.html', $provider = '', $aes_key = '', $aes_iv = '') {
+		//ini_set('default_socket_timeout',1);
 		$this->SN = new JsonRPCClientHelper($api_url);
 
-
-		$this->ScoutnetLoginPage = 'https://www.scoutnet.de/community/scoutnetConnect.html';
+		$this->set_scoutnet_connect_data($login_url, $provider, $aes_key, $aes_iv);
 	}
 
-	public function set_scoutnet_connect_data($ScoutnetProviderName = '', $AES_key = '', $AES_iv = ''){
-		$this->ScoutnetProviderName = $ScoutnetProviderName;
-		$this->AES_key = $AES_key;
-		$this->AES_iv = $AES_iv;
+    /**
+     * @param string $login_url
+     * @param string $provider
+     * @param string $aes_key
+     * @param string $aes_iv
+     * @throws ScoutnetException_MissingConfVar
+     */
+	public function set_scoutnet_connect_data($login_url = null, $provider, $aes_key, $aes_iv){
+	    if ($login_url == null) {
+	        $login_url = 'https://www.scoutnet.de/community/scoutnetConnect.html';
+        }
+	    $provider = trim($provider);
+
+        $this->login_url = $login_url;
+	    $this->provider = $provider;
+	    $this->aes_key = $aes_key;
+	    $this->aes_iv = $aes_iv;
+
+        // if one is set all must be set correct
+        if ($provider != '' || $aes_key !== '' || $aes_iv !== '') {
+            $this->_check_for_all_configValues();
+        }
 	}
+
+    /**
+     * checks if ScoutNet connect Values are set correctly
+     *
+     * @throws ScoutnetException_MissingConfVar
+     */
+    private function _check_for_all_configValues(){
+        if (trim($this->aes_key) == '' || strlen($this->aes_key) != 32) {
+            throw new ScoutnetException_MissingConfVar('aes_key');
+        }
+        if (trim($this->aes_iv) == '' || strlen($this->aes_iv) != 16) {
+            throw new ScoutnetException_MissingConfVar('aes_iv');
+        }
+        if (trim($this->login_url) == '') {
+            throw new ScoutnetException_MissingConfVar('login_url');
+        }
+        if (trim($this->provider) == '') {
+            throw new ScoutnetException_MissingConfVar('provider');
+        }
+    }
 
 	protected function load_data_from_scoutnet($ids,$query){
 		$res = $this->SN->get_data_by_global_id($ids,$query);
@@ -195,22 +239,33 @@ class ScoutnetApi {
 		return $this->SN->requestPermission($type,$ssid,$user,$auth);
 	}
 
-	public function get_scoutnetConnectLoginButton($returnUrl = '',$requestApiKey = false, $imageURL = 'https://www.scoutnet.de/images/scoutnetConnect.png'){
-		$this->_check_for_all_configValues();
-		$button = '<form action="'.$this->ScoutnetLoginPage.'" id="scoutnetLogin" method="post" target="_self">';
+    /**
+     * returns the ScoutNet Connect Button in formated HTML
+     *
+     * @param string $returnUrl
+     * @param bool $requestApiKey
+     * @param string $imageURL
+     * @param string $lang
+     * @return string
+     */
+    public function get_scoutnet_connect_login_button($returnUrl = '', $requestApiKey = false, $imageURL = 'https://www.scoutnet.de/images/scoutnetConnect.png', $lang = 'de'){
+        $this->_check_for_all_configValues();
+        $button = '<form action="'.$this->login_url.'" id="scoutnetLogin" method="post" target="_self">'."\n";
 
-		$button .= $returnUrl == ''?'':'<input type="hidden" name="redirect_url" value="'.$returnUrl.'" />';
-		$button .= '<input type="hidden" name="provider" value="'.$this->ScoutnetProviderName.'" />';
-		$button .= $requestApiKey?'<input type="hidden" name="createApiKey" value="1" />':'';
-		
-		$button .= '<a href="#" onclick="document.getElementById(\'scoutnetLogin\').submit(); return false;">';
-		$button .= '<img src="'.$imageURL.'" title="Login with Scoutnet" alt="scoutnet Login"/>';
-		$button .= '</a>';
-		
-		$button .= '</form>';
+        $button .= $returnUrl == ''?'':"    ".'<input type="hidden" name="redirect_url" value="'.$returnUrl.'" />'."\n";
+        $button .= "    ".'<input type="hidden" name="lang" value="'.$lang.'"/>'."\n";
+        $button .= "    ".'<input type="hidden" name="provider" value="'.$this->provider.'" />'."\n";
+        $button .= $requestApiKey?("    ".'<input type="hidden" name="createApiKey" value="1" />'."\n"):'';
 
-		return $button;
-	}
+        $button .= "    ".'<a href="#" onclick="document.getElementById(\'scoutnetLogin\').submit(); return false;">'."\n";
+
+        $button .= "        ".'<img src="'.$imageURL.'" title="Login with Scoutnet" alt="scoutnet Login"/>'."\n";
+        $button .= "    ".'</a>'."\n";
+
+        $button .= '</form>';
+
+        return $button;
+    }
 
 
 	public function getApiKeyFromData(){
@@ -263,11 +318,6 @@ class ScoutnetApi {
 		return $data;
 	}
 
-	private function _check_for_all_configValues(){
-		if ( trim($this->AES_key) == '' || trim($this->AES_iv) == '' || trim($this->ScoutnetLoginPage) == '' || trim($this->ScoutnetProviderName) == '') {
-				throw new ScoutnetException_MissingConfVar($configVar);
-		}
-	}
 
 
 	private function _generate_auth($api_key,$checkValue){
@@ -299,6 +349,6 @@ class ScoutnetException extends \Exception{}
 
 class ScoutnetException_MissingConfVar extends ScoutnetException{
 	public function __construct( $var ){
-		parent::__construct( "Missing '$var'. Please Contact your Admin to enter a valid AES key. You can request via <a href=\"mailto:scoutnetconnect@scoutnet.de\">scoutnetConnect@ScoutNet.de</a>." );
+		parent::__construct( "Missing '$var'. Please Contact your Admin to enter a valid credentials for ScoutNet Connect. You can request them via <a href=\"mailto:scoutnetconnect@scoutnet.de\">scoutnetConnect@ScoutNet.de</a>." );
 	}
 }

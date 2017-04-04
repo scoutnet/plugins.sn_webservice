@@ -2,6 +2,52 @@
 namespace ScoutNet\Api;
 
 use PHPUnit\Framework\TestCase;
+use ScoutNet\Api\Helpers\JsonRPCClientHelper;
+use \Exception;
+
+class JsonRPCClientHelperMock extends JsonRPCClientHelper {
+    const CACHE_DIR = "../Fixtures/";
+    /**
+     * Performs a jsonRCP request and gets the results as an array
+     *
+     * @param string $method
+     * @param array  $params
+     *
+     * @return array|bool
+     * @throws \Exception
+     */
+    public function __call($method,$params) {
+        // check
+        if (!is_scalar($method)) {
+            throw new Exception('Method name has no scalar value');
+        }
+
+        // check
+        if (is_array($params)) {
+            // no keys
+            $params = array_values($params);
+        } else {
+            throw new Exception('Params must be given as array');
+        }
+
+        $cache_file = SELF::CACHE_DIR.$method.".json";
+        $cache = [];
+        if (is_file($cache_file)) {
+            $cache = json_decode(file_get_contents($cache_file), true);
+        }
+
+        $param_json = json_encode($params);
+
+        if (!isset($cache[$param_json])) {
+            $cache[$param_json] = parent::__call($method, $params);
+            file_put_contents($cache_file, json_encode($cache));
+        }
+
+        return $cache[$param_json];
+    }
+
+}
+
 
 /**
  * @covers ScoutnetApi
@@ -12,6 +58,13 @@ final class ApiTest extends TestCase {
     public function __construct($name = null, array $data = array(), $dataName = '') {
         parent::__construct($name, $data, $dataName);
         $this->sn = new ScoutnetApi();
+        $jsonRPCClientHelperMock = new JsonRPCClientHelperMock('https://www.scoutnet.de/jsonrpc/server.php'); // load data to be mocked from $url
+
+        // inject RPCClientMock
+        $objectReflection = new \ReflectionObject($this->sn);
+        $property = $objectReflection->getProperty('SN');
+        $property->setAccessible(true);
+        $property->setValue($this->sn, $jsonRPCClientHelperMock);
     }
 
 	public function testCanBeCreated() {
@@ -45,6 +98,47 @@ final class ApiTest extends TestCase {
 
         $bezirk = $indexes['17']; // bezirk erft
         $this->assertGreaterThan(5, count($bezirk->getChildren()), "less than 5 Stämme, as of writing there were 12");
+    }
+
+    /**
+     * @expectedException \ScoutNet\Api\ScoutnetException_MissingConfVar
+     * @expectedExceptionMessageRegExp /^Missing 'aes_key'.*$/
+     */
+    public function testSetScoutnetConnectDataFailureAES_KEY() {
+        $this->sn->set_scoutnet_connect_data('https://www.scoutnet.de/community/scoutnetConnect.html', 'phpunit', '', '1234567890123456');
+    }
+
+    /**
+     * @expectedException \ScoutNet\Api\ScoutnetException_MissingConfVar
+     * @expectedExceptionMessageRegExp /^Missing 'aes_iv'.*$/
+     */
+    public function testSetScoutnetConnectDataFailureAES_IV() {
+        $this->sn->set_scoutnet_connect_data('https://www.scoutnet.de/community/scoutnetConnect.html', 'phpunit', '12345678901234567890123456789012', '');
+    }
+
+    /**
+     * @expectedException \ScoutNet\Api\ScoutnetException_MissingConfVar
+     * @expectedExceptionMessageRegExp /^Missing 'provider'.*$/
+     */
+    public function testSetScoutnetConnectDataFailiureProvider() {
+        $this->sn->set_scoutnet_connect_data('https://www.scoutnet.de/community/scoutnetConnect.html', '', '12345678901234567890123456789012', '1234567890123456');
+    }
+
+    /**
+     * @expectedException \ScoutNet\Api\ScoutnetException_MissingConfVar
+     * @expectedExceptionMessageRegExp /^Missing 'login_url'.*$/
+     */
+    public function testSetScoutnetConnectDataFailiureLoginurl() {
+        $this->sn->set_scoutnet_connect_data('  ', 'phpunit', '12345678901234567890123456789012', '1234567890123456');
+    }
+
+    public function testScoutNetConnectLogin(){
+        $this->sn->set_scoutnet_connect_data('https://www.scoutnet.de/community/scoutnetConnect.html','phpunit', '12345678901234567890123456789012', '1234567890123456');
+        $connect_button = $this->sn->get_scoutnet_connect_login_button('http://localhost/testclient.php', true, 'https://www.scoutnet.de/images/scoutnetConnect.png', 'de');
+        $expected_connect_button = file_get_contents("../Fixtures/ConnectButton.html");
+
+
+        $this->assertEquals($expected_connect_button, $connect_button);
     }
 }
 
