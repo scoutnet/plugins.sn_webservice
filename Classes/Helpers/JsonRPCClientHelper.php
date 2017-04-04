@@ -1,36 +1,43 @@
 <?php
 namespace ScoutNet\Api\Helpers;
-/*
-					COPYRIGHT
 
-Copyright 2007 Sergio Vaccaro <sergio@inservibile.org>
+/***************************************************************
+ *
+ *  Copyright notice
+ *
+ *  (c) 2015 Stefan "Mütze" Horst <muetze@scoutnet.de>, ScoutNet
+ *
+ *  All rights reserved
+ *
+ *  This script is part of the TYPO3 project. The TYPO3 project is
+ *  free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  The GNU General Public License can be found at
+ *  http://www.gnu.org/copyleft/gpl.html.
+ *
+ *  This script is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  This copyright notice MUST APPEAR in all copies of the script!
+ ***************************************************************/
 
-This file is part of JSON-RPC PHP.
-
-JSON-RPC PHP is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-JSON-RPC PHP is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with JSON-RPC PHP; if not, write to the Free Software
-Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-*/
+use Exception;
 
 /**
- * The object of this class are generic jsonRPC 1.0 clients
- * http://json-rpc.org/wiki/specification
+ * JsonRPCClientHelper
  *
- * @author sergio <jsonrpcphp@inservibile.org>
+ * @method get_data_by_global_id($globalid, $filter)
+ * @method deleteObject($type, $globalid, $id, $username, $auth)
+ * @method setData($type,$id,$object,$username,$auth)
+ * @method checkPermission($type,$globalid,$username,$auth)
+ * @method requestPermission($type,$globalid,$username,$auth)
  */
-
-
-class JsonRPCClient {
+class JsonRPCClientHelper {
 	
 	/**
 	 * Debug state
@@ -59,7 +66,10 @@ class JsonRPCClient {
 	private $notification = false;
 
 	private $useCurl = false;
-	
+	private $curlProxyServer = false;
+	private $curlProxyTunnel = false;
+	private $curlProxyUserPass = false;
+
 	/**
 	 * Takes the connection parameters
 	 *
@@ -91,21 +101,21 @@ class JsonRPCClient {
 	 * @param boolean $notification
 	 */
 	public function setRPCNotification($notification) {
-		empty($notification) ?
-							$this->notification = false
-							:
-							$this->notification = true;
+		empty($notification) ? $this->notification = false : $this->notification = true;
 	}
-	
+
 	/**
 	 * Performs a jsonRCP request and gets the results as an array
 	 *
 	 * @param string $method
-	 * @param array $params
-	 * @return array
+	 * @param array  $params
+	 *
+	 * @return array|bool
+	 * @throws \Exception
 	 */
 	public function __call($method,$params) {
-		
+		$debug = '';
+
 		// check
 		if (!is_scalar($method)) {
 			throw new Exception('Method name has no scalar value');
@@ -133,10 +143,10 @@ class JsonRPCClient {
 			'id' => $currentId
 		);
 		$request = json_encode($request);
-		$this->debug && $this->debug.='***** Request *****'."\n".$request."\n".'***** End Of request *****'."\n\n";
+		$this->debug && $debug .='***** Request *****'."\n".$request."\n".'***** End Of request *****'."\n\n";
 
 
-		if (SNK_USE_CURL) {
+		if ($this->useCurl && extension_loaded('curl')) {
 			// performs the HTTP POST by use of libcurl
 			$options = array(
 				CURLOPT_URL		=> $this->url,
@@ -147,15 +157,20 @@ class JsonRPCClient {
 				CURLOPT_RETURNTRANSFER	=> true,
 				CURLOPT_SSL_VERIFYHOST 	=> false,
 				CURLOPT_SSL_VERIFYPEER 	=> false,
-				CURLOPT_FOLLOWLOCATION	=> false,
+				CURLOPT_FOLLOWLOCATION	=> true,
 			);
 			$ch = curl_init();
 			curl_setopt_array( $ch, $options );
 
+			if (isset($_COOKIE['XDEBUG_SESSION'])) {
+				curl_setopt($ch, CURLOPT_COOKIE, 'XDEBUG_SESSION: '.urlencode($_COOKIE['XDEBUG_SESSION']));
+			}
+
+
 			if ($this->curlProxyServer != null) {
 				curl_setopt($ch, CURLOPT_PROXY, $this->curlProxyServer);
 
-				if ($this->curlProxyTunnel != null)	{
+				if ($this->curlProxyTunnel != null) {
 					curl_setopt($ch, CURLOPT_HTTPPROXYTUNNEL, $this->curlProxyTunnel);
 				}
 				if ($this->curlProxyUserPass != null)	{
@@ -167,7 +182,7 @@ class JsonRPCClient {
 
 			$response = trim( curl_exec( $ch ) );
 
-			$this->debug && $this->debug.='***** Server response *****'."\n".$response.'***** End of server response *****'."\n";
+			$this->debug && $debug.='***** Server response *****'."\n".$response.'***** End of server response *****'."\n";
 			$response = json_decode( $response, true );
 			curl_close( $ch );
 		} else {
@@ -185,10 +200,10 @@ class JsonRPCClient {
 				while($row = fgets($fp)) {
 					$response.= trim($row)."\n";
 				}
-				$this->debug && $this->debug.='***** Server response *****'."\n".$response.'***** End of server response *****'."\n";
+				$this->debug && $debug.='***** Server response *****'."\n".$response.'***** End of server response *****'."\n";
 				$response = json_decode($response,true);
 			} else {
-				throw new \Exception('Unable to connect to '.$this->url);
+				throw new Exception('Unable to connect to '.$this->url);
 			}
 		}
 
@@ -201,10 +216,10 @@ class JsonRPCClient {
 		if (!$this->notification) {
 			// check
 			if ($response['id'] != $currentId) {
-				throw new \Exception('Incorrect response id (request id: '.$currentId.', response id: '.$response['id'].')');
+				throw new Exception('Incorrect response id (request id: '.$currentId.', response id: '.$response['id'].')');
 			}
 			if (!is_null($response['error'])) {
-				throw new \Exception('Request error: '.$response['error']);
+				throw new Exception('Request error: '.$response['error']);
 			}
 			
 			return $response['result'];

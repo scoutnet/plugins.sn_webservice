@@ -1,5 +1,5 @@
 {
-  "name": "scoutnet/sn-api",
+  "name": "scoutnet/sn-webservice",
   "description" : "This class is needed to comunicate with the scoutnet.de server.",
   "homepage": "https://github.com/scoutnet/plugins.sn_webservice",
   "authors": [
@@ -24,7 +24,6 @@
     }
   },
   "replace": {
-    "scoutnet/sn-webservice": "self.version",
     "sn_webservice": "self.version"
   },
   "extra": {

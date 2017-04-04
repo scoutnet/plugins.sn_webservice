@@ -7,8 +7,8 @@ use ScoutNet\Api\Models\Kalender;
 use ScoutNet\Api\Models\Stufe;
 use ScoutNet\Api\Models\User;
 
-use ScoutNet\Api\Helpers\AES;
-use ScoutNet\Api\Helpers\JsonRPCClient;
+use ScoutNet\Api\Helpers\AesHelper;
+use ScoutNet\Api\Helpers\JsonRPCClientHelper;
 
 // TODO: fixe this
 define('SNK_USE_CURL', false);
@@ -47,7 +47,7 @@ class ScoutnetApi {
      */
 	public function __construct($api_url = "https://www.scoutnet.de/jsonrpc/server.php") {
 		ini_set('default_socket_timeout',1);
-		$this->SN = new JsonRPCClient($api_url);
+		$this->SN = new JsonRPCClientHelper($api_url);
 
 
 		$this->ScoutnetLoginPage = 'https://www.scoutnet.de/community/scoutnetConnect.html';
