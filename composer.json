@@ -1,0 +1,36 @@
+{
+  "name": "scoutnet/sn-api",
+  "description" : "This class is needed to comunicate with the scoutnet.de server.",
+  "homepage": "https://github.com/scoutnet/plugins.sn_webservice",
+  "authors": [
+    {
+      "name": "Stefan Horst",
+      "email": "muetze@scoutnet.de",
+      "homepage": "https://www.scoutnet.de",
+      "role": "Developer"
+    }
+  ],
+  "license": ["GPL-2.0+"],
+  "keywords": ["ScoutNet", "Pfadfinder", "ScoutNet API"],
+  "support": {
+    "issues": "https://github.com/scoutnet/plugins.sn_webservice/issues"
+  },
+  "version": "1.0.0",
+  "require": {
+  },
+  "autoload": {
+    "psr-4": {
+      "ScoutNet\\Api\\": "Classes/"
+    }
+  },
+  "replace": {
+    "scoutnet/sn-webservice": "self.version",
+    "sn_webservice": "self.version"
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-master": "1.0.x-dev",
+      "dev-development": "1.0.x-dev"
+    }
+  }
+}

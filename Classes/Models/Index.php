@@ -1,4 +1,5 @@
 <?php
+namespace ScoutNet\Api\Models;
 
 /**
  * SN_Model_Index
@@ -14,7 +15,7 @@
  * @property integer $longitude
  * @property integer $parent_id
  */
-class SN_Model_Index extends ArrayObject {
+class Index extends \ArrayObject {
 	private $children = array();
 
     function __construct($array) {

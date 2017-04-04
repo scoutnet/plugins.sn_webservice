@@ -1,5 +1,7 @@
 <?php
-class SN_Model_Stufe extends ArrayObject{
+namespace ScoutNet\Api\Models;
+
+class Stufe extends \ArrayObject{
 	function __construct( $array ){
 		parent::__construct($array);
 	}

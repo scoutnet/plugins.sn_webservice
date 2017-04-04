@@ -1,4 +1,5 @@
 <?php
+namespace ScoutNet\Api\Models;
 
 /**
  * SN_Model_User
@@ -13,7 +14,7 @@
  * @property string $Lastname
  * @property string $lastname
  */
-class SN_Model_User extends ArrayObject {
+class User extends \ArrayObject {
 
     function __construct($array) {
         if (isset($array['id'])) {
@@ -21,7 +22,7 @@ class SN_Model_User extends ArrayObject {
         } elseif (isset($array['User_ID'])) {
             $array['userid'] = $array['User_ID'];
         } elseif (empty($array['userid'])) {
-            throw new Exception("not a valid user record: " . print_r($array, true));
+            throw new \Exception("not a valid user record: " . print_r($array, true));
         }
         if (isset($array['Firstname'])) {
             $array['firstname'] = $array['Firstname'];

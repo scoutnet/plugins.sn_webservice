@@ -1,37 +1,58 @@
 <?php
+namespace ScoutNet\Api;
 
-ini_set("display_errors",ON);
+use PHPUnit\Framework\TestCase;
 
-require_once 'class.tx_shscoutnetwebservice_sn.php';
+/**
+ * @covers ScoutnetApi
+ */
+final class ApiTest extends TestCase {
+    private $sn = null;
 
+    public function __construct($name = null, array $data = array(), $dataName = '') {
+        parent::__construct($name, $data, $dataName);
+        $this->sn = new ScoutnetApi();
+    }
 
-$sn = new tx_shscoutnetwebservice_sn();
-
-// Read Api
-echo '---------- read kalender elements -----------------'."\n";
-$events = $sn->get_events_for_global_id_with_filter('4',array('limit'=>'1','before'=>'12.01.2012'));
-
-echo 'got '.count($events).' events'."\n";
-
-foreach ($events as $event)
-	echo $event['Title']."\n";
-
-echo '---------- read index elements -----------------'."\n";
-$indexes = $sn->get_index_for_global_id_with_filter('4',array('deeps'=>'2'));
-
-echo 'got '.count($indexes).' indexes'."\n";
-
-$diozese = $indexes['4'];
-
-echo $diozese['name'].' ('.$diozese['number'].')'."\n";
-
-foreach ($diozese->getChildren() as $bezirk) {
-	echo '-'.$bezirk['name'].' ('.$bezirk['number'].')'."\n";
-
-	foreach ($bezirk->getChildren() as $stamm) {
-		echo '--'.$stamm['name'].' ('.$stamm['number'].')'."\n";
+	public function testCanBeCreated() {
+		$this->assertInstanceOf(
+			ScoutnetApi::class,
+			new ScoutnetApi()
+		);
 	}
+
+	public function testGetEventsForGlobalId() {
+
+        $events = $this->sn->get_events_for_global_id_with_filter('4',array('limit'=>'1','before'=>'12.01.2012'));
+
+        $this->assertEquals(1, count($events),"got more than one event");
+        $this->assertEquals(4, $events[0]->Kalender->ID, "wrong kalender id for event");
+    }
+
+    public function testGetKalenderElements() {
+        $kalender = $this->sn->get_kalender_by_global_id('4');
+        $this->assertEquals(1, count($kalender),"got more than one kalender");
+        $this->assertEquals(4, $kalender[0]->ID, "wrong kalender id returned");
+    }
+
+    public function testGetIndexElements() {
+        $indexes = $this->sn->get_index_for_global_id_with_filter('4',array('deeps'=>'2'));
+
+        $this->assertGreaterThan(13, count($indexes), 'to few structures returned, as of writing there were 113');
+
+        $diozese = $indexes['4']; // diozese Köln
+        $this->assertGreaterThan(5, count($diozese->getChildren()), 'less than 5 Bezirke, as of writing there were 12');
+
+        $bezirk = $indexes['17']; // bezirk erft
+        $this->assertGreaterThan(5, count($bezirk->getChildren()), "less than 5 Stämme, as of writing there were 12");
+    }
 }
+
+/*
+ini_set("display_errors","ON");
+
+$sn = new ScoutnetApi();
+
 
 // Write Api
 echo '---------- write get scoutnetConnect button -----------------'."\n";
@@ -123,3 +144,4 @@ echo "event written. It has ID ".$testEvent['ID']."\n";
 echo '---------- write delete event -----------------'."\n";
 $sn->delete_event($ssid, $testEvent['ID'], $scoutnetUser, $api_key);
 echo 'event deleted.'."\n";
+*/

@@ -1,4 +1,5 @@
 <?php
+namespace ScoutNet\Api\Helpers;
 /*
 					COPYRIGHT
 
@@ -29,7 +30,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 
-class tx_shscoutnetwebservice_jsonRPCClient {
+class JsonRPCClient {
 	
 	/**
 	 * Debug state
@@ -187,7 +188,7 @@ class tx_shscoutnetwebservice_jsonRPCClient {
 				$this->debug && $this->debug.='***** Server response *****'."\n".$response.'***** End of server response *****'."\n";
 				$response = json_decode($response,true);
 			} else {
-				throw new Exception('Unable to connect to '.$this->url);
+				throw new \Exception('Unable to connect to '.$this->url);
 			}
 		}
 
@@ -200,10 +201,10 @@ class tx_shscoutnetwebservice_jsonRPCClient {
 		if (!$this->notification) {
 			// check
 			if ($response['id'] != $currentId) {
-				throw new Exception('Incorrect response id (request id: '.$currentId.', response id: '.$response['id'].')');
+				throw new \Exception('Incorrect response id (request id: '.$currentId.', response id: '.$response['id'].')');
 			}
 			if (!is_null($response['error'])) {
-				throw new Exception('Request error: '.$response['error']);
+				throw new \Exception('Request error: '.$response['error']);
 			}
 			
 			return $response['result'];
@@ -213,5 +214,3 @@ class tx_shscoutnetwebservice_jsonRPCClient {
 		}
 	}
 }
-
-?>

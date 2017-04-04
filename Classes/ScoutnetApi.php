@@ -1,4 +1,18 @@
 <?php
+namespace ScoutNet\Api;
+
+use ScoutNet\Api\Models\Event;
+use ScoutNet\Api\Models\Index;
+use ScoutNet\Api\Models\Kalender;
+use ScoutNet\Api\Models\Stufe;
+use ScoutNet\Api\Models\User;
+
+use ScoutNet\Api\Helpers\AES;
+use ScoutNet\Api\Helpers\JsonRPCClient;
+
+// TODO: fixe this
+define('SNK_USE_CURL', false);
+
 /***************************************************************
 *  Copyright notice
 *
@@ -15,32 +29,8 @@
 *
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- * Hint: use extdeveval to insert/update function index above.
- */
 
-require_once('class.tx_shscoutnetwebservice_jsonRPCClient.php');
-require_once('class.tx_shscoutnetwebservice_AES.php');
-
-require_once('models/SN_Model_Stufe.php');
-require_once('models/SN_Model_Kalender.php');
-require_once('models/SN_Model_User.php');
-require_once('models/SN_Model_Event.php');
-require_once('models/SN_Model_Index.php');
-
-
-/**
- * Service "SN" for the "sh_scoutnet_webservice" extension.
- *
- * @author	Stefan Horst <s.horst@dpsg-koeln.de>
- * @subpackage	tx_shscoutnetwebservice
- */
-class tx_shscoutnetwebservice_sn {
-	var $prefixId = 'tx_shscoutnetwebservice_sn';		// Same as class name
-	var $scriptRelPath = 'sn/class.tx_shscoutnetwebservice_sn.php';	// Path to this script relative to the extension dir.
-	var $extKey = 'sh_scoutnet_webservice';	// The extension key.
+class ScoutnetApi {
 	var $iv = '1234567890123456';
 
 	var $SN = null;
@@ -50,15 +40,15 @@ class tx_shscoutnetwebservice_sn {
 	var $kalender_cache = array();
 
 	var $snData;
-	
-	/**
-	 * [Put your description here]
-	 *
-	 * @return	[type]		...
-	 */
-	public function __construct() {
+
+    /**
+     *
+     * @param string $api_url
+     */
+	public function __construct($api_url = "https://www.scoutnet.de/jsonrpc/server.php") {
 		ini_set('default_socket_timeout',1);
-		$this->SN = new tx_shscoutnetwebservice_jsonRPCClient("https://www.scoutnet.de/jsonrpc/server.php");
+		$this->SN = new JsonRPCClient($api_url);
+
 
 		$this->ScoutnetLoginPage = 'https://www.scoutnet.de/community/scoutnetConnect.html';
 	}
@@ -75,21 +65,26 @@ class tx_shscoutnetwebservice_sn {
 		return $res;
 	}
 
+    /**
+     * @param $ids
+     * @param $filter
+     * @return  Event[]
+     */
 	public function get_events_for_global_id_with_filter($ids,$filter){
 		$events = array();
 		foreach ($this->load_data_from_scoutnet($ids,array('events'=>$filter)) as $record) {
 
 			if ($record['type'] === 'user'){
-				$user = new SN_Model_User($record['content']);
+				$user = new User( $record['content']);
 				$this->user_cache[$user['userid']] = $user;
 			} elseif ($record['type'] === 'stufe'){
-				$stufe = new SN_Model_Stufe($record['content']);
+				$stufe = new Stufe($record['content']);
 				$this->stufen_cache[$stufe['Keywords_ID']] = $stufe;
 			} elseif ($record['type'] === 'kalender'){
-				$kalender = new SN_Model_Kalender($record['content']);
+				$kalender = new Kalender($record['content']);
 				$this->kalender_cache[$kalender['ID']] = $kalender;
 			} elseif ($record['type'] === 'event') {
-				$event = new SN_Model_Event($record['content']);
+				$event = new Event($record['content']);
 
 				$author = $this->get_user_by_id($event['Last_Modified_By']);
 				if ($author == null) {
@@ -123,13 +118,18 @@ class tx_shscoutnetwebservice_sn {
 		return $events;
 	}
 
-	public function get_index_for_global_id_with_filter($ids,$filter){
-		$events = array();
+    /**
+     * @param $ids
+     * @param $filter
+     * @return Index[]
+     */
+	public function get_index_for_global_id_with_filter($ids, $filter){
+		$indexes = array();
 		foreach ($this->load_data_from_scoutnet($ids,array('index'=>$filter)) as $record) {
 
 			if ($record['type'] === 'index'){
-				$index = new SN_Model_Index($record['content']);
-				$index['parent'] = $indexes[$index['parent_id']];
+				$index = new Index($record['content']);
+//				$index['parent'] = $indexes[$index['parent_id']];
 
 				if (isset($indexes[$index['parent_id']])) $indexes[$index['parent_id']]->addChild($index);
 				$indexes[$index['id']] = $index;
@@ -146,7 +146,7 @@ class tx_shscoutnetwebservice_sn {
 		$kalenders = array();
 		foreach ($this->load_data_from_scoutnet($ids,array('kalenders'=>array())) as $record) {
 			if ($record['type'] === 'kalender'){
-				$kalender = new SN_Model_Kalender($record['content']);
+				$kalender = new Kalender($record['content']);
 				$this->kalender_cache[$kalender['ID']] = $kalender;
 				$kalenders[] = $kalender;
 			}
@@ -265,7 +265,7 @@ class tx_shscoutnetwebservice_sn {
 
 	private function _check_for_all_configValues(){
 		if ( trim($this->AES_key) == '' || trim($this->AES_iv) == '' || trim($this->ScoutnetLoginPage) == '' || trim($this->ScoutnetProviderName) == '') {
-				throw new tx_shscoutnetwebservice_sn_Exception_MissingConfVar($configVar);
+				throw new ScoutnetException_MissingConfVar($configVar);
 		}
 	}
 
@@ -295,12 +295,10 @@ class tx_shscoutnetwebservice_sn {
 
 }
 
-class tx_shscoutnetwebservice_sn_Exception extends Exception{}
+class ScoutnetException extends \Exception{}
 
-class tx_shscoutnetwebservice_sn_Exception_MissingConfVar extends tx_shscoutnetwebservice_sn_Exception{
+class ScoutnetException_MissingConfVar extends ScoutnetException{
 	public function __construct( $var ){
 		parent::__construct( "Missing '$var'. Please Contact your Admin to enter a valid AES key. You can request via <a href=\"mailto:scoutnetconnect@scoutnet.de\">scoutnetConnect@ScoutNet.de</a>." );
 	}
 }
-
-?>

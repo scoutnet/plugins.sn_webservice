@@ -1,4 +1,5 @@
 <?php
+namespace ScoutNet\Api\Models;
 
 /**
  * SN_Model_Event
@@ -18,14 +19,14 @@
  * @property string $Description Beschreibung
  * @property array $Stufen
  * @property array $Keywords z. B. array(10 => 'Schulung/Kurs', 6 => 'Vorstände')
- * @property SN_Model_Kalender $Kalender
+ * @property Kalender $Kalender
  * @property string $Last_Modified_By
  * @property integer $Last_Modified_At timestamp
  * @property string $Created_By
  * @property integer $Created_At timestamp
- * @property SN_Model_User $Author 
+ * @property User $Author
  */
-class SN_Model_Event extends ArrayObject {
+class Event extends \ArrayObject {
 
     function __construct($array) {
         parent::__construct($array);

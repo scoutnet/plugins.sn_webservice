@@ -1,4 +1,5 @@
 <?php
+namespace ScoutNet\Api\Models;
 
  /**
   * SN_Model_Kalender
@@ -10,7 +11,7 @@
   * @property integer $Ebene_Id z. B. 5
   */
 
-class SN_Model_Kalender extends ArrayObject {
+class Kalender extends \ArrayObject {
 
     function __construct($array) {
         parent::__construct($array);
