@@ -5,8 +5,15 @@ use PHPUnit\Framework\TestCase;
 use ScoutNet\Api\Helpers\JsonRPCClientHelper;
 use \Exception;
 
+DEFINE('CACHE_DIR', dirname(dirname(__FILE__))."/Fixtures/");
+
 class JsonRPCClientHelperMock extends JsonRPCClientHelper {
-    const CACHE_DIR = "../Fixtures/";
+    private $cache_dir = null;
+
+    public function __construct($url, $debug = false, $cache_dir) {
+        parent::__construct($url, $debug);
+        $this->cache_dir = $cache_dir;
+    }
     /**
      * Performs a jsonRCP request and gets the results as an array
      *
@@ -30,7 +37,7 @@ class JsonRPCClientHelperMock extends JsonRPCClientHelper {
             throw new Exception('Params must be given as array');
         }
 
-        $cache_file = SELF::CACHE_DIR.$method.".json";
+        $cache_file = $this->cache_dir.$method.".json";
         $cache = [];
         if (is_file($cache_file)) {
             $cache = json_decode(file_get_contents($cache_file), true);
@@ -58,7 +65,7 @@ final class ApiTest extends TestCase {
     public function __construct($name = null, array $data = array(), $dataName = '') {
         parent::__construct($name, $data, $dataName);
         $this->sn = new ScoutnetApi();
-        $jsonRPCClientHelperMock = new JsonRPCClientHelperMock('https://www.scoutnet.de/jsonrpc/server.php'); // load data to be mocked from $url
+        $jsonRPCClientHelperMock = new JsonRPCClientHelperMock('https://www.scoutnet.de/jsonrpc/server.php', false, CACHE_DIR); // load data to be mocked from $url
 
         // inject RPCClientMock
         $objectReflection = new \ReflectionObject($this->sn);
@@ -135,7 +142,7 @@ final class ApiTest extends TestCase {
     public function testScoutNetConnectLogin(){
         $this->sn->set_scoutnet_connect_data('https://www.scoutnet.de/community/scoutnetConnect.html','phpunit', '12345678901234567890123456789012', '1234567890123456');
         $connect_button = $this->sn->get_scoutnet_connect_login_button('http://localhost/testclient.php', true, 'https://www.scoutnet.de/images/scoutnetConnect.png', 'de');
-        $expected_connect_button = file_get_contents("../Fixtures/ConnectButton.html");
+        $expected_connect_button = file_get_contents(CACHE_DIR."ConnectButton.html");
 
 
         $this->assertEquals($expected_connect_button, $connect_button);
