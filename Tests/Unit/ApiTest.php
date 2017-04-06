@@ -57,7 +57,7 @@ class JsonRPCClientHelperMock extends JsonRPCClientHelper {
 
 
 /**
- * @covers ScoutnetApi
+ * @covers \ScoutNet\Api\ScoutnetApi
  */
 final class ApiTest extends TestCase {
     private $sn = null;
