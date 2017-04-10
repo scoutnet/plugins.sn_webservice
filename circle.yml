@@ -7,9 +7,11 @@ machine:
   # Add some environment variables
   environment:
     CIRCLE_ENV: test
+  php:
+    version: 7.0.17
 
 ## Customize test commands
 test:
   override:
     - mkdir -p $CIRCLE_TEST_REPORTS/phpunit
-    - php7 phpunit --log-junit $CIRCLE_TEST_REPORTS/phpunit/junit.xml -c Tests/Builds/UnitTests.xml
+    - phpunit --log-junit $CIRCLE_TEST_REPORTS/phpunit/junit.xml -c Tests/Builds/UnitTests.xml
