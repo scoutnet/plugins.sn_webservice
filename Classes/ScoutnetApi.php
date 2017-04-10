@@ -279,43 +279,42 @@ class ScoutnetApi {
 
 		$this->_check_for_all_configValues();
 
-		$z = $this->AES_key;
-		$iv = $this->AES_iv;
+		$z = $this->aes_key;
+		$iv = $this->aes_iv;
 
-		$aes = new tx_shscoutnetwebservice_AES($z,"CBC",$iv);
+		$aes = new \ScoutNet\Api\Helpers\AESHelper($z,"CBC",$iv);
 
 		$base64 = base64_decode(strtr($_GET['auth'], '-_~','+/='));
 
 		if (trim($base64) == "")  
-			throw new Exception('the auth is empty');
+			throw new \Exception('the auth is empty');
 
-		$data = unserialize(substr($aes->decrypt($base64),strlen($iv)));
+		$data = json_decode(substr($aes->decrypt($base64),strlen($iv)), true);
+
+        $md5 = $data['md5']; unset($data['md5']);
+        $sha1 = $data['sha1']; unset($data['sha1']);
+
+        if (md5(json_encode($data)) != $md5) {
+            throw new \Exception('the auth is broken');
+        }
+
+        if (sha1(json_encode($data)) != $sha1) {
+            throw new \Exception('the auth is broken');
+        }
 
 
-		$md5 = $data['md5']; unset($data['md5']);
-		$sha1 = $data['sha1']; unset($data['sha1']);
+        if (time() - $data['time'] > 3600) {
+            throw new \Exception('the auth is too old. Try again');
+        }
 
-		if (md5(serialize($data)) != $md5) {
-			throw new Exception('the auth is broken');
-		}    
+        $your_domain = $this->provider;
 
-		if (sha1(serialize($data)) != $sha1) {
-			throw new Exception('the auth is broken');
-		}    
+        if ($data['your_domain'] != $your_domain)
+            throw new \Exception('the auth is for the wrong site!. Try again');
 
+        $this->snData = $data;
 
-		if (time() - $data['time'] > 3600) {
-			throw new Exception('the auth is too old. Try again');
-		}    
-
-		$your_domain = $this->ScoutnetProviderName;
-
-		if ($data['your_domain'] != $your_domain)
-			throw new Exception('the auth is for the wrong site!. Try again');
-
-		$this->snData = $data;
-
-		return $data;
+        return $data;
 	}
 
 

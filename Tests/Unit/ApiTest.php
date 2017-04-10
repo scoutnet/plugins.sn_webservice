@@ -55,11 +55,13 @@ class JsonRPCClientHelperMock extends JsonRPCClientHelper {
 
 }
 
-
 /**
  * @covers \ScoutNet\Api\ScoutnetApi
  */
 final class ApiTest extends TestCase {
+    const AES_KEY = "12345678901234567890123456789012";
+    const AES_IV = "1234567890123456";
+
     private $sn = null;
 
     public function __construct($name = null, array $data = array(), $dataName = '') {
@@ -74,6 +76,32 @@ final class ApiTest extends TestCase {
         $property->setValue($this->sn, $jsonRPCClientHelperMock);
     }
 
+    private function _setCorrectWriteCredentials() {
+        $this->sn->set_scoutnet_connect_data('https://www.scoutnet.de/community/scoutnetConnect.html','phpunit', self::AES_KEY, self::AES_IV);
+    }
+
+    private function _generateExpectedApiKey()
+    {
+        $aes = new \ScoutNet\Api\Helpers\AESHelper(self::AES_KEY, "CBC", self::AES_IV);
+
+        $content = ['test' => 'bla'];
+        $content['time'] = time();
+        $content['your_domain'] = 'phpunit';
+        $content['user'] = 'phpunit';
+        $content['api_key'] = '1234567890';
+
+        // generate temp json to build hashes from
+        $json = json_encode($content);
+
+        $content['md5'] = md5($json);
+        $content['sha1'] = sha1($json);
+
+        $json = json_encode($content);
+
+        $data = base64_encode(self::AES_IV . $aes->encrypt($json));
+
+        return $data;
+    }
 	public function testCanBeCreated() {
 		$this->assertInstanceOf(
 			ScoutnetApi::class,
@@ -112,7 +140,7 @@ final class ApiTest extends TestCase {
      * @expectedExceptionMessageRegExp /^Missing 'aes_key'.*$/
      */
     public function testSetScoutnetConnectDataFailureAES_KEY() {
-        $this->sn->set_scoutnet_connect_data('https://www.scoutnet.de/community/scoutnetConnect.html', 'phpunit', '', '1234567890123456');
+        $this->sn->set_scoutnet_connect_data('https://www.scoutnet.de/community/scoutnetConnect.html', 'phpunit', '', self::AES_IV);
     }
 
     /**
@@ -120,7 +148,7 @@ final class ApiTest extends TestCase {
      * @expectedExceptionMessageRegExp /^Missing 'aes_iv'.*$/
      */
     public function testSetScoutnetConnectDataFailureAES_IV() {
-        $this->sn->set_scoutnet_connect_data('https://www.scoutnet.de/community/scoutnetConnect.html', 'phpunit', '12345678901234567890123456789012', '');
+        $this->sn->set_scoutnet_connect_data('https://www.scoutnet.de/community/scoutnetConnect.html', 'phpunit', self::AES_KEY, '');
     }
 
     /**
@@ -128,7 +156,7 @@ final class ApiTest extends TestCase {
      * @expectedExceptionMessageRegExp /^Missing 'provider'.*$/
      */
     public function testSetScoutnetConnectDataFailiureProvider() {
-        $this->sn->set_scoutnet_connect_data('https://www.scoutnet.de/community/scoutnetConnect.html', '', '12345678901234567890123456789012', '1234567890123456');
+        $this->sn->set_scoutnet_connect_data('https://www.scoutnet.de/community/scoutnetConnect.html', '', self::AES_KEY, self::AES_IV);
     }
 
     /**
@@ -136,16 +164,32 @@ final class ApiTest extends TestCase {
      * @expectedExceptionMessageRegExp /^Missing 'login_url'.*$/
      */
     public function testSetScoutnetConnectDataFailiureLoginurl() {
-        $this->sn->set_scoutnet_connect_data('  ', 'phpunit', '12345678901234567890123456789012', '1234567890123456');
+        $this->sn->set_scoutnet_connect_data('  ', 'phpunit', self::AES_KEY, self::AES_IV);
     }
 
     public function testScoutNetConnectLogin(){
-        $this->sn->set_scoutnet_connect_data('https://www.scoutnet.de/community/scoutnetConnect.html','phpunit', '12345678901234567890123456789012', '1234567890123456');
+        $this->_setCorrectWriteCredentials();
+
         $connect_button = $this->sn->get_scoutnet_connect_login_button('http://localhost/testclient.php', true, 'https://www.scoutnet.de/images/scoutnetConnect.png', 'de');
         $expected_connect_button = file_get_contents(CACHE_DIR."ConnectButton.html");
 
 
         $this->assertEquals($expected_connect_button, $connect_button);
+    }
+
+    public function testGetApiKeyFromData() {
+        $this->_setCorrectWriteCredentials();
+
+        $_GET['auth'] = $this->_generateExpectedApiKey();
+
+        // this function gets the data from $_GET['auth']
+        $data = $this->sn->getApiKeyFromData();
+
+        $scoutnetUser = $data['user'];
+        $api_key = $data['api_key'];
+
+        $this->assertEquals("phpunit", $scoutnetUser);
+        $this->assertEquals("1234567890", $api_key);
     }
 }
 

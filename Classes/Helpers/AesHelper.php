@@ -211,8 +211,8 @@ class AesHelper {
         }
 
         /** Encrypts an aribtrary length String.
-        *   @params plaintext string
-        *   @returns ciphertext string
+        *   @params string plaintext
+        *   @returns string cypthertext
         *   Whenever possible you should stream your plaintext through the
         *   encryptBlock() function directly, as the amount of time required
         *   to encrypt is linear to the size of the ciphertext.
