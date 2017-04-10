@@ -4,6 +4,7 @@ namespace ScoutNet\Api;
 use PHPUnit\Framework\TestCase;
 use ScoutNet\Api\Helpers\JsonRPCClientHelper;
 use \Exception;
+use ScoutNet\Api\Helpers\AesHelper;
 
 DEFINE('CACHE_DIR', dirname(dirname(__FILE__))."/Fixtures/");
 
@@ -82,7 +83,7 @@ final class ApiTest extends TestCase {
 
     private function _generateExpectedApiKey()
     {
-        $aes = new \ScoutNet\Api\Helpers\AESHelper(self::AES_KEY, "CBC", self::AES_IV);
+        $aes = new AesHelper(self::AES_KEY, "CBC", self::AES_IV);
 
         $content = ['test' => 'bla'];
         $content['time'] = time();
