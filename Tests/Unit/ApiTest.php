@@ -150,9 +150,21 @@ final class ApiTest extends TestCase {
     }
 
     public function testWritePermissions(){
-        $rights = $this->sn->has_write_permission_to_calender(4, self::API_USER, self::API_KEY);
+        $rights = $this->sn->has_write_permission_to_calender(1, self::API_USER, self::API_KEY);
 
         $this->assertEquals(Permission::AUTH_WRITE_ALLOWED, $rights);
+    }
+
+    public function testWritePermissionsNoAuth(){
+        $rights = $this->sn->has_write_permission_to_calender(2, self::API_USER, self::API_KEY);
+
+        $this->assertEquals(Permission::AUTH_NO_RIGHT, $rights);
+    }
+
+    public function testWritePermissionsPending(){
+        $rights = $this->sn->has_write_permission_to_calender(3, self::API_USER, self::API_KEY);
+
+        $this->assertEquals(Permission::AUTH_PENDING, $rights);
     }
 }
 
