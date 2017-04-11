@@ -13,11 +13,11 @@ machine:
 dependencies:
   override:
     - go get github.com/aktau/github-release
+    - composer install
 
 ## Customize test commands
 test:
   override:
-    - pwd
     - mkdir -p $CIRCLE_TEST_REPORTS/phpunit
     - phpunit --log-junit $CIRCLE_TEST_REPORTS/phpunit/junit.xml -c Tests/Builds/UnitTests.xml
 
