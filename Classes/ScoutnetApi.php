@@ -28,7 +28,7 @@ use ScoutNet\Api\Helpers\JsonRPCClientHelper;
 ***************************************************************/
 
 class ScoutnetApi {
-	var $iv = '1234567890123456';
+	const UNSECURE_START_IV = '1234567890123456';
 
 	var $SN = null;
 
@@ -54,7 +54,7 @@ class ScoutnetApi {
      */
 	public function __construct($api_url = "https://www.scoutnet.de/jsonrpc/server.php", $login_url = 'https://www.scoutnet.de/community/scoutnetConnect.html', $provider = '', $aes_key = '', $aes_iv = '') {
 		//ini_set('default_socket_timeout',1);
-		$this->SN = new JsonRPCClientHelper($api_url);
+		$this->SN = new JsonRPCClientHelper($api_url, true);
 
 		$this->set_scoutnet_connect_data($login_url, $provider, $aes_key, $aes_iv);
 	}
@@ -225,12 +225,20 @@ class ScoutnetApi {
 		return $this->SN->deleteObject($type,$ssid,$id,$user,$auth);
 	}
 
-	public function has_write_permission_to_calender($ssid,$user,$api_key) {
-		$type = 'event';
-		$auth = $this->_generate_auth($api_key,$type.$ssid.$user);
+	public function has_write_permission_to_calender($ssid, $user, $api_key) {
+		$permission = $this->get_permissions_of_type_for_structure('event', $ssid, $user, $api_key);
 
-		return $this->SN->checkPermission($type,$ssid,$user,$auth);
+		return $permission->getState();
 	}
+
+	public function get_permissions_of_type_for_structure($type, $ssid, $user, $api_key) {
+        $auth = $this->_generate_auth($api_key,$type.$ssid.$user);
+
+        $right = $this->SN->checkPermission($type,$ssid,$user,$auth);
+        $right['type'] = $type;
+
+        return new Models\Permission($right);
+    }
 
 	public function request_write_permissions_for_calender($ssid,$user,$api_key) {
 		$type = 'event';
@@ -318,19 +326,18 @@ class ScoutnetApi {
 	}
 
 
-
-	private function _generate_auth($api_key,$checkValue){
+	private function _generate_auth($api_key, $checkValue){
 		if ($api_key == '')
-			throw new Exception('your Api Key is empty');
+			throw new \Exception('your Api Key is empty');
 
-		$aes = new tx_shscoutnetwebservice_AES($api_key,"CBC",$this->iv);
+        $aes = new AESHelper($api_key,"CBC",self::UNSECURE_START_IV);
 
 		$auth = array(
 			'sha1' => sha1($checkValue),
 			'md5' => md5($checkValue),
 			'time' => time(),
 		);
-		$auth = serialize($auth);
+		$auth = json_encode($auth);
 
 		// this is done since we use the same iv all the time
 		$first_block = '';
