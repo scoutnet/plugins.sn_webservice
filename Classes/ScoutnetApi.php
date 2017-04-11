@@ -31,6 +31,13 @@ use ScoutNet\Api\Helpers\JsonRPCClientHelper;
 class ScoutnetApi {
     const UNSECURE_START_IV = '1234567890123456';
 
+    const ERROR_AUTH_BROKEN = 1491935269;
+    const ERROR_WRONG_PROVIDER = 1491935295;
+    const ERROR_AUTH_TOO_OLD = 1491935476;
+    const ERROR_AUTH_EMPTY = 1491935505;
+
+    const ERROR_MISSING_API_KEY = 1491938183;
+
     var $SN = null;
 
     var $user_cache = array();
@@ -46,12 +53,14 @@ class ScoutnetApi {
     private $login_url = null;
 
     /**
+     * Construct the ScoutNet API. To read you need not set anything. For Writing access you must set the
+     * provider, aes_key and aes_iv values
      *
-     * @param string $api_url
-     * @param string $login_url
-     * @param string $provider
-     * @param string $aes_key
-     * @param string $aes_iv
+     * @param string $api_url   if not set use the default value
+     * @param string $login_url use default value
+     * @param string $provider  set the provider name to write content
+     * @param string $aes_key   set aes key for the provider
+     * @param string $aes_iv    set aes iv for the provider
      */
     public function __construct($api_url = "https://www.scoutnet.de/jsonrpc/server.php", $login_url = 'https://www.scoutnet.de/community/scoutnetConnect.html', $provider = '', $aes_key = '', $aes_iv = '') {
         //ini_set('default_socket_timeout',1);
@@ -61,6 +70,8 @@ class ScoutnetApi {
     }
 
     /**
+     * Use this function to set the Parameter to be able to use the write API (if not set in the constructor)
+     *
      * @param string $login_url
      * @param string $provider
      * @param string $aes_key
@@ -106,8 +117,8 @@ class ScoutnetApi {
     }
 
     /**
-     * @param int[] $ids   SSIDs of Structures to request data from
-     * @param array $query Filter Query for Request
+     * @param int[]|int $ids   SSIDs of Structures to request data from
+     * @param array     $query Filter Query for Request
      *
      * @return mixed
      */
@@ -120,8 +131,8 @@ class ScoutnetApi {
     /**
      * Load Events for Kalender
      *
-     * @param int[] $ids    SSIDs of Kalenders to request Events from
-     * @param array $filter only find Events matching this filter
+     * @param int[]|int $ids    SSIDs of Kalenders to request Events from
+     * @param array     $filter only find Events matching this filter
      *
      * @return  Event[]
      */
@@ -176,8 +187,8 @@ class ScoutnetApi {
     /**
      * Load Index Elements for this Structure Element
      *
-     * @param int[] $ids    SSIDs to find Index Elements for
-     * @param array $filter Filter for Elements
+     * @param int[]|int $ids    SSIDs to find Index Elements for
+     * @param array     $filter Filter for Elements
      *
      * @return \ScoutNet\Api\Models\Index[]
      */
@@ -199,8 +210,8 @@ class ScoutnetApi {
     /**
      * Load Events with this IDs from the given Kalenders
      *
-     * @param int[] $ids       SSIDs to load events for
-     * @param int[] $event_ids IDs of Events to load
+     * @param int[]|int $ids       SSIDs to load events for
+     * @param int[]     $event_ids IDs of Events to load
      *
      * @return \ScoutNet\Api\Models\Event[]
      */
@@ -361,7 +372,7 @@ class ScoutnetApi {
         $base64 = base64_decode(strtr($_GET['auth'], '-_~', '+/='));
 
         if (trim($base64) == "")
-            throw new ScoutnetException('the auth is empty');
+            throw new ScoutnetException('AUTH is empty', self::ERROR_AUTH_EMPTY);
 
         // check if we have the apropiate Values Configed (AES_Key and AES_IV etc.)
         $this->_check_for_all_configValues();
@@ -380,21 +391,21 @@ class ScoutnetApi {
 
         // the hashes are generated without the hashes themself
         if (md5(json_encode($data)) != $md5) {
-            throw new ScoutnetException('the auth is broken');
+            throw new ScoutnetException('Could not verify AUTH', self::ERROR_AUTH_BROKEN);
         }
 
         if (sha1(json_encode($data)) != $sha1) {
-            throw new ScoutnetException('the auth is broken');
+            throw new ScoutnetException('Could not verify AUTH', self::ERROR_AUTH_BROKEN);
         }
 
         if (time() - $data['time'] > 3600) {
-            throw new ScoutnetException('the auth is too old. Try again');
+            throw new ScoutnetException('AUTH is too old', self::ERROR_AUTH_TOO_OLD);
         }
 
         $your_domain = $this->provider;
 
-        if ($data['your_domain'] != $your_domain)
-            throw new ScoutnetException('the auth is for the wrong site!. Try again');
+        if ($data['your_domain'] !== $your_domain)
+            throw new ScoutnetException('AUTH for wrong provider', self::ERROR_WRONG_PROVIDER);
 
         $this->snData = $data;
 
@@ -414,7 +425,7 @@ class ScoutnetApi {
 
         // check if api key is valid aes key
         if ($api_key == '' || strlen($api_key) != 32)
-            throw new ScoutnetException_MissingConfVar('api_key');
+            throw new ScoutnetException_MissingConfVar('api_key', self::ERROR_MISSING_API_KEY);
 
         $aes = new AESHelper($api_key, "CBC", self::UNSECURE_START_IV);
 
@@ -441,7 +452,7 @@ class ScoutnetException extends \Exception {
 }
 
 class ScoutnetException_MissingConfVar extends ScoutnetException {
-    public function __construct($var) {
-        parent::__construct("Missing '$var'. Please Contact your Admin to enter a valid credentials for ScoutNet Connect. You can request them via <a href=\"mailto:scoutnetconnect@scoutnet.de\">scoutnetConnect@ScoutNet.de</a>.");
+    public function __construct($var, $code = null) {
+        parent::__construct("Missing '$var'. Please Contact your Admin to enter a valid credentials for ScoutNet Connect. You can request them via <a href=\"mailto:scoutnetconnect@scoutnet.de\">scoutnetConnect@ScoutNet.de</a>.", $code);
     }
 }

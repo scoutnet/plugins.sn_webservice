@@ -12,7 +12,8 @@ namespace ScoutNet\Api\Models;
 class Permission {
     const AUTH_NO_RIGHT = 1;
     const AUTH_WRITE_ALLOWED = 0;
-    const AUTH_PENDING = 2;
+    const AUTH_REQUESTED = 0;
+    const AUTH_REQUEST_PENDING = 2;
 
     var $state = self::AUTH_NO_RIGHT;
     var $text = '';
