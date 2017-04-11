@@ -22,6 +22,9 @@ zip: Build/$(NAME)_$(CURRENTVERSION).zip
 Build/%.zip: checkVersion
 	-@[ -d Build ] || mkdir Build
 	git archive -o "Build/$(NAME)_$(CURRENTVERSION).zip" $(CURRENTVERSION)
+	# add composer stuff
+	composer install
+	zip -ur "Build/$(NAME)_$(CURRENTVERSION).zip" vendor
 
 stepPatchVersion:
 	@echo NEXT Version: $(NEXTPATCHVERSION)
