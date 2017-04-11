@@ -175,7 +175,7 @@ final class ApiTest extends TestCase {
 
         $auth = $method->invokeArgs($this->sn, [self::API_KEY, 'test']);
 
-        $this->assertEquals("cGJcjkxp40dKZP6Cf8QfpCiqDcXTRmrD50zdjtjBATWDeSMbj0Ro0etFtMJBASd-NBn41PC-y6IvI-h2QejUNm7g9IVpaSJj1_ibUSDoSwVNTdS_c0RSem8XyO-gTrl78gVH0AnJ13B9PUDj_mMsuhmTe_YWh-DuQ-x4ZTlM3IQ~", $auth);
+        $this->assertEquals("qcGJcjkxp40dKZP6Cf8QfpCiqDcXTRmrD50zdjtjBATWDeSMbj0Ro0etFtMJBASd-NBn41PC-y6IvI-h2QejUNm7g9IVpaSJj1_ibUSDoSwVNTdS_c0RSem8XyO-gTrl78gVH0AnJ13B9PUDj_mMsuhmTe_YWh-DuQ-x4ZTlM3IQ~", $auth);
     }
 
     public function testGetApiKeyFromDataWithNoAuth() {
