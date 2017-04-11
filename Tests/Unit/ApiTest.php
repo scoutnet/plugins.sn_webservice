@@ -166,6 +166,14 @@ final class ApiTest extends TestCase {
 
         $this->assertEquals(Permission::AUTH_PENDING, $rights);
     }
+
+    /**
+     * @skip
+     */
+    public function testRequestPermission() {
+        // ask for rights
+        //$this->sn->request_write_permissions_for_calender(1, self::API_USER, self::API_KEY);
+    }
 }
 
 
