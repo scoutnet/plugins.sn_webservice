@@ -8,56 +8,6 @@ use ScoutNet\Api\Helpers\AesHelper;
 use ScoutNet\Api\Models\Permission;
 use ScoutNet\Api\ScoutnetApi;
 
-DEFINE('CACHE_DIR', dirname(dirname(__FILE__))."/Fixtures/");
-
-class JsonRPCClientHelperMock extends JsonRPCClientHelper {
-    private $cache_dir = null;
-
-    public function __construct($url, $debug = false, $cache_dir) {
-        parent::__construct($url, $debug);
-        $this->cache_dir = $cache_dir;
-    }
-    /**
-     * Performs a jsonRCP request and gets the results as an array
-     *
-     * @param string $method
-     * @param array  $params
-     *
-     * @return array|bool
-     * @throws \Exception
-     */
-    public function __call($method,$params) {
-        // check
-        if (!is_scalar($method)) {
-            throw new Exception('Method name has no scalar value');
-        }
-
-        // check
-        if (is_array($params)) {
-            // no keys
-            $params = array_values($params);
-        } else {
-            throw new Exception('Params must be given as array');
-        }
-
-        $cache_file = $this->cache_dir.$method.".json";
-        $cache = [];
-        if (is_file($cache_file)) {
-            $cache = json_decode(file_get_contents($cache_file), true);
-        }
-
-        $param_json = json_encode($params);
-
-        if (!isset($cache[$param_json])) {
-            $cache[$param_json] = parent::__call($method, $params);
-            file_put_contents($cache_file, json_encode($cache));
-        }
-
-        return $cache[$param_json];
-    }
-
-}
-
 /**
  * @covers \ScoutNet\Api\ScoutnetApi
  */
@@ -205,6 +155,62 @@ final class ApiTest extends TestCase {
         $this->assertEquals(Permission::AUTH_WRITE_ALLOWED, $rights);
     }
 }
+
+
+/**
+ * Mocks
+ */
+
+DEFINE('CACHE_DIR', dirname(dirname(__FILE__))."/Fixtures/");
+
+class JsonRPCClientHelperMock extends JsonRPCClientHelper {
+    private $cache_dir = null;
+
+    public function __construct($url, $debug = false, $cache_dir) {
+        parent::__construct($url, $debug);
+        $this->cache_dir = $cache_dir;
+    }
+    /**
+     * Performs a jsonRCP request and gets the results as an array
+     *
+     * @param string $method
+     * @param array  $params
+     *
+     * @return array|bool
+     * @throws \Exception
+     */
+    public function __call($method,$params) {
+        // check
+        if (!is_scalar($method)) {
+            throw new Exception('Method name has no scalar value');
+        }
+
+        // check
+        if (is_array($params)) {
+            // no keys
+            $params = array_values($params);
+        } else {
+            throw new Exception('Params must be given as array');
+        }
+
+        $cache_file = $this->cache_dir.$method.".json";
+        $cache = [];
+        if (is_file($cache_file)) {
+            $cache = json_decode(file_get_contents($cache_file), true);
+        }
+
+        $param_json = json_encode($params);
+
+        if (!isset($cache[$param_json])) {
+            $cache[$param_json] = parent::__call($method, $params);
+            file_put_contents($cache_file, json_encode($cache));
+        }
+
+        return $cache[$param_json];
+    }
+
+}
+
 
 namespace ScoutNet\Api;
 
