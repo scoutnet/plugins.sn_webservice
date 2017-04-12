@@ -1,11 +1,318 @@
 <?php
-namespace ScoutNet\Api;
+
+namespace ScoutNet\Api\Tests;
 
 use PHPUnit\Framework\TestCase;
 use ScoutNet\Api\Helpers\JsonRPCClientHelper;
 use \Exception;
+use ScoutNet\Api\Helpers\AesHelper;
+use ScoutNet\Api\Models\Permission;
+use ScoutNet\Api\ScoutnetApi;
 
-DEFINE('CACHE_DIR', dirname(dirname(__FILE__))."/Fixtures/");
+/**
+ * @covers \ScoutNet\Api\ScoutnetApi
+ */
+final class ApiTest extends TestCase {
+    const AES_KEY = "12345678901234567890123456789012";
+    const AES_IV = "1234567890123456";
+
+    const API_PROVIDER = "phpunit";
+    const API_USER = "phpunit";
+    const API_KEY = "12345678901234567890123456789012";
+
+    const MOCKED_TIME_VALUE = 1;
+    const MOCKED_RAND_VALUE = 4;
+
+    private $sn = null;
+
+    public function __construct($name = null, array $data = array(), $dataName = '') {
+        parent::__construct($name, $data, $dataName);
+        $this->sn = new ScoutnetApi();
+        $jsonRPCClientHelperMock = new JsonRPCClientHelperMock('https://www.scoutnet.de/jsonrpc/server.php', false, CACHE_DIR); // load data to be mocked from $url
+
+        // inject RPCClientMock
+        $objectReflection = new \ReflectionObject($this->sn);
+        $property = $objectReflection->getProperty('SN');
+        $property->setAccessible(true);
+        $property->setValue($this->sn, $jsonRPCClientHelperMock);
+    }
+
+    /**
+     * set correct Write Credentials, so we can test the wrong Credentials too
+     */
+    private function _setCorrectWriteCredentials() {
+        $this->sn->set_scoutnet_connect_data('https://www.scoutnet.de/community/scoutnetConnect.html', self::API_PROVIDER, self::AES_KEY, self::AES_IV);
+    }
+
+    /**
+     * Generates the Auth for a given time, provider, api key etc..
+     * So we can check if broken api keys are correcly detected.
+     *
+     * @param int    $time        Time for the Auth
+     * @param string $provider    Provider in the Auth
+     * @param string $user        User in the Auth
+     * @param string $api_key     Api Key in the Auth
+     * @param bool   $broken_md5  bool, if we generate a broken md5 hash
+     * @param bool   $broken_sha1 bool, if we generate a broken sha1 hash
+     *
+     * @return string AUTH
+     */
+    private function _generateAuth($time = self::MOCKED_TIME_VALUE, $provider = self::API_PROVIDER, $user = self::API_USER, $api_key = self::API_KEY, $broken_md5 = false, $broken_sha1 = false) {
+        $aes = new AesHelper(self::AES_KEY, "CBC", self::AES_IV);
+
+        $content = [];
+        $content['time'] = $time;
+        $content['your_domain'] = $provider;
+        $content['user'] = $user;
+        $content['api_key'] = $api_key;
+
+        // generate temp json to build hashes from
+        $json = json_encode($content);
+
+        $content['md5'] = $broken_md5 ? "12345678901234567890123456789012" : md5($json);
+        $content['sha1'] = $broken_sha1 ? "1234567890123456789012345678901234567890" : sha1($json);
+
+        $json = json_encode($content);
+
+        $data = base64_encode(self::AES_IV . $aes->encrypt($json));
+
+        return $data;
+    }
+
+    public function testCanBeCreated() {
+        $this->assertInstanceOf(
+            ScoutnetApi::class,
+            new ScoutnetApi()
+        );
+    }
+
+    public function testGetEventsForGlobalId() {
+
+        $events = $this->sn->get_events_for_global_id_with_filter(4, array('limit' => '1', 'before' => '12.01.2012'));
+
+        $this->assertEquals(1, count($events), "got more than one event");
+        $this->assertEquals(4, $events[0]->Kalender->ID, "wrong kalender id for event");
+    }
+
+    public function testGetKalenderElements() {
+        $kalender = $this->sn->get_kalender_by_global_id('4');
+        $this->assertEquals(1, count($kalender), "got more than one kalender");
+        $this->assertEquals(4, $kalender[0]->ID, "wrong kalender id returned");
+    }
+
+    public function testGetIndexElements() {
+        $indexes = $this->sn->get_index_for_global_id_with_filter(4, array('deeps' => '2'));
+
+        $this->assertGreaterThan(13, count($indexes), 'to few structures returned, as of writing there were 113');
+
+        $diozese = $indexes['4']; // diozese Köln
+        $this->assertGreaterThan(5, count($diozese->getChildren()), 'less than 5 Bezirke, as of writing there were 12');
+
+        $bezirk = $indexes['17']; // bezirk erft
+        $this->assertGreaterThan(5, count($bezirk->getChildren()), "less than 5 Stämme, as of writing there were 12");
+    }
+
+    /**
+     * @expectedException \ScoutNet\Api\ScoutnetException_MissingConfVar
+     * @expectedExceptionMessageRegExp /^Missing 'aes_key'.*$/
+     */
+    public function testSetScoutnetConnectDataFailureAES_KEY() {
+        $this->sn->set_scoutnet_connect_data('https://www.scoutnet.de/community/scoutnetConnect.html', self::API_PROVIDER, '', self::AES_IV);
+    }
+
+    /**
+     * @expectedException \ScoutNet\Api\ScoutnetException_MissingConfVar
+     * @expectedExceptionMessageRegExp /^Missing 'aes_iv'.*$/
+     */
+    public function testSetScoutnetConnectDataFailureAES_IV() {
+        $this->sn->set_scoutnet_connect_data('https://www.scoutnet.de/community/scoutnetConnect.html', self::API_PROVIDER, self::AES_KEY, '');
+    }
+
+    /**
+     * @expectedException \ScoutNet\Api\ScoutnetException_MissingConfVar
+     * @expectedExceptionMessageRegExp /^Missing 'provider'.*$/
+     */
+    public function testSetScoutnetConnectDataFailiureProvider() {
+        $this->sn->set_scoutnet_connect_data('https://www.scoutnet.de/community/scoutnetConnect.html', '', self::AES_KEY, self::AES_IV);
+    }
+
+    /**
+     * @expectedException \ScoutNet\Api\ScoutnetException_MissingConfVar
+     * @expectedExceptionMessageRegExp /^Missing 'login_url'.*$/
+     */
+    public function testSetScoutnetConnectDataFailiureLoginurl() {
+        $this->sn->set_scoutnet_connect_data('  ', self::API_PROVIDER, self::AES_KEY, self::AES_IV);
+    }
+
+    public function testScoutNetConnectLogin() {
+        $this->_setCorrectWriteCredentials();
+
+        $connect_button = $this->sn->get_scoutnet_connect_login_button('http://localhost/testclient.php', true, 'https://www.scoutnet.de/images/scoutnetConnect.png', 'de');
+        $expected_connect_button = file_get_contents(CACHE_DIR . "ConnectButton.html");
+
+
+        $this->assertEquals($expected_connect_button, $connect_button);
+    }
+
+    /**
+     * @expectedException \ScoutNet\Api\ScoutnetException_MissingConfVar
+     * @expectedExceptionCode 1491938183
+     */
+    public function testGenerateAuthWithoutApiKey() {
+        // call to private function
+        $objectReflection = new \ReflectionObject($this->sn);
+        $method = $objectReflection->getMethod('_generate_auth');
+        $method->setAccessible(true);
+
+        $method->invokeArgs($this->sn, ['test', 'test']);
+    }
+
+    public function testGenerateAuthWithCorrectApiKey() {
+        // call to private function
+        $objectReflection = new \ReflectionObject($this->sn);
+        $method = $objectReflection->getMethod('_generate_auth');
+        $method->setAccessible(true);
+
+        $auth = $method->invokeArgs($this->sn, [self::API_KEY, 'test']);
+
+        $this->assertEquals("cGJcjkxp40dKZP6Cf8QfpCiqDcXTRmrD50zdjtjBATWDeSMbj0Ro0etFtMJBASd-NBn41PC-y6IvI-h2QejUNm7g9IVpaSJj1_ibUSDoSwVNTdS_c0RSem8XyO-gTrl78gVH0AnJ13B9PUDj_mMsuhmTe_YWh-DuQ-x4ZTlM3IQ~", $auth);
+    }
+
+    public function testGetApiKeyFromDataWithNoAuth() {
+        $this->_setCorrectWriteCredentials();
+
+        $data = $this->sn->getApiKeyFromData();
+
+        $this->assertEquals(false, $data);
+    }
+
+    /**
+     * @expectedException \ScoutNet\Api\ScoutnetException
+     * @expectedExceptionMessageRegExp /^AUTH is empty$/
+     */
+    public function testGetApiKeyFromDataWithEmptyAuth() {
+        $this->_setCorrectWriteCredentials();
+
+        // we mocked the time for the API
+        $_GET['auth'] = 'AAAA';
+        $this->sn->getApiKeyFromData();
+    }
+
+    /**
+     * @expectedException \ScoutNet\Api\ScoutnetException
+     * @expectedExceptionMessageRegExp /^Could not verify AUTH$/
+     */
+    public function testGetApiKeyFromDataWithBrokenMd5() {
+        $this->_setCorrectWriteCredentials();
+
+        // we mocked the time for the API
+        $_GET['auth'] = $this->_generateAuth(self::MOCKED_TIME_VALUE, self::API_PROVIDER, self::API_USER, self::API_KEY, true, false);
+        $this->sn->getApiKeyFromData();
+    }
+
+    /**
+     * @expectedException \ScoutNet\Api\ScoutnetException
+     * @expectedExceptionMessageRegExp /^Could not verify AUTH$/
+     */
+    public function testGetApiKeyFromDataWithBrokenSha1() {
+        $this->_setCorrectWriteCredentials();
+
+        // we mocked the time for the API
+        $_GET['auth'] = $this->_generateAuth(self::MOCKED_TIME_VALUE, self::API_PROVIDER, self::API_USER, self::API_KEY, false, true);
+        $this->sn->getApiKeyFromData();
+    }
+
+    /**
+     * @expectedException \ScoutNet\Api\ScoutnetException
+     * @expectedExceptionMessageRegExp /^AUTH is too old$/
+     */
+    public function testGetApiKeyFromDataWithExpiredTime() {
+        $this->_setCorrectWriteCredentials();
+
+        // we mocked the time for the API
+        $_GET['auth'] = $this->_generateAuth(\ScoutNet\Api\time() - 5000);
+        $this->sn->getApiKeyFromData();
+    }
+
+    /**
+     * @expectedException \ScoutNet\Api\ScoutnetException
+     * @expectedExceptionMessageRegExp /^AUTH for wrong provider$/
+     */
+    public function testGetApiKeyFromDataWithWrongProvider() {
+        $this->_setCorrectWriteCredentials();
+
+        // we mocked the time for the API
+        $_GET['auth'] = $this->_generateAuth(self::MOCKED_TIME_VALUE, 'wrongProvider');
+        $this->sn->getApiKeyFromData();
+    }
+
+    public function testGetApiKeyFromData() {
+        $this->_setCorrectWriteCredentials();
+
+        // we mocked the time for the API
+        $_GET['auth'] = $this->_generateAuth();
+
+        // this function gets the data from $_GET['auth']
+        $data = $this->sn->getApiKeyFromData();
+
+        $scoutnetUser = $data['user'];
+        $api_key = $data['api_key'];
+
+        $this->assertEquals(self::API_USER, $scoutnetUser);
+        $this->assertEquals(self::API_KEY, $api_key);
+    }
+
+    public function testGetApiKeyFromDataCheckCache() {
+        $this->_setCorrectWriteCredentials();
+
+        // we mocked the time for the API
+        $_GET['auth'] = $this->_generateAuth();
+
+        $first_run = $this->sn->getApiKeyFromData();
+        $second_run = $this->sn->getApiKeyFromData();
+
+        $this->assertEquals($first_run, $second_run);
+    }
+
+    public function testWritePermissions() {
+        $rights = $this->sn->has_write_permission_to_calender(1, self::API_USER, self::API_KEY);
+
+        $this->assertEquals(Permission::AUTH_WRITE_ALLOWED, $rights);
+    }
+
+    public function testWritePermissionsNoAuth() {
+        $rights = $this->sn->has_write_permission_to_calender(2, self::API_USER, self::API_KEY);
+
+        $this->assertEquals(Permission::AUTH_NO_RIGHT, $rights);
+    }
+
+    public function testWritePermissionsPending() {
+        $rights = $this->sn->has_write_permission_to_calender(3, self::API_USER, self::API_KEY);
+
+        $this->assertEquals(Permission::AUTH_REQUEST_PENDING, $rights);
+    }
+
+    public function testRequestPermissionWorking() {
+        // ask for rights
+        $ret = $this->sn->request_write_permissions_for_calender(1, self::API_USER, self::API_KEY);
+
+        $this->assertEquals(Permission::AUTH_REQUESTED, $ret['code']);
+    }
+
+    public function testRequestPermissionAlreadyRequested() {
+        // ask for rights
+        $ret = $this->sn->request_write_permissions_for_calender(2, self::API_USER, self::API_KEY);
+
+        $this->assertEquals(Permission::AUTH_REQUEST_PENDING, $ret['code']);
+    }
+}
+
+
+/**
+ * Mocks
+ */
+
+DEFINE('CACHE_DIR', dirname(dirname(__FILE__)) . "/Fixtures/");
 
 class JsonRPCClientHelperMock extends JsonRPCClientHelper {
     private $cache_dir = null;
@@ -14,6 +321,7 @@ class JsonRPCClientHelperMock extends JsonRPCClientHelper {
         parent::__construct($url, $debug);
         $this->cache_dir = $cache_dir;
     }
+
     /**
      * Performs a jsonRCP request and gets the results as an array
      *
@@ -23,7 +331,7 @@ class JsonRPCClientHelperMock extends JsonRPCClientHelper {
      * @return array|bool
      * @throws \Exception
      */
-    public function __call($method,$params) {
+    public function __call($method, $params) {
         // check
         if (!is_scalar($method)) {
             throw new Exception('Method name has no scalar value');
@@ -37,7 +345,7 @@ class JsonRPCClientHelperMock extends JsonRPCClientHelper {
             throw new Exception('Params must be given as array');
         }
 
-        $cache_file = $this->cache_dir.$method.".json";
+        $cache_file = $this->cache_dir . $method . ".json";
         $cache = [];
         if (is_file($cache_file)) {
             $cache = json_decode(file_get_contents($cache_file), true);
@@ -55,147 +363,30 @@ class JsonRPCClientHelperMock extends JsonRPCClientHelper {
 
 }
 
+/**
+ * We mock time() and rand() so we have predictable values.
+ */
+namespace ScoutNet\Api;
 
 /**
- * @covers ScoutnetApi
+ * mock time
+ *
+ * @return int
  */
-final class ApiTest extends TestCase {
-    private $sn = null;
+function time() {
+    return \ScoutNet\Api\Tests\ApiTest::MOCKED_TIME_VALUE;
+}
 
-    public function __construct($name = null, array $data = array(), $dataName = '') {
-        parent::__construct($name, $data, $dataName);
-        $this->sn = new ScoutnetApi();
-        $jsonRPCClientHelperMock = new JsonRPCClientHelperMock('https://www.scoutnet.de/jsonrpc/server.php', false, CACHE_DIR); // load data to be mocked from $url
-
-        // inject RPCClientMock
-        $objectReflection = new \ReflectionObject($this->sn);
-        $property = $objectReflection->getProperty('SN');
-        $property->setAccessible(true);
-        $property->setValue($this->sn, $jsonRPCClientHelperMock);
-    }
-
-	public function testCanBeCreated() {
-		$this->assertInstanceOf(
-			ScoutnetApi::class,
-			new ScoutnetApi()
-		);
-	}
-
-	public function testGetEventsForGlobalId() {
-
-        $events = $this->sn->get_events_for_global_id_with_filter('4',array('limit'=>'1','before'=>'12.01.2012'));
-
-        $this->assertEquals(1, count($events),"got more than one event");
-        $this->assertEquals(4, $events[0]->Kalender->ID, "wrong kalender id for event");
-    }
-
-    public function testGetKalenderElements() {
-        $kalender = $this->sn->get_kalender_by_global_id('4');
-        $this->assertEquals(1, count($kalender),"got more than one kalender");
-        $this->assertEquals(4, $kalender[0]->ID, "wrong kalender id returned");
-    }
-
-    public function testGetIndexElements() {
-        $indexes = $this->sn->get_index_for_global_id_with_filter('4',array('deeps'=>'2'));
-
-        $this->assertGreaterThan(13, count($indexes), 'to few structures returned, as of writing there were 113');
-
-        $diozese = $indexes['4']; // diozese Köln
-        $this->assertGreaterThan(5, count($diozese->getChildren()), 'less than 5 Bezirke, as of writing there were 12');
-
-        $bezirk = $indexes['17']; // bezirk erft
-        $this->assertGreaterThan(5, count($bezirk->getChildren()), "less than 5 Stämme, as of writing there were 12");
-    }
-
-    /**
-     * @expectedException \ScoutNet\Api\ScoutnetException_MissingConfVar
-     * @expectedExceptionMessageRegExp /^Missing 'aes_key'.*$/
-     */
-    public function testSetScoutnetConnectDataFailureAES_KEY() {
-        $this->sn->set_scoutnet_connect_data('https://www.scoutnet.de/community/scoutnetConnect.html', 'phpunit', '', '1234567890123456');
-    }
-
-    /**
-     * @expectedException \ScoutNet\Api\ScoutnetException_MissingConfVar
-     * @expectedExceptionMessageRegExp /^Missing 'aes_iv'.*$/
-     */
-    public function testSetScoutnetConnectDataFailureAES_IV() {
-        $this->sn->set_scoutnet_connect_data('https://www.scoutnet.de/community/scoutnetConnect.html', 'phpunit', '12345678901234567890123456789012', '');
-    }
-
-    /**
-     * @expectedException \ScoutNet\Api\ScoutnetException_MissingConfVar
-     * @expectedExceptionMessageRegExp /^Missing 'provider'.*$/
-     */
-    public function testSetScoutnetConnectDataFailiureProvider() {
-        $this->sn->set_scoutnet_connect_data('https://www.scoutnet.de/community/scoutnetConnect.html', '', '12345678901234567890123456789012', '1234567890123456');
-    }
-
-    /**
-     * @expectedException \ScoutNet\Api\ScoutnetException_MissingConfVar
-     * @expectedExceptionMessageRegExp /^Missing 'login_url'.*$/
-     */
-    public function testSetScoutnetConnectDataFailiureLoginurl() {
-        $this->sn->set_scoutnet_connect_data('  ', 'phpunit', '12345678901234567890123456789012', '1234567890123456');
-    }
-
-    public function testScoutNetConnectLogin(){
-        $this->sn->set_scoutnet_connect_data('https://www.scoutnet.de/community/scoutnetConnect.html','phpunit', '12345678901234567890123456789012', '1234567890123456');
-        $connect_button = $this->sn->get_scoutnet_connect_login_button('http://localhost/testclient.php', true, 'https://www.scoutnet.de/images/scoutnetConnect.png', 'de');
-        $expected_connect_button = file_get_contents(CACHE_DIR."ConnectButton.html");
-
-
-        $this->assertEquals($expected_connect_button, $connect_button);
-    }
+/**
+ * mock random
+ *
+ * @return int
+ */
+function rand() {
+    return \ScoutNet\Api\Tests\ApiTest::MOCKED_RAND_VALUE;
 }
 
 /*
-ini_set("display_errors","ON");
-
-$sn = new ScoutnetApi();
-
-
-// Write Api
-echo '---------- write get scoutnetConnect button -----------------'."\n";
-
-// set the credentials
-$ScoutnetProviderName = '<YOUR PROVIDER NAME HERE>';
-$AES_key = '<YOUR AES KEY HERE>';
-$AES_iv = '<YOUR AES IV HERE>'; 
-
-$sn->set_scoutnet_connect_data($ScoutnetProviderName, $AES_key, $AES_iv);
-
-// ask for login button
-// must be post otherwise the server does not like this
-$return_url = 'http://localhost/testclient.php';
-
-echo $sn->get_scoutnetConnectLoginButton($return_url,true)."\n";
-
-echo '---------- write get user api key -----------------'."\n";
-// for testing purpose we got this auth back:
-// normaly we get it via get parameter: $_GET['auth']
-$_GET['auth'] = 'VxyPg-OevS4OSCM6w1w-FstjPx1aMPxEoEeju0Fe44Sfcm2paXyIjRveFy4qN52vAZINKcH7B8i76XXK6WcTTHUekrzyBaFrv9p-hWR17nfwPV4MtShCu_DURRquVEpPtTNLHiAwOUitpWdunk9Rx9CEE6m6EMwhjyiYD5XLFQjuhG4A8-FlMDVoJYKEPQAskOO1ODI5Fe2k6jFqYOS2UwPRSOTNzBenQ-_zF49kZO2PwJsVMm68qS4RsnLfwqaWL2XgQXdghNXkeCkiPMyLAs3kd-4KVgcjmjtUGqkhMg3GFgEiixDFcWOrAWQiNZVfxT0V8eL0LlvRwSaJ3TxjZ95SJTJTfTn9b1_myZyJXBO_4UtnxIhhv0fX8TnGW3O0fNyqfdL3jT7IQG4f5N-pPoUFVUV_75gKKLmIMaEb_YVnIzj4oWSuXLdlPz1tvIcRXCbxYm_m-ooG14QApssD8YBsGDkXIOcmAt2IgTpvTgKa_wPf84Z4rUQEXnhnlIGIHpljH4AxVcg9crPpfY1jkKwisjZrGLf3rTig-5pDMyShnnXSNU5n33JcQTK8YvmboLGCLSnavGn348OcoOOypg~~';
-
-// this function gets the data from $_GET['auth']
-$data = $sn->getApiKeyFromData();
-
-$scoutnetUser = $data['user'];
-$api_key = $data['api_key'];
-
-echo 'Welcome '.$scoutnetUser.'. Your Api key is: '.$api_key."\n";
-
-// Save this data here
-
-echo '---------- write check user rights -----------------'."\n";
-
-// this is connected to the aes key!
-$ssid = 17;
-
-// check if we have right to edit our kalender
-$rights = $sn->has_write_permission_to_calender($ssid, $scoutnetUser, $api_key);
-
-// code == 0 -> user has access
-// code == 1 -> user has no access
 
 if ($rights['code'] !== 0) {
 	echo "you do not have permission to access this calender. We ask for rights.\n";
