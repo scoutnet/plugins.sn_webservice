@@ -1,125 +1,134 @@
 <?php
 namespace ScoutNet\Api\Models;
 
-/**
- * SN_Model_User
- * @property string $userid
- * @property string $firstname
- * @property string $surname
- * @property string $sex
- * @property string $Surname
- * @property string $User_ID
- * @property string $id
- * @property string $Firstname
- * @property string $Lastname
- * @property string $lastname
- */
-class User extends \ArrayObject {
+class User {
+    private $array = [];
 
     function __construct($array) {
-        if (isset($array['id'])) {
-            $array['userid'] = $array['id'];
-        } elseif (isset($array['User_ID'])) {
-            $array['userid'] = $array['User_ID'];
-        } elseif (empty($array['userid'])) {
-            throw new \Exception("not a valid user record: " . print_r($array, true));
-        }
-        if (isset($array['Firstname'])) {
-            $array['firstname'] = $array['Firstname'];
-        }
-        if (array_key_exists('surname', $array)) {
-            $array['Surname'] = $array['surname'];
-        } elseif (array_key_exists('lastname', $array)) {
-            $array['Surname'] = $array['lastname'];
-        } elseif (array_key_exists('Lastname', $array)) {
-            $array['Surname'] = $array['Lastname'];
-        }
+        $this->array = $array;
 
-        $array['User_ID'] = $array['userid'];
-        $array['id'] = $array['userid'];
-
-        $array['Firstname'] = $array['firstname'];
-
-        $array['surname'] = $array['Surname'];
-        $array['Lastname'] = $array['Surname'];
-        $array['lastname'] = $array['Surname'];
-        parent::__construct($array);
+        $this->uid = $array['userid'];
+        $this->username = $array['userid'];
+        $this->firstName = $array['firstname'];
+        $this->lastName = $array['surname'];
+        $this->sex = $array['sex'];
     }
 
     public function __get($name) {
-        return $this[$name];
+        return $this->{$name};
     }
 
     /**
-     * @deprecated
+     * @var int
      */
-    public function readable_name() {
-        return $this->get_long_name();
-    }
+    protected $uid = null;
 
-    public function get_full_name() {
-        $full_name = $this['Firstname'] . ' ' . $this['Surname'];
-        return trim($full_name) ? trim($full_name) : $this['userid'];
-    }
+    /**
+     * @var string
+     * @validate NotEmpty
+     * @validate StringLength(minimum=2, maximum=80)
+     */
+    protected $username = null;
 
-    public function get_firstname() {
-        return $this->get_first_name();
-    }
+    /**
+     * @var string
+     * @validate NotEmpty
+     * @validate StringLength(minimum=2, maximum=80)
+     */
+    protected $firstName = null;
 
-    public function get_first_name() {
-        return trim($this['Firstname']) ? trim($this['Firstname']) : $this['userid'];
-    }
+    /**
+     * @var string
+     * @validate NotEmpty
+     * @validate StringLength(minimum=2, maximum=80)
+     */
+    protected $lastName = null;
 
-    public function get_fullname() {
-        return $this->get_full_name();
-    }
+    /**
+     * @var string
+     * @validate NotEmpty
+     * @validate StringLength(minimum=1, maximum=80)
+     */
+    protected $sex = null;
 
-    public function get_long_name() {
-        $full_name = $this->get_full_name();
-        if ($full_name) {
-            return $full_name . ' (' . $this['id'] . ')';
-        } else {
-            return $this['id'];
-        }
+    /**
+     * @return int
+     */
+    public function getUid(){
+        return $this->uid;
     }
 
     /**
-     * @return SN_Model_Structure
+     * @param $uid int
      */
-    public function get_structure() {
-        return SN_DataAccess_Structure::instance()->get($this['structureid']);
+    public function setUid($uid){
+        $this->uid = $uid;
     }
 
-    public function dear() {
-        if (isset($this['sex']) && $this['sex'] === 'f') {
-            return "Liebe";
+    /**
+     * @return string
+     */
+    public function getUsername () {
+        return $this->username;
+    }
+
+    /**
+     * @param string $username
+     */
+    public function setUsername ($username) {
+        $this->username = $username;
+    }
+
+    public function getFirstName(){
+        return trim($this->firstName)?trim($this->firstName):$this->getUsername();
+    }
+
+    /**
+     * @param string $firstName
+     */
+    public function setFirstName ($firstName) {
+        $this->firstName = $firstName;
+    }
+
+    /**
+     * @return string
+     */
+    public function getLastName () {
+        return $this->lastName;
+    }
+
+    /**
+     * @param string $lastName
+     */
+    public function setLastName ($lastName) {
+        $this->lastName = $lastName;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSex () {
+        return $this->sex;
+    }
+
+    /**
+     * @param string $sex
+     */
+    public function setSex ($sex) {
+        $this->sex = $sex;
+    }
+
+    public function getFullName(){
+        // we use the class functions not the getters, because the firstname can be the username
+        $full_name = $this->firstName.' '.$this->lastName;
+        return trim($full_name) ? trim($full_name) : $this->getUsername();
+    }
+    public function getLongName(){
+        $full_name = $this->getFullName();
+        if( $full_name ){
+            return $full_name.' ('.$this->getUsername().')';
         } else {
-            return "Lieber";
+            return $this->getUsername();
         }
     }
-
-    public function grammar($he, $she) {
-        if (isset($this['sex']) && $this['sex'] === 'f') {
-            return $he;
-        } else {
-            return $she;
-        }
-    }
-
-    public function get_contact_url_short() {
-        return SN::instance()->get_users_contact_url_short($this);
-    }
-
-    public function get_contact_url() {
-        return SN::instance()->get_users_contact_url($this);
-    }
-
-    public function get_contact_link_tag_full_name() {
-        return SN::instance()->get_users_contact_link_tag_full_name($this);
-    }
-
-    public function get_contact_link_tag_first_name() {
-        return SN::instance()->get_users_contact_link_tag_first_name($this);
-    }
-
 }

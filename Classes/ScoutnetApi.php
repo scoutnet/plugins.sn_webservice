@@ -144,16 +144,16 @@ class ScoutnetApi {
 
             if ($record['type'] === 'user') {
                 $user = new User($record['content']);
-                $this->cache->add('user', $user['userid'], $user);
+                $this->cache->add($user);//'user', $user['userid'], $user);
             } elseif ($record['type'] === 'stufe') {
                 $stufe = new Stufe($record['content']);
-                $this->cache->add('stufe', $stufe['Keywords_ID'], $stufe);
+                $this->cache->add($stufe);//'stufe', $stufe['Keywords_ID'], $stufe);
             } elseif ($record['type'] === 'kalender') {
                 $kalender = new Structure($record['content']);
-                $this->cache->add('structure', $kalender['ID'], $kalender);
+                $this->cache->add($kalender);//'structure', $kalender->getUid(), $kalender);
             } elseif ($record['type'] === 'event') {
                 $event = new Event($record['content'], $this->cache);
-                $this->cache->add('event', $event->getUid(), $event);
+                $this->cache->add($event);//'event', $event->getUid(), $event);
 
                 $events[] = $event;
             }
@@ -201,7 +201,7 @@ class ScoutnetApi {
         foreach ($this->load_data_from_scoutnet($ids, array('kalenders' => array())) as $record) {
             if ($record['type'] === 'kalender') {
                 $kalender = new Structure($record['content']);
-                $this->cache->add('kalender', $kalender['ID'], $kalender);
+                $this->cache->add($kalender);
                 $kalenders[] = $kalender;
             }
         }

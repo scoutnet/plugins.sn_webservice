@@ -91,13 +91,13 @@ final class ApiTest extends TestCase {
         $events = $this->sn->get_events_for_global_id_with_filter(4, array('limit' => '1', 'before' => '12.01.2012'));
 
         $this->assertEquals(1, count($events), "got more than one event");
-        $this->assertEquals(4, $events[0]->getStructure()->ID, "wrong kalender id for event");
+        $this->assertEquals(4, $events[0]->getStructure()->getUid(), "wrong kalender id for event");
     }
 
     public function testGetKalenderElements() {
         $kalender = $this->sn->get_kalender_by_global_id('4');
         $this->assertEquals(1, count($kalender), "got more than one kalender");
-        $this->assertEquals(4, $kalender[0]->ID, "wrong kalender id returned");
+        $this->assertEquals(4, $kalender[0]->getUid(), "wrong kalender id returned");
     }
 
     public function testGetIndexElements() {

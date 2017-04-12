@@ -9,35 +9,42 @@
 namespace ScoutNet\Api\Helpers;
 
 
+use ScoutNet\Api\Models\Structure;
+use ScoutNet\Api\Models\Stufe;
+use ScoutNet\Api\Models\User;
+use ScoutNet\Api\Models\Event;
+
 class CacheHelper {
     private $cache = [];
 
+    public function add($object) {
+        $class = get_class($object);
+        $id = $object->getUid();
 
-    public function add($type, $id, $object) {
-        $this->cache[$type][$id] = $object;
+        $this->cache[$class][$id] = $object;
+    }
+
+    public function get($class, $id) {
+        if (isset($this->cache[$class]) && isset($this->cache[$class][$id])) {
+            return $this->cache[$class][$id];
+        }
+        return null;
     }
 
     public function get_event_by_id($id) {
-        return $this->get('event', $id);
+        return $this->get(Event::class, $id);
     }
 
     public function get_stufe_by_id($id) {
-        return $this->get('stufe', $id);
+        return $this->get(Stufe::class, $id);
     }
 
     public function get_kalender_by_id($id) {
-        return $this->get('structure', $id);
+        return $this->get(Structure::class, $id);
     }
 
     public function get_user_by_id($id) {
-        return $this->get('user', $id);
-    }
-
-    public function get($type, $id) {
-        if (isset($this->cache[$type]) && isset($this->cache[$type][$id])) {
-            return $this->cache[$type][$id];
-        }
-        return null;
+        return $this->get(User::class, $id);
     }
 
 }
