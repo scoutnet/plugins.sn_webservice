@@ -11,7 +11,7 @@ namespace ScoutNet\Api\Models;
   * @property integer $Ebene_Id z. B. 5
   */
 
-class Kalender extends \ArrayObject {
+class Structure extends \ArrayObject {
 
     function __construct($array) {
         parent::__construct($array);

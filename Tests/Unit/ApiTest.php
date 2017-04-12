@@ -91,7 +91,7 @@ final class ApiTest extends TestCase {
         $events = $this->sn->get_events_for_global_id_with_filter(4, array('limit' => '1', 'before' => '12.01.2012'));
 
         $this->assertEquals(1, count($events), "got more than one event");
-        $this->assertEquals(4, $events[0]->Kalender->ID, "wrong kalender id for event");
+        $this->assertEquals(4, $events[0]->getStructure()->ID, "wrong kalender id for event");
     }
 
     public function testGetKalenderElements() {
@@ -305,6 +305,35 @@ final class ApiTest extends TestCase {
 
         $this->assertEquals(Permission::AUTH_REQUEST_PENDING, $ret['code']);
     }
+
+
+    public function testCreateEvent() {
+        $testEvent = Array(
+            'ID' => -1, // id of event to update -1 for new event
+            'SSID' => 1,
+            'Title' => 'F+F Mitgliederversammlung',
+            'Organizer' => 'Freundes- und Förderkreis',
+            'Target_Group' => 'Freunde',
+            'Start' => 1354294800,
+            'End' => 1354294800,
+            'All_Day' => false,
+            'ZIP' => '',
+            'Location' => 'Tagungs- und Gästehaus Rolandstr.',
+            'URL_Text' => '',
+            'URL' => '',
+            'Description' => '',
+            'Stufen' => Array (),
+            'Keywords' => Array (
+                '193' => 1,
+                '543' => 1,
+            )
+        );
+
+       // $testEvent = $this->sn->write_event(-1, $testEvent, self::API_USER, self::API_KEY);
+        echo "event written. It has ID ".$testEvent['ID']."\n";
+    }
+
+
 }
 
 
@@ -387,27 +416,6 @@ function rand() {
 }
 
 /*
-
-if ($rights['code'] !== 0) {
-	echo "you do not have permission to access this calender. We ask for rights.\n";
-	// ask for rights
-	$sn->request_write_permissions_for_calender($ssid, $scoutnetUser, $api_key);
-
-	// this sends an email to the admin and asks for rights
-} else {
-	echo "you can access the kalender.\n";
-}
-
-echo '---------- write get Kalender Meta tags -----------------'."\n";
-
-$kalenders = $sn->get_kalender_by_global_id(array($ssid));
-// only use first
-$kalender = $kalenders[0];
-
-// this contains all used and forced kategories
-//print_r($kalender);
-
-echo '---------- write create event -----------------'."\n";
 
 $testEvent = Array(
 	'ID' => -1, // id of event to update -1 for new event

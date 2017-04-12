@@ -2,9 +2,10 @@
 
 namespace ScoutNet\Api;
 
+use ScoutNet\Api\Helpers\CacheHelper;
 use ScoutNet\Api\Models\Event;
 use ScoutNet\Api\Models\Index;
-use ScoutNet\Api\Models\Kalender;
+use ScoutNet\Api\Models\Structure;
 use ScoutNet\Api\Models\Stufe;
 use ScoutNet\Api\Models\User;
 use ScoutNet\Api\Models\Permission;
@@ -40,10 +41,6 @@ class ScoutnetApi {
 
     var $SN = null;
 
-    var $user_cache = array();
-    var $stufen_cache = array();
-    var $kalender_cache = array();
-
     var $snData;
 
     private $provider = null;
@@ -51,6 +48,8 @@ class ScoutnetApi {
     private $aes_iv = null;
 
     private $login_url = null;
+
+    private $cache = null;
 
     /**
      * Construct the ScoutNet API. To read you need not set anything. For Writing access you must set the
@@ -67,6 +66,8 @@ class ScoutnetApi {
         $this->SN = new JsonRPCClientHelper($api_url, true);
 
         $this->set_scoutnet_connect_data($login_url, $provider, $aes_key, $aes_iv);
+
+        $this->cache = new CacheHelper();
     }
 
     /**
@@ -129,7 +130,7 @@ class ScoutnetApi {
     }
 
     /**
-     * Load Events for Kalender
+     * Load Events for Structure
      *
      * @param int[]|int $ids    SSIDs of Kalenders to request Events from
      * @param array     $filter only find Events matching this filter
@@ -137,46 +138,22 @@ class ScoutnetApi {
      * @return  Event[]
      */
     public function get_events_for_global_id_with_filter($ids, $filter) {
-        $events = array();
+        $events = [];
+
         foreach ($this->load_data_from_scoutnet($ids, array('events' => $filter)) as $record) {
 
             if ($record['type'] === 'user') {
                 $user = new User($record['content']);
-                $this->user_cache[$user['userid']] = $user;
+                $this->cache->add('user', $user['userid'], $user);
             } elseif ($record['type'] === 'stufe') {
                 $stufe = new Stufe($record['content']);
-                $this->stufen_cache[$stufe['Keywords_ID']] = $stufe;
+                $this->cache->add('stufe', $stufe['Keywords_ID'], $stufe);
             } elseif ($record['type'] === 'kalender') {
-                $kalender = new Kalender($record['content']);
-                $this->kalender_cache[$kalender['ID']] = $kalender;
+                $kalender = new Structure($record['content']);
+                $this->cache->add('structure', $kalender['ID'], $kalender);
             } elseif ($record['type'] === 'event') {
-                $event = new Event($record['content']);
-
-                $author = $this->get_user_by_id($event['Last_Modified_By']);
-                if ($author == null) {
-                    $author = $this->get_user_by_id($event['Created_By']);
-                }
-
-                if ($author != null) {
-                    $event['Author'] = $author;
-                }
-
-                $stufen = Array();
-
-
-                if (isset($event['Stufen'])) {
-                    foreach ($event['Stufen'] as $stufenId) {
-                        $stufe = $this->get_stufe_by_id($stufenId);
-                        if ($stufe != null) {
-                            $stufen[] = $stufe;
-                        }
-                    }
-                }
-
-                $event['Stufen'] = $stufen;
-
-                $event['Kalender'] = $this->get_kalender_by_id($event['Kalender']);
-
+                $event = new Event($record['content'], $this->cache);
+                $this->cache->add('event', $event->getUid(), $event);
 
                 $events[] = $event;
             }
@@ -223,8 +200,8 @@ class ScoutnetApi {
         $kalenders = array();
         foreach ($this->load_data_from_scoutnet($ids, array('kalenders' => array())) as $record) {
             if ($record['type'] === 'kalender') {
-                $kalender = new Kalender($record['content']);
-                $this->kalender_cache[$kalender['ID']] = $kalender;
+                $kalender = new Structure($record['content']);
+                $this->cache->add('kalender', $kalender['ID'], $kalender);
                 $kalenders[] = $kalender;
             }
         }
@@ -232,20 +209,32 @@ class ScoutnetApi {
         return $kalenders;
     }
 
-    private function get_stufe_by_id($id) {
-        return $this->stufen_cache[$id];
-    }
-
-    private function get_kalender_by_id($id) {
-        return $this->kalender_cache[$id];
-    }
-
-    private function get_user_by_id($id) {
-        return $this->user_cache[$id];
-    }
-
-    public function write_event($id, $data, $user, $api_key) {
+    /**
+     * Use this function to write event to scoutnet
+     *
+     * @param \ScoutNet\Api\Models\Event  $data    Event Object
+     * @param string $user    User to upload Object for
+     * @param string $api_key Api Key of User
+     *
+     * @return mixed
+     */
+    public function write_event(\ScoutNet\Api\Models\Event $data, $user, $api_key) {
         $type = 'event';
+        $id = $data->getId();
+
+        return $this->write_object($type, $id, $data, $user, $api_key);
+    }
+
+    /**
+     * @param string $type    Type of Object to write; The API only works with events
+     * @param int    $id      id of object to update or -1 for new object
+     * @param array  $data    Object data as Array
+     * @param string $user    User to upload Object for
+     * @param string $api_key Api Key of User
+     *
+     * @return mixed
+     */
+    public function write_object($type, $id, $data, $user, $api_key) {
         $auth = $this->_generate_auth($api_key, $type . $id . serialize($data) . $user);
 
         return $this->SN->setData($type, $id, $data, $user, $auth);
@@ -293,7 +282,7 @@ class ScoutnetApi {
     /**
      * Request Write Permission for a specified User
      *
-     * @param int    $ssid    SSID of Kalender
+     * @param int    $ssid    SSID of Structure
      * @param string $user    User to request Right for
      * @param string $api_key Api Key of User
      *
