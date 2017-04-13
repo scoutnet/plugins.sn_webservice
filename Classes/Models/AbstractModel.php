@@ -25,7 +25,7 @@ abstract class AbstractModel {
      * @param $name
      *
      * @return mixed
-     * @deprecated 
+     * @deprecated
      */
     public function __get($name) {
         return $this->{$name};
