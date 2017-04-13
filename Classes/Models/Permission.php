@@ -36,6 +36,10 @@ class Permission {
         $this->type = isset($array['type'])?$array['type']:'';
     }
 
+    public function setState($state) {
+        $this->state = $state;
+    }
+
     public function getState() {
         return $this->state;
     }

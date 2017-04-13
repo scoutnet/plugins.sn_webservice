@@ -58,14 +58,14 @@ class Categorie extends AbstractModel {
     }
 
     /**
-     * @return mixed
+     * @return boolean
      */
     public function getAvailable() {
         return $this->available;
     }
 
     /**
-     * @param mixed $available
+     * @param boolean $available
      */
     public function setAvailable($available) {
         $this->available = $available;

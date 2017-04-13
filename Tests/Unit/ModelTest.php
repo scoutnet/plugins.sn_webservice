@@ -22,6 +22,19 @@ class TestCategorieModel extends TestCase {
         $this->assertEquals('', $categorie->getText());
         $this->assertEquals(false, $categorie->getAvailable());
     }
+
+    public function testSetParameter() {
+        $categorie = new Categorie();
+
+        $categorie->setUid(23);
+        $this->assertEquals(23, $categorie->getUid());
+
+        $categorie->setText('demo');
+        $this->assertEquals('demo', $categorie->getText());
+
+        $categorie->setAvailable(true);
+        $this->assertEquals(true, $categorie->getAvailable());
+    }
 }
 
 class TestEventModel extends TestCase {
@@ -100,6 +113,31 @@ class TestPermissionModel extends TestCase {
         $this->assertEquals(Permission::AUTH_NO_RIGHT, $permission->getState());
         $this->assertEquals('', $permission->getText());
         $this->assertEquals('', $permission->getType());
+    }
+
+    public function testSetParameters() {
+        $permission = new Permission();
+
+        $permission->setState(Permission::AUTH_REQUEST_PENDING);
+        $this->assertEquals(Permission::AUTH_REQUEST_PENDING, $permission->getState());
+
+        $permission->setText('demoText');
+        $this->assertEquals('demoText', $permission->getText());
+
+        $permission->setType('demoType');
+        $this->assertEquals('demoType', $permission->getType());
+
+        $permission->setState(Permission::AUTH_REQUEST_PENDING);
+        $this->assertEquals(false, $permission->hasWritePermissions());
+        $this->assertEquals(true, $permission->hasWritePermissionsPending());
+
+        $permission->setState(Permission::AUTH_WRITE_ALLOWED);
+        $this->assertEquals(true, $permission->hasWritePermissions());
+        $this->assertEquals(false, $permission->hasWritePermissionsPending());
+
+        $permission->setState(Permission::AUTH_NO_RIGHT);
+        $this->assertEquals(false, $permission->hasWritePermissions());
+        $this->assertEquals(false, $permission->hasWritePermissionsPending());
     }
 }
 
