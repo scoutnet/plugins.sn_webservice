@@ -21,6 +21,12 @@ namespace ScoutNet\Api\Models;
  ***************************************************************/
 
 abstract class AbstractModel {
+    /**
+     * @param $name
+     *
+     * @return mixed
+     * @deprecated 
+     */
     public function __get($name) {
         return $this->{$name};
     }

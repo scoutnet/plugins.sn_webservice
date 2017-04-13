@@ -63,17 +63,17 @@ class Stufe extends AbstractModel {
     /**
      * @var Integer
      */
-    protected $startalter;
+    protected $startalter = -1;
 
     /**
      * @var Integer
      */
-    protected $endalter;
+    protected $endalter = -1;
 
     /**
      * @var String
      */
-    protected $categorieId;
+    protected $categorieId = -1;
 
     /**
      * @return String

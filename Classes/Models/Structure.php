@@ -60,11 +60,11 @@ class Structure extends AbstractModel {
     /**
      * @var array
      */
-    protected $usedCategories;
+    protected $usedCategories = [];
     /**
      * @var array
      */
-    protected $forcedCategories;
+    protected $forcedCategories = [];
 
     /**
      * @return String

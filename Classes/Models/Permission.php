@@ -26,9 +26,9 @@ class Permission {
     const AUTH_REQUESTED = 0;
     const AUTH_REQUEST_PENDING = 2;
 
-    var $state = self::AUTH_NO_RIGHT;
-    var $text = '';
-    var $type = '';
+    protected $state = self::AUTH_NO_RIGHT;
+    protected $text = '';
+    protected $type = '';
 
     function __construct($array = []) {
         $this->state = isset($array['code'])?$array['code']:self::AUTH_NO_RIGHT;
@@ -41,10 +41,38 @@ class Permission {
     }
 
     public function hasWritePermissionsPending() {
-        return $this->state == SELF::AUTH_PENDING;
+        return $this->state == self::AUTH_REQUEST_PENDING;
     }
 
     public function hasWritePermissions() {
-        return $this->state == SELF::AUTH_WRITE_ALLOWED;
+        return $this->state == self::AUTH_WRITE_ALLOWED;
+    }
+
+    /**
+     * @return mixed|string
+     */
+    public function getText() {
+        return $this->text;
+    }
+
+    /**
+     * @param mixed|string $text
+     */
+    public function setText($text) {
+        $this->text = $text;
+    }
+
+    /**
+     * @return mixed|string
+     */
+    public function getType() {
+        return $this->type;
+    }
+
+    /**
+     * @param mixed|string $type
+     */
+    public function setType($type) {
+        $this->type = $type;
     }
 }

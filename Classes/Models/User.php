@@ -21,16 +21,19 @@ namespace ScoutNet\Api\Models;
  ***************************************************************/
 
 class User extends AbstractModel {
+    const SEX_MALE = 'm';
+    const SEX_FEMALE = 'w';
+
     private $array = [];
 
-    function __construct($array) {
+    function __construct($array = []) {
         $this->array = $array;
 
-        $this->uid = $array['userid'];
-        $this->username = $array['userid'];
-        $this->firstName = $array['firstname'];
-        $this->lastName = $array['surname'];
-        $this->sex = $array['sex'];
+        $this->uid = isset($array['userid'])?$array['userid']:-1;
+        $this->username = isset($array['userid'])?$array['userid']:null;
+        $this->firstName = isset($array['firstname'])?$array['firstname']:null;
+        $this->lastName = isset($array['surname'])?$array['surname']:null;
+        $this->sex = isset($array['sex'])?$array['sex']:null;
     }
 
 

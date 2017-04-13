@@ -8,6 +8,7 @@ use ScoutNet\Api\Models\Index;
 use ScoutNet\Api\Models\Permission;
 use ScoutNet\Api\Models\Structure;
 use ScoutNet\Api\Models\Stufe;
+use ScoutNet\Api\Models\User;
 
 class TestCategorieModel extends TestCase {
     public function testCanBeCreated() {
@@ -93,11 +94,31 @@ class TestPermissionModel extends TestCase {
         $this->assertInstanceOf( Permission::class, new Permission());
     }
 
+    public function testDefaultParameters() {
+        $permission = new Permission();
+
+        $this->assertEquals(Permission::AUTH_NO_RIGHT, $permission->getState());
+        $this->assertEquals('', $permission->getText());
+        $this->assertEquals('', $permission->getType());
+    }
 }
 
 class TestStructureModel extends TestCase {
     public function testCanBeCreated() {
         $this->assertInstanceOf( Structure::class, new Structure());
+    }
+
+    public function testDefaultParameters() {
+        $structure = new Structure();
+
+        $this->assertEquals(-1, $structure->getUid());
+        $this->assertEquals(null, $structure->getEbene());
+        $this->assertEquals(null, $structure->getName());
+        $this->assertEquals(null, $structure->getVerband());
+        $this->assertEquals(null, $structure->getIdent());
+        $this->assertEquals(null, $structure->getEbeneId());
+        $this->assertEquals([], $structure->getUsedCategories());
+        $this->assertEquals([], $structure->getForcedCategories());
     }
 
 }
@@ -107,11 +128,31 @@ class TestStufeModel extends TestCase {
         $this->assertInstanceOf( Stufe::class, new Stufe());
     }
 
+    public function testDefaultParameters() {
+        $stufe = new Stufe();
+
+        $this->assertEquals(-1, $stufe->getUid());
+        $this->assertEquals(null, $stufe->getVerband());
+        $this->assertEquals(null, $stufe->getBezeichnung());
+        $this->assertEquals(null, $stufe->getFarbe());
+        $this->assertEquals(-1, $stufe->getStartalter());
+        $this->assertEquals(-1, $stufe->getEndalter());
+        $this->assertEquals(-1, $stufe->getCategorieId());
+    }
 }
 
 class TestUserModel extends TestCase {
     public function testCanBeCreated() {
-        $this->assertInstanceOf( Permission::class, new Permission());
+        $this->assertInstanceOf( User::class, new User());
     }
 
+    public function testDefaultParameters() {
+        $user = new User();
+
+        $this->assertEquals(-1, $user->getUid());
+        $this->assertEquals(null, $user->getUsername());
+        $this->assertEquals(null, $user->getFirstName());
+        $this->assertEquals(null, $user->getLastName());
+        $this->assertEquals(null, $user->getSex());
+    }
 }
