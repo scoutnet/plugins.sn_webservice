@@ -1,18 +1,14 @@
 <?php
+
 namespace ScoutNet\Api\Models;
+
 /***************************************************************
  *
  *  Copyright notice
  *
- *  (c) 2015 Stefan "Mütze" Horst <muetze@scoutnet.de>, ScoutNet
+ *  (c) 2017 Stefan "Mütze" Horst <muetze@scoutnet.de>, ScoutNet
  *
  *  All rights reserved
- *
- *  This script is part of the TYPO3 project. The TYPO3 project is
- *  free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
  *
  *  The GNU General Public License can be found at
  *  http://www.gnu.org/copyleft/gpl.html.
@@ -25,34 +21,29 @@ namespace ScoutNet\Api\Models;
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
 
-class Stufe {
+class Stufe extends AbstractModel {
     private $array = [];
 
-	function __construct( $array ){
-	    $this->array = $array;
+    function __construct($array = []) {
+        $this->array = $array;
 
-        $this->uid = $array['id'];
-        $this->verband = $array['verband'];
-        $this->bezeichnung = $array['bezeichnung'];
-        $this->farbe = $array['farbe'];
-        $this->startalter = intval($array['startalter']);
-        $this->endalter = intval($array['endalter']);
-        $this->categorieId = $array['Keywords_ID'];
-	}
+        $this->uid = isset($array['id'])?$array['id']:-1;
+        $this->verband = isset($array['verband'])?$array['verband']:null;
+        $this->bezeichnung = isset($array['bezeichnung'])?$array['bezeichnung']:'';
+        $this->farbe = isset($array['farbe'])?$array['farbe']:'';
+        $this->startalter = isset($array['startalter'])?intval($array['startalter']):-1;
+        $this->endalter = isset($array['endalter'])?intval($array['endalter']):-1;
+        $this->categorieId = isset($array['Keywords_ID'])?$array['Keywords_ID']:-1;
+    }
 
 
     /**
      * @return string
      * @deprecated
      */
-	public function get_Image_URL(){
-		return (string) $this->getImageURL();
-	}
-
-    /**
-     * @var Integer
-     */
-	protected $uid;
+    public function get_Image_URL() {
+        return (string)$this->getImageURL();
+    }
 
     /**
      * @var String
@@ -85,104 +76,91 @@ class Stufe {
     protected $categorieId;
 
     /**
-     * @return Int $uid
-     */
-    public function getUid() {
-        return $this->uid;
-    }
-    /**
-     * @param Int $uid
-     */
-    public function setUid($uid) {
-        $this->uid = $uid;
-    }
-
-    /**
      * @return String
      */
-    public function getVerband () {
+    public function getVerband() {
         return $this->verband;
     }
 
     /**
      * @param String $verband
      */
-    public function setVerband ($verband) {
+    public function setVerband($verband) {
         $this->verband = $verband;
     }
 
     /**
      * @return String
      */
-    public function getBezeichnung () {
+    public function getBezeichnung() {
         return $this->bezeichnung;
     }
 
     /**
      * @param String $bezeichnung
      */
-    public function setBezeichnung ($bezeichnung) {
+    public function setBezeichnung($bezeichnung) {
         $this->bezeichnung = $bezeichnung;
     }
 
     /**
      * @return String
      */
-    public function getFarbe () {
+    public function getFarbe() {
         return $this->farbe;
     }
 
     /**
      * @param String $farbe
      */
-    public function setFarbe ($farbe) {
+    public function setFarbe($farbe) {
         $this->farbe = $farbe;
     }
 
     /**
      * @return int
      */
-    public function getStartalter () {
+    public function getStartalter() {
         return $this->startalter;
     }
 
     /**
      * @param int $startalter
      */
-    public function setStartalter ($startalter) {
+    public function setStartalter($startalter) {
         $this->startalter = $startalter;
     }
 
     /**
      * @return int
      */
-    public function getEndalter () {
+    public function getEndalter() {
         return $this->endalter;
     }
 
     /**
      * @param int $endalter
      */
-    public function setEndalter ($endalter) {
+    public function setEndalter($endalter) {
         $this->endalter = $endalter;
     }
 
     /**
      * @return String
      */
-    public function getCategorieId () {
+    public function getCategorieId() {
         return $this->categorieId;
     }
 
     /**
      * @param String $categorieId
      */
-    public function setCategorieId ($categorieId) {
+    public function setCategorieId($categorieId) {
         $this->categorieId = $categorieId;
     }
 
-    public function getImageURL(){
-        return (string) "<img src='https://kalender.scoutnet.de/2.0/images/".$this->getUid().".gif' alt='".htmlentities($this->getBezeichnung(), ENT_COMPAT|ENT_HTML401, 'UTF-8')."' />";
+    public function getImageURL() {
+        return (string)"<img src='https://kalender.scoutnet.de/2.0/images/" . $this->getUid() . ".gif' alt='" . htmlentities($this->getBezeichnung(), ENT_COMPAT | ENT_HTML401, 'UTF-8') . "' />";
     }
 
 }

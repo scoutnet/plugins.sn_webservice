@@ -3,10 +3,15 @@
 namespace ScoutNet\Api\Models;
 
 /***************************************************************
+ *
  *  Copyright notice
  *
- *  (c) 2016 Stefan "Mütze" Horst <muetze@scoutnet.de>
+ *  (c) 2017 Stefan "Mütze" Horst <muetze@scoutnet.de>, ScoutNet
+ *
  *  All rights reserved
+ *
+ *  The GNU General Public License can be found at
+ *  http://www.gnu.org/copyleft/gpl.html.
  *
  *  This script is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -16,22 +21,17 @@ namespace ScoutNet\Api\Models;
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
 
-class Categorie {
+class Categorie extends AbstractModel {
     private $array = [];
 
-    public function __construct($array) {
+    public function __construct($array = []) {
         $this->array = $array;
 
-        $this->uid = $array['ID'];
-        $this->text = $array['Text'];
-        $this->available = true;
+        $this->uid = isset($array['ID'])?$array['ID']:-1;
+        $this->text = isset($array['Text'])?$array['Text']:'';
+        $this->available = false;
     }
 
-
-    /**
-     * @var integer
-     */
-    protected $uid;
 
     /**
      * @var string
@@ -42,20 +42,6 @@ class Categorie {
      * @var bool
      */
     protected $available;
-
-    /**
-     * @return int
-     */
-    public function getUid() {
-        return $this->uid;
-    }
-
-    /**
-     * @param int $uid
-     */
-    public function setUid($uid) {
-        $this->uid = $uid;
-    }
 
     /**
      * @return string

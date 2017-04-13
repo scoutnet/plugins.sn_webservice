@@ -1,13 +1,17 @@
 <?php
+
 namespace ScoutNet\Api\Models;
 
 /***************************************************************
  *
  *  Copyright notice
  *
- *  (c) 2015 Stefan "Mütze" Horst <muetze@scoutnet.de>, ScoutNet
+ *  (c) 2017 Stefan "Mütze" Horst <muetze@scoutnet.de>, ScoutNet
  *
  *  All rights reserved
+ *
+ *  The GNU General Public License can be found at
+ *  http://www.gnu.org/copyleft/gpl.html.
  *
  *  This script is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -17,35 +21,47 @@ namespace ScoutNet\Api\Models;
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
 
-class Event {
+class Event extends AbstractModel {
     private $array = [];
 
-    function __construct($array, \ScoutNet\Api\Helpers\CacheHelper $cache = null) {
+    function __construct($array = [], \ScoutNet\Api\Helpers\CacheHelper $cache = null) {
         // save array to class
         $this->array = $array;
 
-        $this->title = $array['Title'];
-        $this->uid = $array['UID'];
-        $this->organizer = $array['Organizer'];
-        $this->targetGroup = $array['Target_Group'];
-        $this->startDate = \DateTime::createFromFormat('Y-m-d H:i:s', gmstrftime("%Y-%m-%d 00:00:00",$array['Start']));
-        $this->startTime = $array['All_Day']?null:gmstrftime('%H:%M:00',$array['Start']);
-        $this->endDate = $array['End'] == 0?null:\DateTime::createFromFormat('Y-m-d H:i:s', gmstrftime("%Y-%m-%d 00:00:00",$array['End']));
-        $this->endTime = $array['All_Day']?null:gmstrftime('%H:%M:00',$array['End']);
+        $this->uid = isset($array['UID']) ? $array['UID'] : -1;
+        $this->title = isset($array['Title']) ? $array['Title'] : null;
+        $this->organizer = isset($array['Organizer']) ? $array['Organizer'] : null;
+        $this->targetGroup = isset($array['Target_Group']) ? $array['Target_Group'] : null;
 
-        $this->zip = $array['ZIP'];
+        // Time
+        if (isset($array['Start'])) {
+            $this->startDate = \DateTime::createFromFormat('Y-m-d H:i:s', gmstrftime("%Y-%m-%d 00:00:00", $array['Start']));
+            $this->startTime = (isset($array['All_Day']) && $array['All_Day']) ? null : gmstrftime('%H:%M:00', $array['Start']);
+        }
+        if (isset($array['End'])) {
+            $this->endDate = $array['End'] == 0 ? null : \DateTime::createFromFormat('Y-m-d H:i:s', gmstrftime("%Y-%m-%d 00:00:00", $array['End']));
+            $this->endTime = (isset($array['All_Day']) && $array['All_Day']) ? null : gmstrftime('%H:%M:00', $array['End']);
+        }
 
-        $this->location = $array['Location'];
-        $this->urlText = $array['URL_Text'];
-        $this->url = $array['URL'];
-        $this->description = $array['Description'];
+        // Location
+        $this->zip = isset($array['ZIP']) ? $array['ZIP'] : null;
+        $this->location = isset($array['Location']) ? $array['Location'] : null;
 
-        $this->changedAt = $array['Last_Modified_At'] == 0?null:\DateTime::createFromFormat('U',$array['Last_Modified_At']);
-        $this->createdAt = $array['Created_At'] == 0?null:\DateTime::createFromFormat('U',$array['Created_At']);
+        // Links
+        $this->urlText = isset($array['URL_Text']) ? $array['URL_Text'] : null;
+        $this->url = isset($array['URL']) ? $array['URL'] : null;
+        $this->description = isset($array['Description']) ? $array['Description'] : null;
+
+        if (isset($array['Last_Modified_At'])) {
+            $this->changedAt = $array['Last_Modified_At'] == 0 ? null : \DateTime::createFromFormat('U', $array['Last_Modified_At']);
+        }
+        if (isset($array['Created_At'])) {
+            $this->createdAt = $array['Created_At'] == 0 ? null : \DateTime::createFromFormat('U', $array['Created_At']);
+        }
 
         if (isset($array['Keywords'])) {
             foreach ($array['Keywords'] as $id => $text) {
-                $categorie = new Categorie(array('ID'=>$id,'Text'=>$text));
+                $categorie = new Categorie(array('ID' => $id, 'Text' => $text));
                 if ($categorie != null) {
                     $this->addCategorie($categorie);
                 }
@@ -55,13 +71,19 @@ class Event {
         if ($cache != null) {
             // load this elements from cache
 
-            $this->changedBy = $cache->get_user_by_id(intval($array['Last_Modified_By']));
-            $this->createdBy = $cache->get_user_by_id(intval($array['Created_By']));
+            if (isset($array['Last_Modified_By'])) {
+                $this->changedBy = $cache->get_user_by_id(intval($array['Last_Modified_By']));
+            }
+            if (isset($array['Created_By'])) {
+                $this->createdBy = $cache->get_user_by_id(intval($array['Created_By']));
+            }
 
-            $this->structure = $cache->get_kalender_by_id(intval($array['Kalender']));
+            if (isset($array['Kalender'])) {
+                $this->structure = $cache->get_kalender_by_id(intval($array['Kalender']));
+            }
 
 
-            if (isset($array['Stufen'])){
+            if (isset($array['Stufen'])) {
                 foreach ($array['Stufen'] as $stufenId) {
                     $stufe = $cache->get_stufe_by_id($stufenId);
                     if ($stufe != null) {
@@ -82,10 +104,10 @@ class Event {
 
     public function get_Author_name() {
         if (isset($this['Author']) && $this['Author'] != null) {
-            return (string) htmlentities(utf8_decode($this['Author']->get_full_Name()));
+            return (string)htmlentities(utf8_decode($this['Author']->get_full_Name()));
         }
 
-        return (string) "";
+        return (string)"";
     }
 
     public function get_Stufen_Images() {
@@ -96,12 +118,10 @@ class Event {
                 $stufen .= $stufe->get_Image_URL();
             }
 
-            return (string) $stufen;
+            return (string)$stufen;
         }
-        return (string) "";
+        return (string)"";
     }
-
-    protected $uid = 0;
 
     /**
      * @var string
@@ -217,268 +237,254 @@ class Event {
     protected $changedAt;
 
     /**
-     * @return int
-     */
-    public function getUid() {
-        return $this->uid;
-    }
-
-    /**
-     * @param int $uid
-     */
-    public function setUid ($uid) {
-        $this->uid = $uid;
-    }
-
-    /**
      * @return string
      */
-    public function getTitle () {
+    public function getTitle() {
         return $this->title;
     }
 
     /**
      * @param string $title
      */
-    public function setTitle ($title) {
+    public function setTitle($title) {
         $this->title = $title;
     }
 
     /**
      * @return string
      */
-    public function getOrganizer () {
+    public function getOrganizer() {
         return $this->organizer;
     }
 
     /**
      * @param string $organizer
      */
-    public function setOrganizer ($organizer) {
+    public function setOrganizer($organizer) {
         $this->organizer = $organizer;
     }
 
     /**
      * @return string
      */
-    public function getTargetGroup () {
+    public function getTargetGroup() {
         return $this->targetGroup;
     }
 
     /**
      * @param string $targetGroup
      */
-    public function setTargetGroup ($targetGroup) {
+    public function setTargetGroup($targetGroup) {
         $this->targetGroup = $targetGroup;
     }
 
     /**
      * @return \DateTime
      */
-    public function getStartDate () {
+    public function getStartDate() {
         return $this->startDate;
     }
 
     /**
      * @param \DateTime $startDate
      */
-    public function setStartDate ($startDate) {
+    public function setStartDate($startDate) {
         $this->startDate = $startDate;
     }
 
     /**
      * @return string
      */
-    public function getStartTime () {
+    public function getStartTime() {
         return $this->startTime;
     }
 
     /**
      * @param string $startTime
      */
-    public function setStartTime ($startTime) {
+    public function setStartTime($startTime) {
         $this->startTime = $startTime;
     }
 
     /**
      * @return \DateTime
      */
-    public function getEndDate () {
+    public function getEndDate() {
         return $this->endDate;
     }
 
     /**
      * @param \DateTime $endDate
      */
-    public function setEndDate ($endDate) {
+    public function setEndDate($endDate) {
         $this->endDate = $endDate;
     }
 
     /**
      * @return string
      */
-    public function getEndTime () {
+    public function getEndTime() {
         return $this->endTime;
     }
 
     /**
      * @param string $endTime
      */
-    public function setEndTime ($endTime) {
+    public function setEndTime($endTime) {
         $this->endTime = $endTime;
     }
 
     /**
      * @return string
      */
-    public function getZip () {
+    public function getZip() {
         return $this->zip;
     }
 
     /**
      * @param string $zip
      */
-    public function setZip ($zip) {
+    public function setZip($zip) {
         $this->zip = $zip;
     }
 
     /**
      * @return string
      */
-    public function getLocation () {
+    public function getLocation() {
         return $this->location;
     }
 
     /**
      * @param string $location
      */
-    public function setLocation ($location) {
+    public function setLocation($location) {
         $this->location = $location;
     }
 
     /**
      * @return string
      */
-    public function getUrlText () {
+    public function getUrlText() {
         return $this->urlText;
     }
 
     /**
      * @param string $urlText
      */
-    public function setUrlText ($urlText) {
+    public function setUrlText($urlText) {
         $this->urlText = $urlText;
     }
 
     /**
      * @return string
      */
-    public function getUrl () {
+    public function getUrl() {
         return $this->url;
     }
 
     /**
      * @param string $url
      */
-    public function setUrl ($url) {
+    public function setUrl($url) {
         $this->url = $url;
     }
 
     /**
      * @return string
      */
-    public function getDescription () {
+    public function getDescription() {
         return $this->description;
     }
 
     /**
      * @param string $description
      */
-    public function setDescription ($description) {
+    public function setDescription($description) {
         $this->description = $description;
     }
 
     /**
      * @return \ScoutNet\Api\Models\Structure
      */
-    public function getStructure () {
+    public function getStructure() {
         return $this->structure;
     }
 
     /**
      * @param \ScoutNet\Api\Models\Structure $structure
      */
-    public function setStructure ($structure) {
+    public function setStructure($structure) {
         $this->structure = $structure;
     }
 
     /**
      * @return \ScoutNet\ShScoutnetWebservice\Domain\Model\User
      */
-    public function getChangedBy () {
+    public function getChangedBy() {
         return $this->changedBy;
     }
 
     /**
      * @param \ScoutNet\ShScoutnetWebservice\Domain\Model\User $changedBy
      */
-    public function setChangedBy ($changedBy) {
+    public function setChangedBy($changedBy) {
         $this->changedBy = $changedBy;
     }
 
     /**
      * @return \ScoutNet\ShScoutnetWebservice\Domain\Model\User
      */
-    public function getCreatedBy () {
+    public function getCreatedBy() {
         return $this->createdBy;
     }
 
     /**
      * @param \ScoutNet\ShScoutnetWebservice\Domain\Model\User $createdBy
      */
-    public function setCreatedBy ($createdBy) {
+    public function setCreatedBy($createdBy) {
         $this->createdBy = $createdBy;
     }
 
     /**
      * @return \DateTime
      */
-    public function getCreatedAt () {
+    public function getCreatedAt() {
         return $this->createdAt;
     }
 
     /**
      * @param \DateTime $createdAt
      */
-    public function setCreatedAt ($createdAt) {
+    public function setCreatedAt($createdAt) {
         $this->createdAt = $createdAt;
     }
 
     /**
      * @return \DateTime
      */
-    public function getChangedAt () {
+    public function getChangedAt() {
         return $this->changedAt;
     }
 
     /**
      * @param \DateTime $changedAt
      */
-    public function setChangedAt ($changedAt) {
+    public function setChangedAt($changedAt) {
         $this->changedAt = $changedAt;
     }
 
     /**
      * @return array
      */
-    public function getCategories () {
+    public function getCategories() {
         return $this->categories;
     }
 
     /**
      * @param array $categories
      */
-    public function setCategories ($categories) {
+    public function setCategories($categories) {
         $this->categories = $categories;
     }
 
@@ -507,9 +513,9 @@ class Event {
                 $stufen .= $stufe->getImageURL();
             }
 
-            return (string) $stufen;
+            return (string)$stufen;
         }
-        return (string) "";
+        return (string)"";
     }
 
     public function getStufenCategories() {
@@ -526,14 +532,11 @@ class Event {
     }
 
 
-
-
-
     public function getStartTimestamp() {
         if ($this->startTime) {
-            $startTimestamp = \DateTime::createFromFormat('Y-m-d H:i:s',$this->startDate->format('Y-m-d').' '.$this->startTime.(substr_count($this->startTime,':') == 1?':00':''));
+            $startTimestamp = \DateTime::createFromFormat('Y-m-d H:i:s', $this->startDate->format('Y-m-d') . ' ' . $this->startTime . (substr_count($this->startTime, ':') == 1 ? ':00' : ''));
         } else {
-            $startTimestamp = \DateTime::createFromFormat('Y-m-d H:i:s',$this->startDate->format('Y-m-d').' 00:00:00');
+            $startTimestamp = \DateTime::createFromFormat('Y-m-d H:i:s', $this->startDate->format('Y-m-d') . ' 00:00:00');
         }
 
         return $startTimestamp;
@@ -541,11 +544,11 @@ class Event {
 
     public function getEndTimestamp() {
         if ($this->endDate && $this->endTime) {
-            $endTimestamp = \DateTime::createFromFormat('Y-m-d H:i:s',$this->endDate->format('Y-m-d').' '.$this->endTime.(substr_count($this->endTime,':') == 1?':00':''));
+            $endTimestamp = \DateTime::createFromFormat('Y-m-d H:i:s', $this->endDate->format('Y-m-d') . ' ' . $this->endTime . (substr_count($this->endTime, ':') == 1 ? ':00' : ''));
         } elseif ($this->endTime) {
-            $endTimestamp = \DateTime::createFromFormat('Y-m-d H:i:s',$this->startDate->format('Y-m-d').' '.$this->endTime.(substr_count($this->endTime,':') == 1?':00':''));
+            $endTimestamp = \DateTime::createFromFormat('Y-m-d H:i:s', $this->startDate->format('Y-m-d') . ' ' . $this->endTime . (substr_count($this->endTime, ':') == 1 ? ':00' : ''));
         } elseif ($this->endDate) {
-            $endTimestamp = \DateTime::createFromFormat('Y-m-d H:i:s',$this->endDate->format('Y-m-d').' 00:00:00');
+            $endTimestamp = \DateTime::createFromFormat('Y-m-d H:i:s', $this->endDate->format('Y-m-d') . ' 00:00:00');
         } else {
             $endTimestamp = $this->getStartTimestamp();
         }
@@ -571,6 +574,7 @@ class Event {
     public function getStartYear() {
         return $this->startDate->format('Y');
     }
+
     public function getStartMonth() {
         return $this->startDate->format('m');
     }
@@ -578,14 +582,14 @@ class Event {
     /**
      * @return mixed
      */
-    public function getStufen () {
+    public function getStufen() {
         return $this->stufen;
     }
 
     /**
      * @param mixed $stufen
      */
-    public function setStufen ($stufen) {
+    public function setStufen($stufen) {
         $this->stufen = $stufen;
     }
 
@@ -597,12 +601,12 @@ class Event {
     }
 
     public function getShowDetails() {
-        return trim($this->getDescription().$this->getZip().$this->getLocation().$this->getOrganizer().$this->getTargetGroup().$this->getUrl()) !== '';
+        return trim($this->getDescription() . $this->getZip() . $this->getLocation() . $this->getOrganizer() . $this->getTargetGroup() . $this->getUrl()) !== '';
     }
 
 
     public function copyProperties($event) {
-        $copyProperties = array( 'title', 'organizer', 'targetGroup', 'startDate', 'startTime', 'endDate', 'endTime', 'zip', 'location', 'urlText', 'url', 'description', 'structure', 'categories');
+        $copyProperties = array('title', 'organizer', 'targetGroup', 'startDate', 'startTime', 'endDate', 'endTime', 'zip', 'location', 'urlText', 'url', 'description', 'structure', 'categories');
 
         foreach ($copyProperties as $propertie) {
             $this->{$propertie} = $event->{$propertie};

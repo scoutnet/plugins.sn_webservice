@@ -5,15 +5,9 @@ namespace ScoutNet\Api\Models;
  *
  *  Copyright notice
  *
- *  (c) 2015 Stefan "Mütze" Horst <muetze@scoutnet.de>, ScoutNet
+ *  (c) 2017 Stefan "Mütze" Horst <muetze@scoutnet.de>, ScoutNet
  *
  *  All rights reserved
- *
- *  This script is part of the TYPO3 project. The TYPO3 project is
- *  free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
  *
  *  The GNU General Public License can be found at
  *  http://www.gnu.org/copyleft/gpl.html.
@@ -26,31 +20,22 @@ namespace ScoutNet\Api\Models;
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
 
-class Structure {
+class Structure extends AbstractModel {
     private $array = [];
 
-    function __construct($array) {
+    function __construct($array = []) {
         $this->array = $array;
 
-        $this->uid = $array['ID'];
-        $this->ebene = $array['Ebene'];
-        $this->name = $array['Name'];
-        $this->verband = $array['Verband'];
-        $this->ident = $array['Ident'];
-        $this->ebeneId = $array['Ebene_Id'];
+        $this->uid = isset($array['ID'])?$array['ID']:-1;
+        $this->ebene = isset($array['Ebene'])?$array['Ebene']:'';
+        $this->name = isset($array['Name'])?$array['Name']:'';
+        $this->verband = isset($array['Verband'])?$array['Verband']:'';
+        $this->ident = isset($array['Ident'])?$array['Ident']:'';
+        $this->ebeneId = isset($array['Ebene_Id'])?$array['Ebene_Id']:0;
 
-        $this->usedCategories = $array['Used_Kategories'];
-        $this->forcedCategories = $array['Forced_Kategories'];
+        $this->usedCategories = isset($array['Used_Kategories'])?$array['Used_Kategories']:[];
+        $this->forcedCategories = isset($array['Forced_Kategories'])?$array['Forced_Kategories']:[];
     }
-
-    public function __get($name) {
-        return $this->{$name};
-    }
-
-    /**
-     * @var Int
-     */
-    protected $uid;
 
     /**
      * @var String
@@ -80,20 +65,6 @@ class Structure {
      * @var array
      */
     protected $forcedCategories;
-
-    /**
-     * @return Integer
-     */
-    public function getUid() {
-        return $this->uid;
-    }
-
-    /**
-     * @param Integer $uid
-     */
-    public function setUid($uid) {
-        $this->uid = $uid;
-    }
 
     /**
      * @return String

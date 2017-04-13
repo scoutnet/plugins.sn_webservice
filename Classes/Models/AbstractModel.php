@@ -20,23 +20,28 @@ namespace ScoutNet\Api\Models;
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
 
-class Index extends \ArrayObject {
-	private $children = array();
-
-    function __construct($array = []) {
-        parent::__construct($array);
-    }
-
+abstract class AbstractModel {
     public function __get($name) {
-        return $this[$name];
+        return $this->{$name};
     }
 
-    public function getChildren() {
-	    return $this->children;
+    /**
+     * @var int
+     */
+    protected $uid = null;
+
+    /**
+     * @return int
+     */
+    public function getUid(){
+        return $this->uid;
     }
 
-    public function addChild(&$child) {
-	    $this->children[] = $child;
+    /**
+     * @param $uid int
+     */
+    public function setUid($uid){
+        $this->uid = $uid;
     }
 
 }
