@@ -1,3 +1,6 @@
+[![Codecov](https://img.shields.io/codecov/c/github/scoutnet/sn-webservice.svg)]()
+===
+
 ScoutNet Api Webservice
 =======================
 
