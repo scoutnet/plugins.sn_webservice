@@ -21,22 +21,6 @@ namespace ScoutNet\Api\Models;
  ***************************************************************/
 
 class Structure extends AbstractModel {
-    private $array = [];
-
-    function __construct($array = []) {
-        $this->array = $array;
-
-        $this->uid = isset($array['ID'])?$array['ID']:-1;
-        $this->ebene = isset($array['Ebene'])?$array['Ebene']:'';
-        $this->name = isset($array['Name'])?$array['Name']:'';
-        $this->verband = isset($array['Verband'])?$array['Verband']:'';
-        $this->ident = isset($array['Ident'])?$array['Ident']:'';
-        $this->ebeneId = isset($array['Ebene_Id'])?$array['Ebene_Id']:0;
-
-        $this->usedCategories = isset($array['Used_Kategories'])?$array['Used_Kategories']:[];
-        $this->forcedCategories = isset($array['Forced_Kategories'])?$array['Forced_Kategories']:[];
-    }
-
     /**
      * @var String
      */
@@ -169,7 +153,7 @@ class Structure extends AbstractModel {
      * @return string
      */
     public function getLongName() {
-        return (string) $this->getEbene().' '.(($this->getEbeneId() >= 7)?$this->getName():"");
+        return (string) $this->getEbene().(($this->getEbeneId() >= 7)?" ".$this->getName():"");
     }
 
     /**

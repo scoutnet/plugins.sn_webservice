@@ -24,18 +24,6 @@ class User extends AbstractModel {
     const SEX_MALE = 'm';
     const SEX_FEMALE = 'w';
 
-    private $array = [];
-
-    function __construct($array = []) {
-        $this->array = $array;
-
-        $this->uid = isset($array['userid'])?$array['userid']:-1;
-        $this->username = isset($array['userid'])?$array['userid']:null;
-        $this->firstName = isset($array['firstname'])?$array['firstname']:null;
-        $this->lastName = isset($array['surname'])?$array['surname']:null;
-        $this->sex = isset($array['sex'])?$array['sex']:null;
-    }
-
 
     /**
      * @var string
@@ -125,7 +113,7 @@ class User extends AbstractModel {
     }
     public function getLongName(){
         $full_name = $this->getFullName();
-        if( $full_name ){
+        if( $full_name !== $this->getUsername() ){
             return $full_name.' ('.$this->getUsername().')';
         } else {
             return $this->getUsername();

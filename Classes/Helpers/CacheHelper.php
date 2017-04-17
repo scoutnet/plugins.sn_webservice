@@ -20,6 +20,7 @@ namespace ScoutNet\Api\Helpers;
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
 
+use ScoutNet\Api\Models\AbstractModel;
 use ScoutNet\Api\Models\Structure;
 use ScoutNet\Api\Models\Stufe;
 use ScoutNet\Api\Models\User;
@@ -28,7 +29,10 @@ use ScoutNet\Api\Models\Event;
 class CacheHelper {
     private $cache = [];
 
-    public function add($object) {
+    /**
+     * @param AbstractModel $object
+     */
+    public function add(AbstractModel $object) {
         $class = get_class($object);
         $id = $object->getUid();
 
@@ -42,18 +46,38 @@ class CacheHelper {
         return null;
     }
 
+    /**
+     * @param $id
+     * @return null
+     * @deprecated
+     */
     public function get_event_by_id($id) {
         return $this->get(Event::class, $id);
     }
 
+    /**
+     * @param $id
+     * @return null
+     * @deprecated
+     */
     public function get_stufe_by_id($id) {
         return $this->get(Stufe::class, $id);
     }
 
+    /**
+     * @param $id
+     * @return null
+     * @deprecated
+     */
     public function get_kalender_by_id($id) {
         return $this->get(Structure::class, $id);
     }
 
+    /**
+     * @param $id
+     * @return null
+     * @deprecated
+     */
     public function get_user_by_id($id) {
         return $this->get(User::class, $id);
     }

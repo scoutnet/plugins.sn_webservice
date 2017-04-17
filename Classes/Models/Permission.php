@@ -30,11 +30,6 @@ class Permission {
     protected $text = '';
     protected $type = '';
 
-    function __construct($array = []) {
-        $this->state = isset($array['code'])?$array['code']:self::AUTH_NO_RIGHT;
-        $this->text = isset($array['text'])?$array['text']:'';
-        $this->type = isset($array['type'])?$array['type']:'';
-    }
 
     public function setState($state) {
         $this->state = $state;

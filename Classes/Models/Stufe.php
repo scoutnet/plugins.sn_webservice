@@ -22,29 +22,6 @@ namespace ScoutNet\Api\Models;
  ***************************************************************/
 
 class Stufe extends AbstractModel {
-    private $array = [];
-
-    function __construct($array = []) {
-        $this->array = $array;
-
-        $this->uid = isset($array['id'])?$array['id']:-1;
-        $this->verband = isset($array['verband'])?$array['verband']:null;
-        $this->bezeichnung = isset($array['bezeichnung'])?$array['bezeichnung']:'';
-        $this->farbe = isset($array['farbe'])?$array['farbe']:'';
-        $this->startalter = isset($array['startalter'])?intval($array['startalter']):-1;
-        $this->endalter = isset($array['endalter'])?intval($array['endalter']):-1;
-        $this->categorieId = isset($array['Keywords_ID'])?$array['Keywords_ID']:-1;
-    }
-
-
-    /**
-     * @return string
-     * @deprecated
-     */
-    public function get_Image_URL() {
-        return (string)$this->getImageURL();
-    }
-
     /**
      * @var String
      */
@@ -163,4 +140,11 @@ class Stufe extends AbstractModel {
         return (string)"<img src='https://kalender.scoutnet.de/2.0/images/" . $this->getUid() . ".gif' alt='" . htmlentities($this->getBezeichnung(), ENT_COMPAT | ENT_HTML401, 'UTF-8') . "' />";
     }
 
+    /**
+     * @return string
+     * @deprecated
+     */
+    public function get_Image_URL() {
+        return (string)$this->getImageURL();
+    }
 }

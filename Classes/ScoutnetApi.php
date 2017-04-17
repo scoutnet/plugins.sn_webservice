@@ -3,12 +3,10 @@
 namespace ScoutNet\Api;
 
 use ScoutNet\Api\Helpers\CacheHelper;
+use ScoutNet\Api\Helpers\ConverterHelper;
+
 use ScoutNet\Api\Models\Event;
 use ScoutNet\Api\Models\Index;
-use ScoutNet\Api\Models\Structure;
-use ScoutNet\Api\Models\Stufe;
-use ScoutNet\Api\Models\User;
-use ScoutNet\Api\Models\Permission;
 
 use ScoutNet\Api\Helpers\AesHelper;
 use ScoutNet\Api\Helpers\JsonRPCClientHelper;
@@ -50,6 +48,7 @@ class ScoutnetApi {
     private $login_url = null;
 
     private $cache = null;
+    private $converter = null;
 
     /**
      * Construct the ScoutNet API. To read you need not set anything. For Writing access you must set the
@@ -68,6 +67,7 @@ class ScoutnetApi {
         $this->set_scoutnet_connect_data($login_url, $provider, $aes_key, $aes_iv);
 
         $this->cache = new CacheHelper();
+        $this->converter = new ConverterHelper($this->cache);
     }
 
     /**
@@ -141,21 +141,17 @@ class ScoutnetApi {
         $events = [];
 
         foreach ($this->load_data_from_scoutnet($ids, array('events' => $filter)) as $record) {
-
             if ($record['type'] === 'user') {
-                $user = new User($record['content']);
-                $this->cache->add($user);//'user', $user['userid'], $user);
+                // convert to User and save to cache
+                $this->converter->convertApiToUser($record['content']);
             } elseif ($record['type'] === 'stufe') {
-                $stufe = new Stufe($record['content']);
-                $this->cache->add($stufe);//'stufe', $stufe['Keywords_ID'], $stufe);
+                // convert to Stufe and save to cache
+                $this->converter->convertApiToStufe($record['content']);
             } elseif ($record['type'] === 'kalender') {
-                $kalender = new Structure($record['content']);
-                $this->cache->add($kalender);//'structure', $kalender->getUid(), $kalender);
+                // convert to Structure and save to cache
+                $this->converter->convertApiToStructure($record['content']);
             } elseif ($record['type'] === 'event') {
-                $event = new Event($record['content'], $this->cache);
-                $this->cache->add($event);//'event', $event->getUid(), $event);
-
-                $events[] = $event;
+                $events[] = $this->converter->convertApiToEvent($record['content']);
             }
         }
         return $events;
@@ -200,9 +196,7 @@ class ScoutnetApi {
         $kalenders = array();
         foreach ($this->load_data_from_scoutnet($ids, array('kalenders' => array())) as $record) {
             if ($record['type'] === 'kalender') {
-                $kalender = new Structure($record['content']);
-                $this->cache->add($kalender);
-                $kalenders[] = $kalender;
+                $kalenders[] = $this->converter->convertApiToStructure($record['content']);
             }
         }
 
@@ -220,7 +214,7 @@ class ScoutnetApi {
      */
     public function write_event(\ScoutNet\Api\Models\Event $data, $user, $api_key) {
         $type = 'event';
-        $id = $data->getId();
+        $id = $data->getUid();
 
         return $this->write_object($type, $id, $data, $user, $api_key);
     }
@@ -276,7 +270,8 @@ class ScoutnetApi {
         $right = $this->SN->checkPermission($type, $ssid, $user, $auth);
         $right['type'] = $type;
 
-        return new Permission($right);
+        $permission = $this->converter->convertApiToPermission($right);
+        return $permission;
     }
 
     /**

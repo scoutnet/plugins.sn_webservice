@@ -22,17 +22,6 @@ namespace ScoutNet\Api\Models;
  ***************************************************************/
 
 class Categorie extends AbstractModel {
-    private $array = [];
-
-    public function __construct($array = []) {
-        $this->array = $array;
-
-        $this->uid = isset($array['ID'])?$array['ID']:-1;
-        $this->text = isset($array['Text'])?$array['Text']:'';
-        $this->available = false;
-    }
-
-
     /**
      * @var string
      */

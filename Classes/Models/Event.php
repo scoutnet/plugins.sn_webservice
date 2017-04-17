@@ -22,106 +22,15 @@ namespace ScoutNet\Api\Models;
  ***************************************************************/
 
 class Event extends AbstractModel {
-    private $array = [];
-
-    function __construct($array = [], \ScoutNet\Api\Helpers\CacheHelper $cache = null) {
-        // save array to class
-        $this->array = $array;
-
-        $this->uid = isset($array['UID']) ? $array['UID'] : -1;
-        $this->title = isset($array['Title']) ? $array['Title'] : null;
-        $this->organizer = isset($array['Organizer']) ? $array['Organizer'] : null;
-        $this->targetGroup = isset($array['Target_Group']) ? $array['Target_Group'] : null;
-
-        // Time
-        if (isset($array['Start'])) {
-            $this->startDate = \DateTime::createFromFormat('Y-m-d H:i:s', gmstrftime("%Y-%m-%d 00:00:00", $array['Start']));
-            $this->startTime = (isset($array['All_Day']) && $array['All_Day']) ? null : gmstrftime('%H:%M:00', $array['Start']);
-        }
-        if (isset($array['End'])) {
-            $this->endDate = $array['End'] == 0 ? null : \DateTime::createFromFormat('Y-m-d H:i:s', gmstrftime("%Y-%m-%d 00:00:00", $array['End']));
-            $this->endTime = (isset($array['All_Day']) && $array['All_Day']) ? null : gmstrftime('%H:%M:00', $array['End']);
-        }
-
-        // Location
-        $this->zip = isset($array['ZIP']) ? $array['ZIP'] : null;
-        $this->location = isset($array['Location']) ? $array['Location'] : null;
-
-        // Links
-        $this->urlText = isset($array['URL_Text']) ? $array['URL_Text'] : null;
-        $this->url = isset($array['URL']) ? $array['URL'] : null;
-        $this->description = isset($array['Description']) ? $array['Description'] : null;
-
-        if (isset($array['Last_Modified_At'])) {
-            $this->changedAt = $array['Last_Modified_At'] == 0 ? null : \DateTime::createFromFormat('U', $array['Last_Modified_At']);
-        }
-        if (isset($array['Created_At'])) {
-            $this->createdAt = $array['Created_At'] == 0 ? null : \DateTime::createFromFormat('U', $array['Created_At']);
-        }
-
-        if (isset($array['Keywords'])) {
-            foreach ($array['Keywords'] as $id => $text) {
-                $categorie = new Categorie(array('ID' => $id, 'Text' => $text));
-                if ($categorie != null) {
-                    $this->addCategorie($categorie);
-                }
-            }
-        }
-
-        if ($cache != null) {
-            // load this elements from cache
-
-            if (isset($array['Last_Modified_By'])) {
-                $this->changedBy = $cache->get_user_by_id(intval($array['Last_Modified_By']));
-            }
-            if (isset($array['Created_By'])) {
-                $this->createdBy = $cache->get_user_by_id(intval($array['Created_By']));
-            }
-
-            if (isset($array['Kalender'])) {
-                $this->structure = $cache->get_kalender_by_id(intval($array['Kalender']));
-            }
-
-
-            if (isset($array['Stufen'])) {
-                foreach ($array['Stufen'] as $stufenId) {
-                    $stufe = $cache->get_stufe_by_id($stufenId);
-                    if ($stufe != null) {
-                        $this->addStufe($stufe);
-                    }
-                }
-            }
-        } else {
-            // TODO: load this stuff from api
-        }
-
-    }
-
+    /**
+     * @param $name
+     * @return mixed
+     * @deprecated
+     */
     public function __get($name) {
         return $this->{$name};
     }
 
-
-    public function get_Author_name() {
-        if (isset($this['Author']) && $this['Author'] != null) {
-            return (string)htmlentities(utf8_decode($this['Author']->get_full_Name()));
-        }
-
-        return (string)"";
-    }
-
-    public function get_Stufen_Images() {
-        if (isset($this['Stufen']) && $this['Stufen'] != null) {
-
-            $stufen = "";
-            foreach ($this['Stufen'] as $stufe) {
-                $stufen .= $stufe->get_Image_URL();
-            }
-
-            return (string)$stufen;
-        }
-        return (string)"";
-    }
 
     /**
      * @var string
@@ -146,6 +55,7 @@ class Event extends AbstractModel {
      * @validate NotEmpty
      */
     protected $startDate;
+
     /**
      * @var string
      */
@@ -155,6 +65,7 @@ class Event extends AbstractModel {
      * @var \DateTime
      */
     protected $endDate;
+
     /**
      * @var string
      */
@@ -612,4 +523,21 @@ class Event extends AbstractModel {
             $this->{$propertie} = $event->{$propertie};
         }
     }
+
+    /**
+     * @return string
+     * @deprecated
+     */
+    public function get_Author_name() {
+        return $this->getAuthor()->getFullName();
+    }
+
+    /**
+     * @return string
+     * @deprecated
+     */
+    public function get_Stufen_Images() {
+        return $this->getStufenImages();
+    }
+
 }
