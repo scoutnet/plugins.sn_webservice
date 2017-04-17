@@ -83,12 +83,15 @@ class TestEventModel extends TestCase {
         $event->setTargetGroup('demoTargetGroup');
         $this->assertEquals('demoTargetGroup', $event->getTargetGroup());
 
-        $start = \DateTime::createFromFormat('Y-m-d H:i:s', '2001-09-09 00:00:00');
-        $event->setStartDate($start);
-        $this->assertEquals($start, $event->getStartDate());
+        $startDate = \DateTime::createFromFormat('Y-m-d H:i:s', '2001-09-09 00:00:00');
+        $event->setStartDate($startDate);
+        $this->assertEquals($startDate, $event->getStartDate());
 
         $event->setStartTime("10:00");
         $this->assertEquals("10:00", $event->getStartTime());
+
+        $startTimeStamp = \DateTime::createFromFormat('Y-m-d H:i:s', '2001-09-09 10:00:00');
+        $this->assertEquals($startTimeStamp, $event->getStartTimestamp());
 
         $end = \DateTime::createFromFormat('Y-m-d H:i:s', '2001-09-10 00:00:00');
         $event->setEndDate($end);
@@ -96,6 +99,9 @@ class TestEventModel extends TestCase {
 
         $event->setEndTime("23:00");
         $this->assertEquals("23:00", $event->getEndTime());
+
+        $endTimeStamp = \DateTime::createFromFormat('Y-m-d H:i:s', '2001-09-10 23:00:00');
+        $this->assertEquals($endTimeStamp, $event->getEndTimestamp());
 
         $event->setZip('demoZip');
         $this->assertEquals('demoZip', $event->getZip());
