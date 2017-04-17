@@ -112,8 +112,45 @@ class TestEventModel extends TestCase {
         $event->setDescription('demoDescription');
         $this->assertEquals('demoDescription', $event->getDescription());
 
-        $event->setStufen(['stufe_1', 'stufe_2']);
-        $this->assertEquals(['stufe_1', 'stufe_2'], $event->getStufen());
+        $stufe1 = new Stufe();
+        $stufe1->setUid(1);
+        $stufe1->setBezeichnung('Stufe1');
+        $stufe1->setCategorieId(1);
+
+        $stufe2 = new Stufe();
+        $stufe2->setUid(2);
+        $stufe2->setBezeichnung('Stufe2');
+        $stufe2->setCategorieId(2);
+
+        $event->setStufen([$stufe1, $stufe2]);
+        $this->assertEquals([$stufe1, $stufe2], $event->getStufen());
+
+        $this->assertEquals('<img src=\'https://kalender.scoutnet.de/2.0/images/1.gif\' alt=\'Stufe1\' /><img src=\'https://kalender.scoutnet.de/2.0/images/2.gif\' alt=\'Stufe2\' />', $event->getStufenImages());
+
+        $stufe3 = new Stufe();
+        $stufe3->setUid(3);
+        $stufe3->setBezeichnung('Stufe3');
+        $stufe3->setCategorieId(3);
+
+        $event->addStufe($stufe3);
+        $this->assertEquals([$stufe1, $stufe2, $stufe3], $event->getStufen());
+
+        $stufe1_cat = new Categorie();
+        $stufe1_cat->setUid(1);
+        $stufe1_cat->setText('Stufe1');
+
+        $stufe2_cat = new Categorie();
+        $stufe2_cat->setUid(2);
+        $stufe2_cat->setText('Stufe2');
+
+        $stufe3_cat = new Categorie();
+        $stufe3_cat->setUid(3);
+        $stufe3_cat->setText('Stufe3');
+
+        $this->assertEquals([1 => $stufe1_cat, 2 => $stufe2_cat, 3 => $stufe3_cat], $event->getStufenCategories());
+
+        $event->setStufen(null);
+        $this->assertEquals('', $event->getStufenImages());
 
         $cat1 = new Categorie();
         $cat1->setUid(1);

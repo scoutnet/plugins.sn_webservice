@@ -416,17 +416,15 @@ class Event extends AbstractModel {
      * @return string
      */
     public function getStufenImages() {
-        if (isset($this->stufen) && $this->stufen != null) {
+        if ($this->stufen == null) return (string)'';
 
-            $stufen = "";
-            /** @var \ScoutNet\ShScoutnetWebservice\Domain\Model\Stufe $stufe */
-            foreach ($this->stufen as $stufe) {
-                $stufen .= $stufe->getImageURL();
-            }
-
-            return (string)$stufen;
+        $images = "";
+        /** @var \ScoutNet\Api\Models\Stufe $stufe */
+        foreach ($this->stufen as $stufe) {
+            $images .= $stufe->getImageURL();
         }
-        return (string)"";
+
+        return (string)$images;
     }
 
     public function getStufenCategories() {
