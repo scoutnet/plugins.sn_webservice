@@ -1,4 +1,5 @@
 <?php
+
 namespace ScoutNet\Api\Tests;
 
 use PHPUnit\Framework\TestCase;
@@ -12,7 +13,7 @@ use ScoutNet\Api\Models\User;
 
 class TestCategorieModel extends TestCase {
     public function testCanBeCreated() {
-        $this->assertInstanceOf( Categorie::class, new Categorie());
+        $this->assertInstanceOf(Categorie::class, new Categorie());
     }
 
     public function testDefaultParameters() {
@@ -39,7 +40,7 @@ class TestCategorieModel extends TestCase {
 
 class TestEventModel extends TestCase {
     public function testCanBeCreated() {
-        $this->assertInstanceOf( Event::class, new Event());
+        $this->assertInstanceOf(Event::class, new Event());
     }
 
     public function testDefaultParameters() {
@@ -110,12 +111,67 @@ class TestEventModel extends TestCase {
 
         $event->setDescription('demoDescription');
         $this->assertEquals('demoDescription', $event->getDescription());
+
+        $event->setStufen(['stufe_1', 'stufe_2']);
+        $this->assertEquals(['stufe_1', 'stufe_2'], $event->getStufen());
+
+        $cat1 = new Categorie();
+        $cat1->setUid(1);
+        $cat1->setText('cat_1');
+
+        $cat2 = new Categorie();
+        $cat2->setUid(2);
+        $cat2->setText('cat_2');
+
+        $cat3 = new Categorie();
+        $cat3->setUid(3);
+        $cat3->setText('cat_3');
+
+        $event->setCategories([1 => $cat1, 2 => $cat2]);
+        $this->assertEquals([1 => $cat1, 2 => $cat2], $event->getCategories());
+
+
+        $event->addCategorie($cat3);
+        $this->assertEquals([1 => $cat1, 2 => $cat2, 3 => $cat3], $event->getCategories());
+
+
+        $structure = new Structure();
+        $event->setStructure($structure);
+        $this->assertEquals($structure, $event->getStructure());
+
+        $changedBy = new User();
+        $changedBy->setUid(23);
+
+        $event->setChangedBy($changedBy);
+        $this->assertEquals($changedBy, $event->getChangedBy());
+
+        $createdBy = new User();
+        $createdBy->setUid(42);
+        $event->setCreatedBy($createdBy);
+        $this->assertEquals($createdBy, $event->getCreatedBy());
+
+        $createdAt = \DateTime::createFromFormat('Y-m-d H:i:s', '2001-09-11 00:00:00');
+        $event->setCreatedAt($createdAt);
+        $this->assertEquals($createdAt, $event->getCreatedAt());
+
+        $changedAt = \DateTime::createFromFormat('Y-m-d H:i:s', '2001-09-12 00:00:00');
+        $event->setChangedAt($changedAt);
+        $this->assertEquals($changedAt, $event->getChangedAt());
+
+
+        $this->assertEquals($changedBy, $event->getAuthor());
+
+        // if changedBy is null return created By
+        $event->setChangedBy(null);
+        $this->assertEquals($createdBy, $event->getAuthor());
+
+
     }
 }
 
 class TestIndexModel extends TestCase {
     public function testCanBeCreated() {
-        $this->assertInstanceOf( Index::class, new Index());
+        $this->assertInstanceOf(Index::class, new Index());
     }
 
     public function testDefaultParameters() {
@@ -149,7 +205,7 @@ class TestIndexModel extends TestCase {
 
 class TestPermissionModel extends TestCase {
     public function testCanBeCreated() {
-        $this->assertInstanceOf( Permission::class, new Permission());
+        $this->assertInstanceOf(Permission::class, new Permission());
     }
 
     public function testDefaultParameters() {
@@ -188,7 +244,7 @@ class TestPermissionModel extends TestCase {
 
 class TestStructureModel extends TestCase {
     public function testCanBeCreated() {
-        $this->assertInstanceOf( Structure::class, new Structure());
+        $this->assertInstanceOf(Structure::class, new Structure());
     }
 
     public function testDefaultParameters() {
@@ -240,7 +296,7 @@ class TestStructureModel extends TestCase {
 
 class TestStufeModel extends TestCase {
     public function testCanBeCreated() {
-        $this->assertInstanceOf( Stufe::class, new Stufe());
+        $this->assertInstanceOf(Stufe::class, new Stufe());
     }
 
     public function testDefaultParameters() {
@@ -285,7 +341,7 @@ class TestStufeModel extends TestCase {
 
 class TestUserModel extends TestCase {
     public function testCanBeCreated() {
-        $this->assertInstanceOf( User::class, new User());
+        $this->assertInstanceOf(User::class, new User());
     }
 
     public function testDefaultParameters() {

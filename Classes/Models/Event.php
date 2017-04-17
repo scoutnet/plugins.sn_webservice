@@ -122,14 +122,14 @@ class Event extends AbstractModel {
     /**
      * changedBy
      *
-     * @var \ScoutNet\ShScoutnetWebservice\Domain\Model\User
+     * @var \ScoutNet\Api\Models\User
      */
     protected $changedBy = NULL;
 
     /**
      * changedBy
      *
-     * @var \ScoutNet\ShScoutnetWebservice\Domain\Model\User
+     * @var \ScoutNet\Api\Models\User
      */
     protected $createdBy = NULL;
 
@@ -330,28 +330,28 @@ class Event extends AbstractModel {
     }
 
     /**
-     * @return \ScoutNet\ShScoutnetWebservice\Domain\Model\User
+     * @return \ScoutNet\Api\Models\User
      */
     public function getChangedBy() {
         return $this->changedBy;
     }
 
     /**
-     * @param \ScoutNet\ShScoutnetWebservice\Domain\Model\User $changedBy
+     * @param \ScoutNet\Api\Models\User $changedBy
      */
     public function setChangedBy($changedBy) {
         $this->changedBy = $changedBy;
     }
 
     /**
-     * @return \ScoutNet\ShScoutnetWebservice\Domain\Model\User
+     * @return \ScoutNet\Api\Models\User
      */
     public function getCreatedBy() {
         return $this->createdBy;
     }
 
     /**
-     * @param \ScoutNet\ShScoutnetWebservice\Domain\Model\User $createdBy
+     * @param \ScoutNet\Api\Models\User $createdBy
      */
     public function setCreatedBy($createdBy) {
         $this->createdBy = $createdBy;
