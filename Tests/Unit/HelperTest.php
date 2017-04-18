@@ -3,6 +3,7 @@
 namespace ScoutNet\Api\Tests;
 
 use PHPUnit\Framework\TestCase;
+use ScoutNet\Api\Helpers\AesHelper;
 use ScoutNet\Api\Helpers\CacheHelper;
 use ScoutNet\Api\Helpers\ConverterHelper;
 use ScoutNet\Api\Models\Categorie;
@@ -87,3 +88,54 @@ class ConvertHelperTest extends TestCase {
         $this->assertEquals($expected_categorie, $cached_categorie);
     }
 }
+
+
+class AESHelperTest extends TestCase {
+    const AES_IV = '1234567890123456';
+    const AES_KEY = '12345678901234567890123456789012';
+
+    public function testCanBeCreated() {
+        $this->assertInstanceOf(AesHelper::class, new AesHelper(self::AES_KEY));
+    }
+
+    /**
+     * @expectedException \Exception
+     * @expectedExceptionMessageRegExp /^Key is 80 bits long[.] [*]not[*] 128, 192, or 256[.]$/
+     */
+    public function testWrongKeySize() {
+        new AesHelper('1234567890');
+    }
+
+    public function testEncryptionECBNoPadding() {
+        $aes = new AesHelper(self::AES_KEY);
+
+        $ciphertext = $aes->encrypt('dies ist ein sehr langer test mit sehr viel text');
+
+        $this->assertEquals('FinfuxuBJA6LrPr226ldeZwPFpGLvQqih/3CTH/6k1vqbO4VTuptsCVCKe1gwnZn', base64_encode($ciphertext));
+    }
+
+    public function testEncryptionCBCNoPadding() {
+        $aes = new AesHelper(self::AES_KEY, AesHelper::AES_MODE_CBC);
+
+        $ciphertext = $aes->encrypt('dies ist ein sehr langer test mit sehr viel text');
+
+        $this->assertEquals('aKRxFwuhKcfJ4kNprkJQPoMkOUDYrEOKKGe4olQqFc0YjLF2d5P1/FV+qz/K4I1R', base64_encode($ciphertext));
+    }
+
+    public function testDencryptionECBNoPadding() {
+        $aes = new AesHelper(self::AES_KEY);
+
+        $plaintext = $aes->decrypt(base64_decode('FinfuxuBJA6LrPr226ldeZwPFpGLvQqih/3CTH/6k1vqbO4VTuptsCVCKe1gwnZn'));
+
+        $this->assertEquals('dies ist ein sehr langer test mit sehr viel text', $plaintext);
+    }
+
+    public function testDencryptionCBCNoPadding() {
+        $aes = new AesHelper(self::AES_KEY, AesHelper::AES_MODE_CBC);
+
+        $plaintext = $aes->decrypt(base64_decode('aKRxFwuhKcfJ4kNprkJQPoMkOUDYrEOKKGe4olQqFc0YjLF2d5P1/FV+qz/K4I1R'));
+
+        $this->assertEquals('dies ist ein sehr langer test mit sehr viel text', $plaintext);
+    }
+}
+
