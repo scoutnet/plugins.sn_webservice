@@ -336,6 +336,8 @@ class TestIndexModel extends TestCase {
         $this->assertEquals(null, $index->getCreatedAt());
         $this->assertEquals(null, $index->getChangedAt());
         */
+        // Stop here and mark this test as incomplete.
+        $this->markTestIncomplete('This test has not been implemented yet.');
     }
 }
 

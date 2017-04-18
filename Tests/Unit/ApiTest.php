@@ -306,7 +306,6 @@ final class ApiTest extends TestCase {
         $this->assertEquals(Permission::AUTH_REQUEST_PENDING, $ret['code']);
     }
 
-
     public function testCreateEvent() {
         $testEvent = Array(
             'ID' => -1, // id of event to update -1 for new event
@@ -329,8 +328,14 @@ final class ApiTest extends TestCase {
             )
         );
 
+
        // $testEvent = $this->sn->write_event(-1, $testEvent, self::API_USER, self::API_KEY);
         echo "event written. It has ID ".$testEvent['ID']."\n";
+
+        // Stop here and mark this test as incomplete.
+        $this->markTestIncomplete(
+            'This test has not been implemented yet.'
+        );
     }
 
 
