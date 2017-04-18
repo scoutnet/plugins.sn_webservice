@@ -1,4 +1,5 @@
 <?php
+
 namespace ScoutNet\Api\Tests;
 
 use PHPUnit\Framework\TestCase;
@@ -15,10 +16,21 @@ class CacheHelperTest extends TestCase {
         $cache = new CacheHelper();
 
         $event = new Event();
-        $event->setUid(23);
-        $cache->add($event);
 
+        // we can only insert elements with an id
+        $ret = $cache->add($event);
+        $this->assertEquals(false, $ret);
+
+        // cache miss
+        $this->assertEquals(null, $cache->get(Event::class, 23));
+
+        $event->setUid(23);
+        $ret = $cache->add($event);
+        $this->assertEquals($event, $ret);
+
+        // cache hit
         $this->assertEquals($event, $cache->get(Event::class, 23));
+
     }
 }
 

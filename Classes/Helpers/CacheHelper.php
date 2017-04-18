@@ -1,4 +1,5 @@
 <?php
+
 namespace ScoutNet\Api\Helpers;
 
 /***************************************************************
@@ -31,12 +32,20 @@ class CacheHelper {
 
     /**
      * @param AbstractModel $object
+     * @return AbstractModel|false
      */
     public function add(AbstractModel $object) {
         $class = get_class($object);
         $id = $object->getUid();
 
+        // we can only insert object with id
+        if ($id == null) {
+            return false;
+        }
+
         $this->cache[$class][$id] = $object;
+
+        return $object;
     }
 
     public function get($class, $id) {
