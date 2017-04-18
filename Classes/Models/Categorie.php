@@ -28,11 +28,6 @@ class Categorie extends AbstractModel {
     protected $text;
 
     /**
-     * @var bool
-     */
-    protected $available;
-
-    /**
      * @return string
      */
     public function getText() {
@@ -44,19 +39,5 @@ class Categorie extends AbstractModel {
      */
     public function setText($text) {
         $this->text = $text;
-    }
-
-    /**
-     * @return boolean
-     */
-    public function getAvailable() {
-        return $this->available;
-    }
-
-    /**
-     * @param boolean $available
-     */
-    public function setAvailable($available) {
-        $this->available = $available;
     }
 }

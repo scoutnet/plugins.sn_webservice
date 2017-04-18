@@ -161,8 +161,29 @@ class ConverterHelper {
         $structure->setIdent(isset($array['Ident']) ? $array['Ident'] : '');
         $structure->setEbeneId(isset($array['Ebene_Id']) ? $array['Ebene_Id'] : 0);
 
-        $structure->setUsedCategories(isset($array['Used_Kategories']) ? $array['Used_Kategories'] : []);
-        $structure->setForcedCategories(isset($array['Forced_Kategories']) ? $array['Forced_Kategories'] : []);
+        if (isset($array['Used_Kategories']) && is_array($array['Used_Kategories'])) {
+            $used_categories = [];
+            foreach ($array['Used_Kategories'] as $id => $text) {
+                $used_categories[$id] = $this->convertApiToCategorie(['ID' => $id, 'Text' => $text]);
+            }
+
+            $structure->setUsedCategories($used_categories);
+        }
+        if (isset($array['Forced_Kategories']) && is_array($array['Forced_Kategories'])) {
+            $forced_categories = [];
+            foreach ($array['Forced_Kategories'] as $name => $cat_array) {
+                $forced_categories[$name] = [];
+                if (! is_array($cat_array)) {
+                    continue;
+                }
+
+                foreach ($cat_array as $id => $text) {
+                    $forced_categories[$name][$id] = $this->convertApiToCategorie(['ID' => $id, 'Text' => $text]);
+                }
+            }
+
+            $structure->setForcedCategories($forced_categories);
+        }
 
         $this->cache->add($structure);
         return $structure;
@@ -183,8 +204,6 @@ class ConverterHelper {
 
         $categorie->setUid(isset($array['ID'])?$array['ID']:-1);
         $categorie->setText(isset($array['Text'])?$array['Text']:'');
-        $categorie->setAvailable(false);
-
 
         $this->cache->add($categorie);
         return $categorie;

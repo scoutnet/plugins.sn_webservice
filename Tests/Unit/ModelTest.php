@@ -38,7 +38,6 @@ class TestCategorieModel extends TestCase {
 
         $this->assertEquals(null, $categorie->getUid());
         $this->assertEquals('', $categorie->getText());
-        $this->assertEquals(false, $categorie->getAvailable());
     }
 
     public function testSetParameter() {
@@ -47,11 +46,9 @@ class TestCategorieModel extends TestCase {
         // first set then read to see sideefects
         $categorie->setUid(23);
         $categorie->setText('demo');
-        $categorie->setAvailable(true);
 
         $this->assertEquals(23, $categorie->getUid());
         $this->assertEquals('demo', $categorie->getText());
-        $this->assertEquals(true, $categorie->getAvailable());
     }
 }
 
