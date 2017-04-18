@@ -1,20 +1,12 @@
 <?php
 
 namespace ScoutNet\Api;
-
-use ScoutNet\Api\Helpers\CacheHelper;
-use ScoutNet\Api\Helpers\ConverterHelper;
-
-use ScoutNet\Api\Models\Event;
-use ScoutNet\Api\Models\Index;
-
-use ScoutNet\Api\Helpers\AesHelper;
-use ScoutNet\Api\Helpers\JsonRPCClientHelper;
-
 /***************************************************************
+ *
  *  Copyright notice
  *
- *  (c) 2009 Stefan Horst <muetze@scoutnet.de>
+ *  (c) 2017 Stefan "Mütze" Horst <muetze@scoutnet.de>, ScoutNet
+ *
  *  All rights reserved
  *
  *  The GNU General Public License can be found at
@@ -27,6 +19,16 @@ use ScoutNet\Api\Helpers\JsonRPCClientHelper;
  *
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
+
+use ScoutNet\Api\Helpers\CacheHelper;
+use ScoutNet\Api\Helpers\ConverterHelper;
+
+use ScoutNet\Api\Models\Event;
+use ScoutNet\Api\Models\Index;
+
+use ScoutNet\Api\Helpers\AesHelper;
+use ScoutNet\Api\Helpers\JsonRPCClientHelper;
+
 class ScoutnetApi {
     const UNSECURE_START_IV = '1234567890123456';
 
