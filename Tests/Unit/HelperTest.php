@@ -8,6 +8,7 @@ use ScoutNet\Api\Helpers\CacheHelper;
 use ScoutNet\Api\Helpers\ConverterHelper;
 use ScoutNet\Api\Models\Categorie;
 use ScoutNet\Api\Models\Event;
+use ScoutNet\Api\Models\Permission;
 
 class CacheHelperTest extends TestCase {
     public function testCanBeCreated() {
@@ -50,7 +51,7 @@ class ConvertHelperTest extends TestCase {
         $expected_categorie->setText('Categorie 1');
         $expected_categorie->setAvailable(false);
 
-        $array = ['ID'=> 23, 'Text' => 'Categorie 1'];
+        $array = ['ID' => 23, 'Text' => 'Categorie 1'];
         $is_categorie = $converter->convertApiToCategorie($array);
 
         $this->assertEquals($expected_categorie, $is_categorie);
@@ -81,11 +82,41 @@ class ConvertHelperTest extends TestCase {
         $expected_categorie->setText('Categorie 1');
         $expected_categorie->setAvailable(false);
 
-        $array = ['ID'=> 23, 'Text' => 'Categorie 1'];
+        $array = ['ID' => 23, 'Text' => 'Categorie 1'];
         $converter->convertApiToCategorie($array);
         $cached_categorie = $cache->get(Categorie::class, 23);
 
         $this->assertEquals($expected_categorie, $cached_categorie);
+    }
+
+    public function testConvertPermissionValidArray() {
+        $converter = new ConverterHelper();
+
+        $expected_permission = new Permission();
+
+        $expected_permission->setState(Permission::AUTH_WRITE_ALLOWED);
+        $expected_permission->setText('Permission 1');
+        $expected_permission->setType('Type 1');
+
+        $array = ['code' => Permission::AUTH_WRITE_ALLOWED, 'text' => 'Permission 1', 'type' => 'Type 1'];
+        $is_permission = $converter->convertApiToPermission($array);
+
+        $this->assertEquals($expected_permission, $is_permission);
+    }
+
+    public function testConvertPermissionEmptyArray() {
+        $converter = new ConverterHelper();
+
+        $expected_permission = new Permission();
+
+        $expected_permission->setState(Permission::AUTH_NO_RIGHT);
+        $expected_permission->setText('');
+        $expected_permission->setType('');
+
+        $array = [];
+        $is_permission = $converter->convertApiToPermission($array);
+
+        $this->assertEquals($expected_permission, $is_permission);
     }
 }
 
@@ -106,36 +137,57 @@ class AESHelperTest extends TestCase {
         new AesHelper('1234567890');
     }
 
-    public function testEncryptionECBNoPadding() {
+    public function testWrongIvSize() {
+        $aes = new AesHelper(self::AES_KEY, AesHelper::AES_MODE_CBC, '1234567890');
+
+        $objectReflection = new \ReflectionObject($aes);
+        $iv = $objectReflection->getProperty('iv');
+        $iv->setAccessible(true);
+
+        // gets padded with 0x00
+        $this->assertEquals(['1', '2', '3', '4', '5', '6', '7', '8',
+            '9', '0', "\0", "\0", "\0", "\0", "\0", "\0"], $iv->getValue($aes));
+    }
+
+    public function testWrongCyphertextSize() {
         $aes = new AesHelper(self::AES_KEY);
 
-        $ciphertext = $aes->encrypt('dies ist ein sehr langer test mit sehr viel text');
+        $plaintext_unpadded = $aes->decrypt(base64_decode('1234')); // it gets zero padded
+        $plaintext_padded = $aes->decrypt(base64_decode('1234AAAAAAAAAAAAAAAAAA==')); // no padding, since cyphertext is correct size
 
-        $this->assertEquals('FinfuxuBJA6LrPr226ldeZwPFpGLvQqih/3CTH/6k1vqbO4VTuptsCVCKe1gwnZn', base64_encode($ciphertext));
+        $this->assertEquals($plaintext_padded, $plaintext_unpadded);
     }
 
-    public function testEncryptionCBCNoPadding() {
-        $aes = new AesHelper(self::AES_KEY, AesHelper::AES_MODE_CBC);
-
-        $ciphertext = $aes->encrypt('dies ist ein sehr langer test mit sehr viel text');
-
-        $this->assertEquals('aKRxFwuhKcfJ4kNprkJQPoMkOUDYrEOKKGe4olQqFc0YjLF2d5P1/FV+qz/K4I1R', base64_encode($ciphertext));
-    }
-
-    public function testDencryptionECBNoPadding() {
+    public function testEncryptionECBZeroPadding() {
         $aes = new AesHelper(self::AES_KEY);
 
-        $plaintext = $aes->decrypt(base64_decode('FinfuxuBJA6LrPr226ldeZwPFpGLvQqih/3CTH/6k1vqbO4VTuptsCVCKe1gwnZn'));
+        $ciphertext = $aes->encrypt('dies ist ein sehr langer test mit sehr viel text..');
 
-        $this->assertEquals('dies ist ein sehr langer test mit sehr viel text', $plaintext);
+        $this->assertEquals('FinfuxuBJA6LrPr226ldeZwPFpGLvQqih/3CTH/6k1vqbO4VTuptsCVCKe1gwnZn8LuJfNDe+7NyaIucraohtg==', base64_encode($ciphertext));
     }
 
-    public function testDencryptionCBCNoPadding() {
+    public function testEncryptionCBCZeroPadding() {
         $aes = new AesHelper(self::AES_KEY, AesHelper::AES_MODE_CBC);
 
-        $plaintext = $aes->decrypt(base64_decode('aKRxFwuhKcfJ4kNprkJQPoMkOUDYrEOKKGe4olQqFc0YjLF2d5P1/FV+qz/K4I1R'));
+        $ciphertext = $aes->encrypt('dies ist ein sehr langer test mit sehr viel text..');
 
-        $this->assertEquals('dies ist ein sehr langer test mit sehr viel text', $plaintext);
+        $this->assertEquals('aKRxFwuhKcfJ4kNprkJQPoMkOUDYrEOKKGe4olQqFc0YjLF2d5P1/FV+qz/K4I1RegSP0UpT0VskDRn0tr0W2Q==', base64_encode($ciphertext));
+    }
+
+    public function testDencryptionECBZeroPadding() {
+        $aes = new AesHelper(self::AES_KEY);
+
+        $plaintext = $aes->decrypt(base64_decode('FinfuxuBJA6LrPr226ldeZwPFpGLvQqih/3CTH/6k1vqbO4VTuptsCVCKe1gwnZn8LuJfNDe+7NyaIucraohtg=='));
+
+        $this->assertEquals('dies ist ein sehr langer test mit sehr viel text..', $plaintext);
+    }
+
+    public function testDencryptionCBCZeroPadding() {
+        $aes = new AesHelper(self::AES_KEY, AesHelper::AES_MODE_CBC);
+
+        $plaintext = $aes->decrypt(base64_decode('aKRxFwuhKcfJ4kNprkJQPoMkOUDYrEOKKGe4olQqFc0YjLF2d5P1/FV+qz/K4I1RegSP0UpT0VskDRn0tr0W2Q=='));
+
+        $this->assertEquals('dies ist ein sehr langer test mit sehr viel text..', $plaintext);
     }
 }
 
