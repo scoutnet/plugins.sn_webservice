@@ -469,7 +469,7 @@ class Event extends AbstractModel {
     }
 
     public function getShowEndDate() {
-        return !is_null($this->endDate) && $this->endDate != 0 && $this->endDate != $this->startDate;
+        return !is_null($this->endDate) && $this->endDate != $this->startDate;
     }
 
     public function getShowEndTime() {
@@ -515,7 +515,8 @@ class Event extends AbstractModel {
 
 
     public function copyProperties($event) {
-        $copyProperties = array('title', 'organizer', 'targetGroup', 'startDate', 'startTime', 'endDate', 'endTime', 'zip', 'location', 'urlText', 'url', 'description', 'structure', 'categories');
+        $copyProperties = array('title', 'organizer', 'targetGroup', 'startDate', 'startTime', 'endDate', 'endTime',
+            'zip', 'location', 'urlText', 'url', 'description', 'structure', 'stufen', 'categories');
 
         foreach ($copyProperties as $propertie) {
             $this->{$propertie} = $event->{$propertie};
