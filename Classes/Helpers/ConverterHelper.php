@@ -99,10 +99,10 @@ class ConverterHelper {
         // load event elements from cache
 
         if (isset($array['Last_Modified_By'])) {
-            $event->setChangedBy($this->cache->get(User::class, intval($array['Last_Modified_By'])));
+            $event->setChangedBy($this->cache->get(User::class, $array['Last_Modified_By']));
         }
         if (isset($array['Created_By'])) {
-            $event->setCreatedBy($this->cache->get(User::class, intval($array['Created_By'])));
+            $event->setCreatedBy($this->cache->get(User::class, $array['Created_By']));
         }
 
         if (isset($array['Kalender'])) {

@@ -328,6 +328,143 @@ class ConvertHelperTest extends TestCase {
 
         $this->assertEquals($expected_user, $is_user);
     }
+
+    public function testConvertEventValidArray() {
+        $cache = new CacheHelper();
+        $converter = new ConverterHelper($cache);
+
+        $structure = new Structure();
+        $structure->setUid(23);
+
+        $changedBy = new User();
+        $changedBy->setUid('user1');
+
+        $createdBy = new User();
+        $createdBy->setUid('user2');
+
+        $createdAt = \DateTime::createFromFormat('Y-m-d H:i:s', '2001-09-11 12:23:00');
+        $changedAt = \DateTime::createFromFormat('Y-m-d H:i:s', '2001-09-12 14:42:00');
+
+        $startDate = \DateTime::createFromFormat('Y-m-d H:i:s', '2001-09-09 00:00:00');
+        $endDate = \DateTime::createFromFormat('Y-m-d H:i:s', '2001-09-10 00:00:00');
+
+        $stufe = new Stufe();
+        $stufe->setUid(1);
+        $stufe->setBezeichnung('Stufe');
+        $stufe->setCategorieId(1);
+
+        $cat = new Categorie();
+        $cat->setUid(1);
+        $cat->setText('Stufe');
+
+
+        $expected_event = new Event();
+
+        $expected_event->setUid(23);
+        $expected_event->setTitle('demoTitle');
+        $expected_event->setOrganizer('demoOrganizer');
+        $expected_event->setTargetGroup('demoTargetGroup');
+
+        $expected_event->setStartDate($startDate);
+        $expected_event->setStartTime('10:00:00');
+        $expected_event->setEndDate($endDate);
+        $expected_event->setEndTime('23:00:00');
+        $expected_event->setZip('12345');
+        $expected_event->setLocation('demoLocation');
+        $expected_event->setUrlText('demoUrlText');
+        $expected_event->setUrl('http://demoUrl');
+        $expected_event->setDescription('demoDescription');
+        $expected_event->setChangedAt($changedAt);
+        $expected_event->setCreatedAt($createdAt);
+        $expected_event->setCategories([1 => $cat]);
+
+        // without cache this will be empty
+        $expected_event->setChangedBy(null);
+        $expected_event->setCreatedBy(null);
+        $expected_event->setStructure(null);
+        $expected_event->setStufen([]);
+
+        $array = [
+            "ID" => 23,
+            'UID' => 23,
+            "SSID" => "23",
+            'Title' => 'demoTitle',
+            'Organizer' => 'demoOrganizer',
+            'Target_Group' => 'demoTargetGroup',
+            "Start" => "1000029600",
+            "End" => "1000162800",
+            "All_Day" => false,
+            "ZIP" => "12345",
+            "Location" => "demoLocation",
+            "URL_Text" => "demoUrlText",
+            "URL" => "http://demoUrl",
+            "Description" => "demoDescription",
+            "Stufen" => [1],
+            "Keywords" => ["1" => "Stufe"],
+            "Kalender" => "23",
+            "Last_Modified_By" => "user1",
+            "Last_Modified_At" => "1000305720",
+            "Created_By" => "user2",
+            "Created_At" => "1000210980"
+        ];
+
+        // without cache set
+        $is_event = $converter->convertApiToEvent($array);
+        $cached_event = $cache->get(Event::class, 23);
+
+        $this->assertEquals($expected_event, $is_event);
+        $this->assertEquals($expected_event, $cached_event);
+
+        // cache the elements
+        $cache->add($structure);
+        $cache->add($changedBy);
+        $cache->add($createdBy);
+        $cache->add($stufe);
+        $cache->add($cat);
+
+        $expected_event->setChangedBy($changedBy);
+        $expected_event->setCreatedBy($createdBy);
+        $expected_event->setStructure($structure);
+        $expected_event->setStufen([$stufe]);
+
+        // with cache set
+        $is_event = $converter->convertApiToEvent($array);
+        $cached_event = $cache->get(Event::class, 23);
+
+        $this->assertEquals($expected_event, $is_event);
+        $this->assertEquals($expected_event, $cached_event);
+    }
+
+    public function testConvertEventEmptyArray() {
+        $converter = new ConverterHelper();
+
+        $expected_event = new Event();
+
+        $expected_event->setUid(-1);
+        $expected_event->setTitle(null);
+        $expected_event->setOrganizer(null);
+        $expected_event->setTargetGroup(null);
+
+        $expected_event->setStartDate(null);
+        $expected_event->setStartTime(null);
+        $expected_event->setEndDate(null);
+        $expected_event->setEndTime(null);
+        $expected_event->setZip(null);
+        $expected_event->setLocation(null);
+        $expected_event->setUrlText(null);
+        $expected_event->setUrl(null);
+        $expected_event->setDescription(null);
+        $expected_event->setChangedAt(null);
+        $expected_event->setCreatedAt(null);
+        $expected_event->setChangedBy(null);
+        $expected_event->setCreatedBy(null);
+        $expected_event->setStructure(null);
+
+        $array = [];
+        $is_event = $converter->convertApiToEvent($array);
+
+        $this->assertEquals($expected_event, $is_event);
+    }
 }
 
 
