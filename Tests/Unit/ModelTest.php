@@ -327,31 +327,55 @@ class TestIndexModel extends TestCase {
     public function testDefaultParameters() {
         $index = new Index();
 
-        // TODO: make to object
-        /*
-        $this->assertEquals(-1, $index->getUid());
-        $this->assertEquals('', $index->getTitle());
-        $this->assertEquals('', $index->getOrganizer());
-        $this->assertEquals('', $index->getTargetGroup());
-        $this->assertEquals(null, $index->getStartDate());
-        $this->assertEquals(null, $index->getStartTime());
-        $this->assertEquals(null, $index->getEndDate());
-        $this->assertEquals(null, $index->getEndTime());
-        $this->assertEquals(null, $index->getZip());
-        $this->assertEquals(null, $index->getLocation());
-        $this->assertEquals(null, $index->getUrlText());
+        $this->assertEquals(null, $index->getUid());
+        $this->assertEquals(null, $index->getNumber());
+        $this->assertEquals(null, $index->getEbene());
+        $this->assertEquals(null, $index->getName());
+        $this->assertEquals(null, $index->getOrt());
+        $this->assertEquals(null, $index->getPlz());
         $this->assertEquals(null, $index->getUrl());
-        $this->assertEquals(null, $index->getDescription());
-        $this->assertEquals([], $index->getStufen());
-        $this->assertEquals([], $index->getCategories());
-        $this->assertEquals(null, $index->getStructure());
-        $this->assertEquals(null, $index->getChangedBy());
-        $this->assertEquals(null, $index->getCreatedBy());
-        $this->assertEquals(null, $index->getCreatedAt());
-        $this->assertEquals(null, $index->getChangedAt());
-        */
-        // Stop here and mark this test as incomplete.
-        $this->markTestIncomplete('This test has not been implemented yet.');
+        $this->assertEquals(null, $index->getLatitude());
+        $this->assertEquals(null, $index->getLongitude());
+        $this->assertEquals(null, $index->getParentId());
+        $this->assertEquals([], $index->getChildren());
+    }
+
+    public function testSetParameter() {
+        $child1 = new Index();
+        $child1->setUid(1);
+
+        $child2 = new Index();
+        $child2->setUid(2);
+
+        $index = new Index();
+
+        $index->setUid(23);
+        $index->setNumber('demoNumber');
+        $index->setEbene("demoEbene");
+        $index->setName('demoName');
+        $index->setOrt("demoOrt");
+        $index->setPlz('12345');
+        $index->setUrl('http://demoUrl');
+        $index->setLatitude(50.00);
+        $index->setLongitude(6.00);
+        $index->setParentId(42);
+        $index->setChildren([$child1]);
+
+        $this->assertEquals(23, $index->getUid());
+        $this->assertEquals('demoNumber', $index->getNumber());
+        $this->assertEquals("demoEbene", $index->getEbene());
+        $this->assertEquals('demoName', $index->getName());
+        $this->assertEquals("demoOrt", $index->getOrt());
+        $this->assertEquals('12345', $index->getPlz());
+        $this->assertEquals('http://demoUrl', $index->getUrl());
+        $this->assertEquals(50.0, $index->getLatitude());
+        $this->assertEquals(6.0, $index->getLongitude());
+        $this->assertEquals(42, $index->getParentId());
+        $this->assertEquals([$child1], $index->getChildren());
+
+        $index->addChild($child2);
+
+        $this->assertEquals([$child1, $child2], $index->getChildren());
     }
 }
 

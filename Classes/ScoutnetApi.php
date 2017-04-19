@@ -172,13 +172,12 @@ class ScoutnetApi {
         foreach ($this->load_data_from_scoutnet($ids, array('index' => $filter)) as $record) {
 
             if ($record['type'] === 'index') {
-                $index = new Index($record['content']);
-//				$index['parent'] = $indexes[$index['parent_id']];
+                $index = $this->converter->convertApiToIndex($record['content']);
 
-                if (isset($indexes[$index['parent_id']])) $indexes[$index['parent_id']]->addChild($index);
-                $indexes[$index['id']] = $index;
+                $indexes[$index->getUid()] = $index;
             }
         }
+
         return $indexes;
     }
 
@@ -194,6 +193,10 @@ class ScoutnetApi {
         return $this->get_events_for_global_id_with_filter($ids, array('event_ids' => $event_ids));
     }
 
+    /**
+     * @param int[]|int $ids SSIDs to load Kalenders for
+     * @return \ScoutNet\Api\Models\Structure[]
+     */
     public function get_kalender_by_global_id($ids) {
         $kalenders = array();
         foreach ($this->load_data_from_scoutnet($ids, array('kalenders' => array())) as $record) {

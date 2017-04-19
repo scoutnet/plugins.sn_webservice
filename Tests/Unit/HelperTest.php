@@ -24,6 +24,7 @@ use PHPUnit\Framework\TestCase;
 use ScoutNet\Api\Helpers\AesHelper;
 use ScoutNet\Api\Helpers\CacheHelper;
 use ScoutNet\Api\Helpers\ConverterHelper;
+use ScoutNet\Api\Helpers\JsonRPCClientHelper;
 use ScoutNet\Api\Models\Categorie;
 use ScoutNet\Api\Models\Event;
 use ScoutNet\Api\Models\Permission;
@@ -465,6 +466,90 @@ class ConvertHelperTest extends TestCase {
 
         $this->assertEquals($expected_event, $is_event);
     }
+
+    public function testConvertEventToApi() {
+        $cache = new CacheHelper();
+        $converter = new ConverterHelper($cache);
+
+        $structure = new Structure();
+        $structure->setUid(23);
+
+        $changedBy = new User();
+        $changedBy->setUid('user1');
+
+        $createdBy = new User();
+        $createdBy->setUid('user2');
+
+        $createdAt = \DateTime::createFromFormat('Y-m-d H:i:s', '2001-09-11 12:23:00');
+        $changedAt = \DateTime::createFromFormat('Y-m-d H:i:s', '2001-09-12 14:42:00');
+
+        $startDate = \DateTime::createFromFormat('Y-m-d H:i:s', '2001-09-09 00:00:00');
+        $endDate = \DateTime::createFromFormat('Y-m-d H:i:s', '2001-09-10 00:00:00');
+
+        $stufe = new Stufe();
+        $stufe->setUid(1);
+        $stufe->setBezeichnung('Stufe');
+        $stufe->setCategorieId(1);
+
+        $cat = new Categorie();
+        $cat->setUid(1);
+        $cat->setText('Stufe');
+
+
+        $event = new Event();
+
+        $event->setUid(23);
+        $event->setTitle('demoTitle');
+        $event->setOrganizer('demoOrganizer');
+        $event->setTargetGroup('demoTargetGroup');
+
+        $event->setStartDate($startDate);
+        $event->setStartTime('10:00:00');
+        $event->setEndDate($endDate);
+        $event->setEndTime('23:00:00');
+        $event->setZip('12345');
+        $event->setLocation('demoLocation');
+        $event->setUrlText('demoUrlText');
+        $event->setUrl('http://demoUrl');
+        $event->setDescription('demoDescription');
+        $event->setChangedAt($changedAt);
+        $event->setCreatedAt($createdAt);
+        $event->setCategories([1 => $cat]);
+        $event->setChangedBy($changedBy);
+        $event->setCreatedBy($createdBy);
+        $event->setStructure($structure);
+        $event->setStufen([$stufe]);
+
+
+        $expected_array = [
+            "ID" => 23,
+            'UID' => 23,
+            "SSID" => 23,
+            'Title' => 'demoTitle',
+            'Organizer' => 'demoOrganizer',
+            'Target_Group' => 'demoTargetGroup',
+            "Start" => 1000029600,
+            "End" => 1000162800,
+            "All_Day" => false,
+            "ZIP" => "12345",
+            "Location" => "demoLocation",
+            "URL_Text" => "demoUrlText",
+            "URL" => "http://demoUrl",
+            "Description" => "demoDescription",
+            "Stufen" => [1],
+            "Keywords" => ["1" => "Stufe"],
+            "Kalender" => 23,
+            "Last_Modified_By" => "user1",
+            "Last_Modified_At" => 1000305720,
+            "Created_By" => "user2",
+            "Created_At" => 1000210980
+        ];
+
+        // without cache set
+        $is_array = $converter->convertEventToApi($event);
+        $this->assertEquals($expected_array, $is_array);
+    }
+
 }
 
 
@@ -535,6 +620,12 @@ class AESHelperTest extends TestCase {
         $plaintext = $aes->decrypt(base64_decode('aKRxFwuhKcfJ4kNprkJQPoMkOUDYrEOKKGe4olQqFc0YjLF2d5P1/FV+qz/K4I1RegSP0UpT0VskDRn0tr0W2Q=='));
 
         $this->assertEquals('dies ist ein sehr langer test mit sehr viel text..', $plaintext);
+    }
+}
+
+class JsonRPCClientHelperTest extends TestCase {
+    public function testCanBeCreated() {
+        $this->assertInstanceOf(JsonRPCClientHelper::class, new JsonRPCClientHelper(''));
     }
 }
 

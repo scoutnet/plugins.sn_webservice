@@ -23,6 +23,7 @@ namespace ScoutNet\Api\Helpers;
 
 use ScoutNet\Api\Models\Categorie;
 use ScoutNet\Api\Models\Event;
+use ScoutNet\Api\Models\Index;
 use ScoutNet\Api\Models\Permission;
 use ScoutNet\Api\Models\Structure;
 use ScoutNet\Api\Models\Stufe;
@@ -43,8 +44,40 @@ class ConverterHelper {
     }
 
 
-    public function convertEventToApi($event) {
+    public function convertEventToApi(Event $event) {
+        $array = [
+            'ID' => $event->getUid(),
+            'UID' => $event->getUid(),
+            "SSID" => $event->getStructure()->getUid(),
+            'Title' => $event->getTitle(),
+            'Organizer' => $event->getOrganizer(),
+            'Target_Group' => $event->getTargetGroup(),
+            "Start" => $event->getStartTimestamp()->getTimestamp(),
+            "End" => $event->getEndTimestamp()->getTimestamp(),
+            "All_Day" => $event->getAllDayEvent(),
+            "ZIP" => $event->getZip(),
+            "Location" => $event->getLocation(),
+            "URL_Text" => $event->getUrlText(),
+            "URL" => $event->getUrl(),
+            "Description" => $event->getDescription(),
+            "Stufen" => [],
+            "Keywords" => [],
+            "Kalender" => $event->getStructure()->getUid(),
+            "Last_Modified_By" => $event->getChangedBy()->getUid(),
+            "Last_Modified_At" => $event->getChangedAt()->getTimestamp(),
+            "Created_By" => $event->getCreatedBy()->getUid(),
+            "Created_At" => $event->getCreatedAt()->getTimestamp()
+        ];
 
+        foreach ($event->getStufen() as $stufe) {
+            $array['Stufen'][] = $stufe->getUid();
+        }
+
+        foreach ($event->getCategories() as $category) {
+            $array['Keywords'][$category->getUid()] = $category->getText();
+        }
+
+        return $array;
     }
 
     public function convertApiToEvent($array) {
@@ -207,5 +240,31 @@ class ConverterHelper {
 
         $this->cache->add($categorie);
         return $categorie;
+    }
+
+    public function convertApiToIndex($array) {
+        $index = new Index();
+
+        $index->setUid(isset($array['id'])?$array['id']:-1);
+        $index->setNumber(isset($array['number'])?$array['number']:'');
+        $index->setEbene(isset($array['ebene'])?$array['ebene']:'');
+        $index->setName(isset($array['name'])?$array['name']:'');
+        $index->setOrt(isset($array['ort'])?$array['ort']:'');
+        $index->setPlz(isset($array['plz'])?$array['plz']:'');
+        $index->setUrl(isset($array['url'])?$array['url']:'');
+        $index->setLatitude(isset($array['latitude'])?$array['latitude']:0.0);
+        $index->setLongitude(isset($array['longitude'])?$array['longitude']:0.0);
+        $index->setParentId(isset($array['parent_id'])?$array['parent_id']:null);
+
+        // this only works, because the api returns the children after the parents
+        /**
+         * @var \ScoutNet\Api\Models\Index $parent
+         */
+        if ($parent = $this->cache->get(Index::class, $index->getParentId())) {
+            $parent->addChild($index);
+        }
+
+        $this->cache->add($index);
+        return $index;
     }
 }

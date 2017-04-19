@@ -34,7 +34,7 @@ class CacheHelper {
      * @param AbstractModel $object
      * @return AbstractModel|false
      */
-    public function add(AbstractModel $object) {
+    public function add(AbstractModel &$object) {
         $class = get_class($object);
         $id = $object->getUid();
 

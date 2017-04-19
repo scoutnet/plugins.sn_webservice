@@ -101,12 +101,12 @@ class Event extends AbstractModel {
     protected $description;
 
     /**
-     * @var \ScoutNet\ShScoutnetWebservice\Domain\Model\Stufe[]
+     * @var \ScoutNet\Api\Models\Stufe[]
      */
     protected $stufen = array();
 
     /**
-     * @var \ScoutNet\ShScoutnetWebservice\Domain\Model\Categorie[]
+     * @var \ScoutNet\Api\Models\Categorie[]
      */
     protected $categories = array();
 
@@ -386,7 +386,7 @@ class Event extends AbstractModel {
     }
 
     /**
-     * @return array
+     * @return \ScoutNet\Api\Models\Categorie[]
      */
     public function getCategories() {
         return $this->categories;
@@ -469,7 +469,7 @@ class Event extends AbstractModel {
     }
 
     public function getShowEndDate() {
-        return !is_null($this->endDate) && $this->endDate != $this->startDate;
+        return !is_null($this->endDate) && $this->endDate !== $this->startDate;
     }
 
     public function getShowEndTime() {
@@ -489,7 +489,7 @@ class Event extends AbstractModel {
     }
 
     /**
-     * @return mixed
+     * @return \ScoutNet\Api\Models\Stufe[]
      */
     public function getStufen() {
         return $this->stufen;
