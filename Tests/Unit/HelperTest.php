@@ -27,6 +27,7 @@ use ScoutNet\Api\Helpers\ConverterHelper;
 use ScoutNet\Api\Helpers\JsonRPCClientHelper;
 use ScoutNet\Api\Models\Categorie;
 use ScoutNet\Api\Models\Event;
+use ScoutNet\Api\Models\Index;
 use ScoutNet\Api\Models\Permission;
 use ScoutNet\Api\Models\Structure;
 use ScoutNet\Api\Models\Stufe;
@@ -550,6 +551,76 @@ class ConvertHelperTest extends TestCase {
         $this->assertEquals($expected_array, $is_array);
     }
 
+    public function testConverIndexValidArray() {
+        $cache = new CacheHelper();
+        $converter = new ConverterHelper($cache);
+
+        $parent = new Index();
+        $parent->setUid(42);
+        $parent->setChildren([]);
+
+        // check if parent get child set correct
+        $cache->add($parent);
+
+        $expected_index = new Index();
+
+        $expected_index->setUid(23);
+        $expected_index->setNumber('10/10/10');
+        $expected_index->setEbene('demoEbene');
+        $expected_index->setName('demoName');
+        $expected_index->setOrt("demoOrt");
+        $expected_index->setPlz('12345');
+        $expected_index->setUrl('http://demoUrl');
+        $expected_index->setLatitude(50.0);
+        $expected_index->setLongitude(6.0);
+        $expected_index->setParentId(42);
+        $expected_index->setChildren([]);
+
+        $array = [
+            'id' => 23,
+            'number' => '10/10/10',
+            'ebene' => 'demoEbene',
+            'name' => 'demoName',
+            'ort' => 'demoOrt',
+            'plz' => '12345',
+            'url' => 'http://demoUrl',
+            'latitude' => 50.0,
+            'longitude' => 6.0,
+            'parent_id' => 42,
+        ];
+
+        $is_index = $converter->convertApiToIndex($array);
+        $cached_index = $cache->get(Index::class, 23);
+
+        $this->assertEquals($expected_index, $is_index);
+        $this->assertEquals($expected_index, $cached_index);
+
+        // parent is set
+        $this->assertEquals([$is_index], $parent->getChildren());
+    }
+
+    public function testConvertIndexEmptyArray() {
+        $converter = new ConverterHelper();
+
+        $expected_index = new Index();
+
+        $expected_index->setUid(-1);
+        $expected_index->setNumber('');
+        $expected_index->setEbene('');
+        $expected_index->setName('');
+        $expected_index->setOrt("");
+        $expected_index->setPlz('');
+        $expected_index->setUrl('');
+        $expected_index->setLatitude(0.0);
+        $expected_index->setLongitude(0.0);
+        $expected_index->setParentId(null);
+        $expected_index->setChildren([]);
+
+        $array = [];
+        $is_index = $converter->convertApiToIndex($array);
+
+        $this->assertEquals($expected_index, $is_index);
+    }
 }
 
 
