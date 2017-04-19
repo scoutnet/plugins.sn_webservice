@@ -28,6 +28,8 @@ use ScoutNet\Api\Models\Categorie;
 use ScoutNet\Api\Models\Event;
 use ScoutNet\Api\Models\Permission;
 use ScoutNet\Api\Models\Structure;
+use ScoutNet\Api\Models\Stufe;
+use ScoutNet\Api\Models\User;
 
 class CacheHelperTest extends TestCase {
     public function testCanBeCreated() {
@@ -154,67 +156,6 @@ class ConvertHelperTest extends TestCase {
         $structure->setUsedCategories([1 => $cat1, 2 => $cat2]);
         $structure->setForcedCategories(['section1' => [3 => $cat3], 'section2' => [4 => $cat4]]);
 
-        /*
-        "Used_Kategories":{
-            "858":"AGMedien",
-            "4":"Aktion",
-            "882":"Bausteinwochenende",
-            "7":"Bezirksleitung",
-            "12":"Di\u00f6zesanleitung",
-            "3":"Fahrt\/Lager",
-            "105":"Freunde und F\u00f6rderer",
-            "5":"Gemeinde",
-            "11":"Gremium\/AK",
-            "182":"Gruppenstunde",
-            "810":"Jamb",
-            "43":"Leiterrunde",
-            "125":"Ranger & Rover",
-            "59":"Ranger\/Rover",
-            "10":"Schulung\/Kurs",
-            "2":"Stamm",
-            "9":"Stufenkonferenz",
-            "881":"Teamer Starter Training",
-            "38":"Truppstunde",
-            "6":"Vorst\u00e4nde"
-        },
-        "Forced_Kategories":{
-            "sections\/leaders":{
-                "886":"Vorgruppe",
-                "16":"W\u00f6lflinge",
-                "17":"Jungpfadfinder",
-                "18":"Pfadfinder",
-                "19":"Rover",
-                "20":"Leiter"
-            },
-            "DPSG-Ausbildung":{
-                "476":"Einstieg Schritt 1",
-                "179":"Einstieg Schritt 2",
-                "331":"Baustein 1 a",
-                "330":"Baustein 1 b",
-                "477":"Baustein 1 c",
-                "865":"Baustein 1 d",
-                "478":"Baustein 2 a",
-                "479":"Baustein 2 b",
-                "333":"Baustein 2 c",
-                "480":"Baustein 2 d",
-                "820":"Baustein 2 e",
-                "332":"Baustein 3 a",
-                "328":"Baustein 3 b",
-                "481":"Baustein 3 c",
-                "483":"Baustein 3 e",
-                "484":"Baustein 3 f",
-                "485":"Woodbadgekurs",
-                "36":"Ausbildungstagung",
-                "486":"Modulleitungstraining (MLT)",
-                "701":"Teamer-Training I",
-                "702":"Teamer-Training II",
-                "489":"Assistent Leader Training (ALT)",
-                "897":"Fort-\/Weiterbildung"
-            }
-        }
-
-        */
-
         $array = [
             'ID' => 23,
             'Ebene' => 'demoEbene',
@@ -229,6 +170,44 @@ class ConvertHelperTest extends TestCase {
             'Forced_Kategories' => [
                 'section1' => [3 => 'cat3'],
                 'section2' => [4 => 'cat4']
+            ]
+        ];
+        $is_structure = $converter->convertApiToStructure($array);
+        $cached_structure = $cache->get(Structure::class, 23);
+
+        $this->assertEquals($structure, $is_structure);
+        $this->assertEquals($structure, $cached_structure);
+    }
+
+    public function testConvertStructureValidArrayNoCategories() {
+        $cache = new CacheHelper();
+        $converter = new ConverterHelper($cache);
+
+        $structure = new Structure();
+
+        $structure->setUid(23);
+
+        $structure->setEbene('demoEbene');
+        $structure->setName('demoName');
+        $structure->setVerband('demoVerband');
+        $structure->setIdent('demoIdent');
+        $structure->setEbeneId(23);
+
+        $structure->setUsedCategories([]);
+        $structure->setForcedCategories(['section1' => [], 'section2' => []]);
+
+        $array = [
+            'ID' => 23,
+            'Ebene' => 'demoEbene',
+            'Name' => 'demoName',
+            'Verband' => 'demoVerband',
+            'Ident' => 'demoIdent',
+            'Ebene_Id' => 23,
+            'Used_Kategories' => [
+            ],
+            'Forced_Kategories' => [
+                'section1' => '',
+                'section2' => ''
             ]
         ];
         $is_structure = $converter->convertApiToStructure($array);
@@ -256,6 +235,98 @@ class ConvertHelperTest extends TestCase {
         $is_structure = $converter->convertApiToStructure($array);
 
         $this->assertEquals($structure, $is_structure);
+    }
+
+    public function testConvertStufeValidArray() {
+        $cache = new CacheHelper();
+        $converter = new ConverterHelper($cache);
+
+        $expected_stufe = new Stufe();
+
+        $expected_stufe->setUid(23);
+        $expected_stufe->setVerband('demoVerband');
+        $expected_stufe->setBezeichnung('Stufe 1');
+        $expected_stufe->setFarbe('#ffeeff');
+        $expected_stufe->setStartalter(9);
+        $expected_stufe->setEndalter(11);
+        $expected_stufe->setCategorieId(1);
+
+        $array = [
+            'id' => 23,
+            'verband' => 'demoVerband',
+            'bezeichnung' => 'Stufe 1',
+            'farbe' => '#ffeeff',
+            'startalter' => 9,
+            'endalter' => 11,
+            'Keywords_ID' => 1,
+        ];
+        $is_stufe = $converter->convertApiToStufe($array);
+        $cached_stufe = $cache->get(Stufe::class, 23);
+
+        $this->assertEquals($expected_stufe, $is_stufe);
+        $this->assertEquals($expected_stufe, $cached_stufe);
+    }
+
+    public function testConvertStufeEmptyArray() {
+        $converter = new ConverterHelper();
+
+        $expected_stufe = new Stufe();
+
+        $expected_stufe->setUid(-1);
+        $expected_stufe->setVerband('');
+        $expected_stufe->setBezeichnung('');
+        $expected_stufe->setFarbe('');
+        $expected_stufe->setStartalter(-1);
+        $expected_stufe->setEndalter(-1);
+        $expected_stufe->setCategorieId(-1);
+
+        $array = [];
+        $is_stufe = $converter->convertApiToStufe($array);
+
+        $this->assertEquals($expected_stufe, $is_stufe);
+    }
+
+    public function testConvertUserValidArray() {
+        $cache = new CacheHelper();
+        $converter = new ConverterHelper($cache);
+
+        $expected_user = new User();
+
+        $expected_user->setUid('demoUsername');
+        $expected_user->setUsername('demoUsername');
+        $expected_user->setFirstName('demoFirstName');
+        $expected_user->setLastName('demoLastName');
+        $expected_user->setSex(User::SEX_FEMALE);
+
+        $array = [
+            'userid' => 'demoUsername',
+            'firstname' => 'demoFirstName',
+            'surname' => 'demoLastName',
+            'sex' => 'w',
+        ];
+
+        $is_user = $converter->convertApiToUser($array);
+        $cached_user = $cache->get(User::class, 'demoUsername');
+
+        $this->assertEquals($expected_user, $is_user);
+        $this->assertEquals($expected_user, $cached_user);
+    }
+
+    public function testConvertUserEmptyArray() {
+        $converter = new ConverterHelper();
+
+        $expected_user = new User();
+
+        $expected_user->setUid(-1);
+        $expected_user->setUsername(null);
+        $expected_user->setFirstName(null);
+        $expected_user->setLastName(null);
+        $expected_user->setSex(null);
+
+        $array = [];
+        $is_user = $converter->convertApiToUser($array);
+
+        $this->assertEquals($expected_user, $is_user);
     }
 }
 
