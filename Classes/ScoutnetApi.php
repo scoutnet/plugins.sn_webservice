@@ -1,6 +1,7 @@
 <?php
 
 namespace ScoutNet\Api;
+
 /***************************************************************
  *
  *  Copyright notice
@@ -37,6 +38,7 @@ class ScoutnetApi {
     const ERROR_AUTH_EMPTY = 1491935505;
 
     const ERROR_MISSING_API_KEY = 1491938183;
+    const ERROR_MISSING_API_USER = 1492695814;
 
     var $SN = null;
 
@@ -45,6 +47,9 @@ class ScoutnetApi {
     private $provider = null;
     private $aes_key = null;
     private $aes_iv = null;
+
+    private $api_user = null;
+    private $api_key = null;
 
     private $login_url = null;
 
@@ -115,6 +120,20 @@ class ScoutnetApi {
         }
         if (trim($this->provider) == '') {
             throw new ScoutnetException_MissingConfVar('provider');
+        }
+    }
+
+    public function loginUser($api_user, $api_key) {
+        $this->api_user = $api_user;
+        $this->api_key = $api_key;
+    }
+
+    private function _check_login() {
+        if (trim($this->api_user) == '') {
+            throw new ScoutnetException_MissingConfVar('api_user', self::ERROR_MISSING_API_USER);
+        }
+        if (trim($this->api_key) == '' || strlen($this->api_key) != 32) {
+            throw new ScoutnetException_MissingConfVar('api_key', self::ERROR_MISSING_API_KEY);
         }
     }
 
@@ -194,6 +213,7 @@ class ScoutnetApi {
 
     /**
      * @param int[]|int $ids SSIDs to load Kalenders for
+     *
      * @return \ScoutNet\Api\Models\Structure[]
      */
     public function get_kalender_by_global_id($ids) {
@@ -210,52 +230,47 @@ class ScoutnetApi {
     /**
      * Use this function to write event to scoutnet
      *
-     * @param \ScoutNet\Api\Models\Event  $data    Event Object
-     * @param string $user    User to upload Object for
-     * @param string $api_key Api Key of User
+     * @param Event  $event   Event Object
      *
      * @return mixed
      */
-    public function write_event(\ScoutNet\Api\Models\Event $data, $user, $api_key) {
+    public function write_event(Event $event) {
         $type = 'event';
-        $id = $data->getUid();
+        $id = $event->getUid();
+        $apiData = $this->converter->convertEventToApi($event);
 
-        return $this->write_object($type, $id, $data, $user, $api_key);
+        return $this->write_object($type, $id, $apiData);
     }
 
     /**
      * @param string $type    Type of Object to write; The API only works with events
-     * @param int    $id      id of object to update or -1 for new object
+     * @param int    $id      ID of object to update/ create
      * @param array  $data    Object data as Array
-     * @param string $user    User to upload Object for
-     * @param string $api_key Api Key of User
      *
      * @return mixed
      */
-    public function write_object($type, $id, $data, $user, $api_key) {
-        $auth = $this->_generate_auth($api_key, $type . $id . serialize($data) . $user);
+    public function write_object($type, $id, $data) {
+        $auth = $this->_generate_auth($type . $id . serialize($data) . $this->api_user);
 
-        return $this->SN->setData($type, $id, $data, $user, $auth);
+        return $this->SN->setData($type, $id, $data, $this->api_user, $auth);
     }
 
-    public function delete_event($ssid, $id, $user, $api_key) {
+    public function delete_event($ssid, $id) {
         $type = 'event';
-        $auth = $this->_generate_auth($api_key, $type . $ssid . $id . $user);
+        $auth = $this->_generate_auth($type . $ssid . $id . $this->api_user);
 
-        return $this->SN->deleteObject($type, $ssid, $id, $user, $auth);
+        return $this->SN->deleteObject($type, $ssid, $id, $this->api_user, $auth);
     }
 
     /**
      * This Function returns if a given user has write permissions on a specified Kalendar.
      *
      * @param int    $ssid    SSID of Calendar
-     * @param string $user    User to request Rights for
-     * @param string $api_key Api Key of User
      *
      * @return int State of Write Rights
      */
-    public function has_write_permission_to_calender($ssid, $user, $api_key) {
-        $permission = $this->get_permissions_of_type_for_structure('event', $ssid, $user, $api_key);
+    public function has_write_permission_to_calender($ssid) {
+        $permission = $this->get_permissions_of_type_for_structure('event', $ssid);
 
         return $permission->getState();
     }
@@ -263,15 +278,13 @@ class ScoutnetApi {
     /**
      * @param string $type    Type of Permissions
      * @param int    $ssid    SSID of Structure
-     * @param string $user    User to request Rights for
-     * @param string $api_key Api Key of User
      *
      * @return \ScoutNet\Api\Models\Permission
      */
-    public function get_permissions_of_type_for_structure($type, $ssid, $user, $api_key) {
-        $auth = $this->_generate_auth($api_key, $type . $ssid . $user);
+    public function get_permissions_of_type_for_structure($type, $ssid) {
+        $auth = $this->_generate_auth( $type . $ssid . $this->api_user);
 
-        $right = $this->SN->checkPermission($type, $ssid, $user, $auth);
+        $right = $this->SN->checkPermission($type, $ssid, $this->api_user, $auth);
         $right['type'] = $type;
 
         $permission = $this->converter->convertApiToPermission($right);
@@ -282,15 +295,13 @@ class ScoutnetApi {
      * Request Write Permission for a specified User
      *
      * @param int    $ssid    SSID of Structure
-     * @param string $user    User to request Right for
-     * @param string $api_key Api Key of User
      *
      * @return mixed
      */
-    public function request_write_permissions_for_calender($ssid, $user, $api_key) {
+    public function request_write_permissions_for_calender($ssid) {
         $type = 'event';
 
-        return $this->request_permissions_of_type_for_structure($type, $ssid, $user, $api_key);
+        return $this->request_permissions_of_type_for_structure($type, $ssid);
     }
 
     /**
@@ -298,15 +309,13 @@ class ScoutnetApi {
      *
      * @param string $type    Type of Permission
      * @param int    $ssid    SSID of Structure
-     * @param string $user    User to request Right for
-     * @param string $api_key Api Key of User
      *
      * @return mixed
      */
-    public function request_permissions_of_type_for_structure($type, $ssid, $user, $api_key) {
-        $auth = $this->_generate_auth($api_key, $type . $ssid . $user);
+    public function request_permissions_of_type_for_structure($type, $ssid) {
+        $auth = $this->_generate_auth($type . $ssid . $this->api_user);
 
-        return $this->SN->requestPermission($type, $ssid, $user, $auth);
+        return $this->SN->requestPermission($type, $ssid, $this->api_user, $auth);
     }
 
 
@@ -403,19 +412,15 @@ class ScoutnetApi {
     /**
      * This function generates the Auth hash to verify request
      *
-     * @param string $api_key    Api Key of User
      * @param string $checkValue Value to sign with Api Key
      *
      * @return string
      * @throws ScoutnetException_MissingConfVar
      */
-    private function _generate_auth($api_key, $checkValue) {
+    private function _generate_auth($checkValue) {
+        $this->_check_login();
 
-        // check if api key is valid aes key
-        if ($api_key == '' || strlen($api_key) != 32)
-            throw new ScoutnetException_MissingConfVar('api_key', self::ERROR_MISSING_API_KEY);
-
-        $aes = new AESHelper($api_key, "CBC", self::UNSECURE_START_IV);
+        $aes = new AESHelper($this->api_key, "CBC", self::UNSECURE_START_IV);
 
         $auth = array(
             'sha1' => sha1($checkValue),

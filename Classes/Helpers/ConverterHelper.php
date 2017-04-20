@@ -46,35 +46,43 @@ class ConverterHelper {
 
     public function convertEventToApi(Event $event) {
         $array = [
-            'ID' => $event->getUid(),
-            'UID' => $event->getUid(),
-            "SSID" => $event->getStructure()->getUid(),
+            'ID' => $event->getUid() !== null?$event->getUid():-1,
+            'SSID' => $event->getStructure()->getUid(),
             'Title' => $event->getTitle(),
             'Organizer' => $event->getOrganizer(),
             'Target_Group' => $event->getTargetGroup(),
-            "Start" => $event->getStartTimestamp()->getTimestamp(),
-            "End" => $event->getEndTimestamp()->getTimestamp(),
-            "All_Day" => $event->getAllDayEvent(),
-            "ZIP" => $event->getZip(),
-            "Location" => $event->getLocation(),
-            "URL_Text" => $event->getUrlText(),
-            "URL" => $event->getUrl(),
-            "Description" => $event->getDescription(),
-            "Stufen" => [],
-            "Keywords" => [],
-            "Kalender" => $event->getStructure()->getUid(),
-            "Last_Modified_By" => $event->getChangedBy()->getUid(),
-            "Last_Modified_At" => $event->getChangedAt()->getTimestamp(),
-            "Created_By" => $event->getCreatedBy()->getUid(),
-            "Created_At" => $event->getCreatedAt()->getTimestamp()
+            'Start' => $event->getStartTimestamp() instanceof \DateTime?\DateTime::createFromFormat('d.m.Y H:i:s T',$event->getStartTimestamp()->format('d.m.Y H:i:s').' UTC')->format('U'):'',
+            'End' => $event->getEndTimestamp() instanceof \DateTime?\DateTime::createFromFormat('d.m.Y H:i:s T',$event->getEndTimestamp()->format('d.m.Y H:i:s').' UTC')->format('U'):'',
+            'All_Day' => $event->getAllDayEvent(),
+            'ZIP' => $event->getZip(),
+            'Location' => $event->getLocation(),
+            'URL_Text' => $event->getUrlText(),
+            'URL' => $event->getUrl(),
+            'Description' => $event->getDescription(),
+            'Stufen' => [],
+            'Keywords' => [],
+            'Kalender' => $event->getStructure()->getUid(),
+            'Last_Modified_By' => $event->getChangedBy()->getUid(),
+            'Last_Modified_At' => $event->getChangedAt()->getTimestamp(),
+            'Created_By' => $event->getCreatedBy()->getUid(),
+            'Created_At' => $event->getCreatedAt()->getTimestamp()
         ];
 
         foreach ($event->getStufen() as $stufe) {
             $array['Stufen'][] = $stufe->getUid();
         }
 
+        $customKeywords = array();
         foreach ($event->getCategories() as $category) {
-            $array['Keywords'][$category->getUid()] = $category->getText();
+            if ($category->getUid() == null) {
+                $customKeywords[] = $category->getText();
+            } else {
+                $array['Keywords'][$category->getUid()] = $category->getText();
+            }
+        }
+
+        if (count($customKeywords) > 0) {
+            $array['Custom_Keywords'] = $customKeywords;
         }
 
         return $array;

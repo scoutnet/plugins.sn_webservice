@@ -525,13 +525,12 @@ namespace ScoutNet\Api\Tests {
 
             $expected_array = [
                 "ID" => 23,
-                'UID' => 23,
                 "SSID" => 23,
                 'Title' => 'demoTitle',
                 'Organizer' => 'demoOrganizer',
                 'Target_Group' => 'demoTargetGroup',
-                "Start" => 1000029600,
-                "End" => 1000162800,
+                "Start" => '1000029600',
+                "End" => '1000162800',
                 "All_Day" => false,
                 "ZIP" => "12345",
                 "Location" => "demoLocation",

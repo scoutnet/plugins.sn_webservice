@@ -30,6 +30,7 @@ use ScoutNet\Api\Models\Permission;
 use ScoutNet\Api\Models\Structure;
 use ScoutNet\Api\Models\User;
 use ScoutNet\Api\ScoutnetApi;
+use ScoutNet\Api\ScoutnetException_MissingConfVar;
 
 /**
  * @covers \ScoutNet\Api\ScoutnetApi
@@ -134,6 +135,14 @@ final class ApiTest extends TestCase {
         $this->assertGreaterThan(5, count($bezirk->getChildren()), "less than 5 Stämme, as of writing there were 12");
     }
 
+
+    public function testException() {
+        $ext = new ScoutnetException_MissingConfVar('test', 23);
+
+        $this->assertEquals(23, $ext->getCode());
+        $this->assertEquals("Missing 'test'. Please Contact your Admin to enter a valid credentials for ScoutNet Connect. You can request them via <a href=\"mailto:scoutnetconnect@scoutnet.de\">scoutnetConnect@ScoutNet.de</a>.", $ext->getMessage());
+    }
+
     /**
      * @expectedException \ScoutNet\Api\ScoutnetException_MissingConfVar
      * @expectedExceptionMessageRegExp /^Missing 'aes_key'.*$/
@@ -188,24 +197,75 @@ final class ApiTest extends TestCase {
 
     /**
      * @expectedException \ScoutNet\Api\ScoutnetException_MissingConfVar
+     * @expectedExceptionCode 1492695814
+     */
+    public function testSetLoginDetailsUserEmpty() {
+        $this->sn->loginUser('', self::API_KEY);
+        $objectReflection = new \ReflectionObject($this->sn);
+        $method = $objectReflection->getMethod('_check_login');
+        $method->setAccessible(true);
+
+        $method->invokeArgs($this->sn, []);
+    }
+
+    /**
+     * @expectedException \ScoutNet\Api\ScoutnetException_MissingConfVar
+     * @expectedExceptionCode 1491938183
+     */
+    public function testSetLoginDetailsApiKeyEmpty() {
+        $this->sn->loginUser(self::API_USER, '');
+        $objectReflection = new \ReflectionObject($this->sn);
+        $method = $objectReflection->getMethod('_check_login');
+        $method->setAccessible(true);
+
+        $method->invokeArgs($this->sn, []);
+    }
+
+    /**
+     * @expectedException \ScoutNet\Api\ScoutnetException_MissingConfVar
+     * @expectedExceptionCode 1491938183
+     */
+    public function testSetLoginDetailsApiKeyWrongLength() {
+        $this->sn->loginUser(self::API_USER, 'abc');
+        $objectReflection = new \ReflectionObject($this->sn);
+        $method = $objectReflection->getMethod('_check_login');
+        $method->setAccessible(true);
+
+        $method->invokeArgs($this->sn, []);
+    }
+
+    public function testSetLoginDetails() {
+        $this->sn->loginUser(self::API_USER, self::API_KEY);
+        $objectReflection = new \ReflectionObject($this->sn);
+        $method = $objectReflection->getMethod('_check_login');
+        $method->setAccessible(true);
+
+        $method->invokeArgs($this->sn, []);
+    }
+
+    /**
+     * @expectedException \ScoutNet\Api\ScoutnetException_MissingConfVar
      * @expectedExceptionCode 1491938183
      */
     public function testGenerateAuthWithoutApiKey() {
+        $this->sn->loginUser(self::API_USER, 'wrongApiKey');
         // call to private function
         $objectReflection = new \ReflectionObject($this->sn);
         $method = $objectReflection->getMethod('_generate_auth');
         $method->setAccessible(true);
 
-        $method->invokeArgs($this->sn, ['test', 'test']);
+        $method->invokeArgs($this->sn, ['test']);
     }
 
     public function testGenerateAuthWithCorrectApiKey() {
+        $this->sn->loginUser(self::API_USER, self::API_KEY);
+
         // call to private function
         $objectReflection = new \ReflectionObject($this->sn);
         $method = $objectReflection->getMethod('_generate_auth');
         $method->setAccessible(true);
 
-        $auth = $method->invokeArgs($this->sn, [self::API_KEY, 'test']);
+        $auth = $method->invokeArgs($this->sn, ['test']);
 
         $this->assertEquals("cGJcjkxp40dKZP6Cf8QfpCiqDcXTRmrD50zdjtjBATWDeSMbj0Ro0etFtMJBASd-NBn41PC-y6IvI-h2QejUNm7g9IVpaSJj1_ibUSDoSwVNTdS_c0RSem8XyO-gTrl78gVH0AnJ13B9PUDj_mMsuhmTe_YWh-DuQ-x4ZTlM3IQ~", $auth);
     }
@@ -307,33 +367,38 @@ final class ApiTest extends TestCase {
     }
 
     public function testWritePermissions() {
-        $rights = $this->sn->has_write_permission_to_calender(1, self::API_USER, self::API_KEY);
+        $this->sn->loginUser(self::API_USER, self::API_KEY);
+        $rights = $this->sn->has_write_permission_to_calender(1);
 
         $this->assertEquals(Permission::AUTH_WRITE_ALLOWED, $rights);
     }
 
     public function testWritePermissionsNoAuth() {
-        $rights = $this->sn->has_write_permission_to_calender(2, self::API_USER, self::API_KEY);
+        $this->sn->loginUser(self::API_USER, self::API_KEY);
+        $rights = $this->sn->has_write_permission_to_calender(2);
 
         $this->assertEquals(Permission::AUTH_NO_RIGHT, $rights);
     }
 
     public function testWritePermissionsPending() {
-        $rights = $this->sn->has_write_permission_to_calender(3, self::API_USER, self::API_KEY);
+        $this->sn->loginUser(self::API_USER, self::API_KEY);
+        $rights = $this->sn->has_write_permission_to_calender(3);
 
         $this->assertEquals(Permission::AUTH_REQUEST_PENDING, $rights);
     }
 
     public function testRequestPermissionWorking() {
+        $this->sn->loginUser(self::API_USER, self::API_KEY);
         // ask for rights
-        $ret = $this->sn->request_write_permissions_for_calender(1, self::API_USER, self::API_KEY);
+        $ret = $this->sn->request_write_permissions_for_calender(1);
 
         $this->assertEquals(Permission::AUTH_REQUESTED, $ret['code']);
     }
 
     public function testRequestPermissionAlreadyRequested() {
+        $this->sn->loginUser(self::API_USER, self::API_KEY);
         // ask for rights
-        $ret = $this->sn->request_write_permissions_for_calender(2, self::API_USER, self::API_KEY);
+        $ret = $this->sn->request_write_permissions_for_calender(2);
 
         $this->assertEquals(Permission::AUTH_REQUEST_PENDING, $ret['code']);
     }
@@ -582,6 +647,7 @@ final class ApiTest extends TestCase {
                 '543' => 1,
             )
         );
+
 
 
        // $testEvent = $this->sn->write_event(-1, $testEvent, self::API_USER, self::API_KEY);
