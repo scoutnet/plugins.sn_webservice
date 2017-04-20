@@ -808,6 +808,18 @@ namespace ScoutNet\Api\Tests {
             $this->assertEquals(['Cookie' => 'XDEBUG_SESSION=123'], $ret);
         }
 
+        public function testRPCCallCurlProxyTest() {
+            $rpcClient = new JsonRPCClientHelper('demo');
+            $rpcClient->setUseCurl('demoProxyServer', 'demoProxyTunnel', 'demoUserPass');
+
+            $ret = $rpcClient->__call('demoCallOptions', []);
+            $this->assertEquals(['options' => [
+                CURLOPT_PROXY => 'demoProxyServer',
+                CURLOPT_HTTPPROXYTUNNEL => 'demoProxyTunnel',
+                CURLOPT_PROXYUSERPWD => 'demoUserPass'
+            ]], $ret);
+        }
+
         public function testRPCCallCurlWorking() {
             $rpcClient = new JsonRPCClientHelper('demo');
             $rpcClient->setUseCurl();
@@ -930,7 +942,21 @@ namespace ScoutNet\Api\Helpers {
 
         $headers[] = 'Cookie: '.$ch[CURLOPT_COOKIE];
 
-        $response = getMockedRequest($url, $request, $headers);
+        if ($request['method'] == 'demoCallOptions') {
+            $response = [
+                'id' => $request['id'],
+                'error' => null,
+                'result' => [
+                    'options' => [],
+                ]
+            ];
+            foreach ([CURLOPT_PROXY, CURLOPT_HTTPPROXYTUNNEL, CURLOPT_PROXYUSERPWD] as $option) {
+                $response['result']['options'][$option] = $ch[$option];
+            }
+        } else {
+            $response = getMockedRequest($url, $request, $headers);
+        }
+
         return json_encode($response);
     }
 
