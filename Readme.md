@@ -18,3 +18,17 @@ run
  composer dumpautoload
 
 to generate autoloader script
+
+Use API
+-------
+
+ReadApi:
+
+    // load Autoloader from composer
+    require("vendor/autoload.php");
+
+    // reading Elements from the API with this code:
+    $scoutNetApi = new \ScoutNet\Api\ScoutnetApi();
+    $events = $scoutNetApi->get_events_for_global_id_with_filter(4, ['limit' => 3]);
+
+    print_r($events);
