@@ -67,8 +67,7 @@ class ScoutnetApi {
      * @param string $aes_iv    set aes iv for the provider
      */
     public function __construct($api_url = "https://www.scoutnet.de/jsonrpc/server.php", $login_url = 'https://www.scoutnet.de/community/scoutnetConnect.html', $provider = '', $aes_key = '', $aes_iv = '') {
-        //ini_set('default_socket_timeout',1);
-        $this->SN = new JsonRPCClientHelper($api_url, true);
+        $this->SN = new JsonRPCClientHelper($api_url);
 
         $this->set_scoutnet_connect_data($login_url, $provider, $aes_key, $aes_iv);
 
