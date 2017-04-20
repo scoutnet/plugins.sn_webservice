@@ -5,15 +5,9 @@ namespace ScoutNet\Api\Helpers;
  *
  *  Copyright notice
  *
- *  (c) 2015 Stefan "Mütze" Horst <muetze@scoutnet.de>, ScoutNet
+ *  (c) 2017 Stefan "Mütze" Horst <muetze@scoutnet.de>, ScoutNet
  *
  *  All rights reserved
- *
- *  This script is part of the TYPO3 project. The TYPO3 project is
- *  free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
  *
  *  The GNU General Public License can be found at
  *  http://www.gnu.org/copyleft/gpl.html.
@@ -38,6 +32,10 @@ use Exception;
  * @method requestPermission($type,$globalid,$username,$auth)
  */
 class JsonRPCClientHelper {
+    const ERROR_CODE_METHOD_NAME_NO_STRING = 1492673555;
+    const ERROR_CODE_PARAMS_NO_ARRAY = 1492673563;
+    const ERROR_CODE_UNABLE_TO_CONNECT = 1492679926;
+    const ERROR_CODE_RESPONSE_ID_WRONG = 1492673515;
 	
 	/**
 	 * Debug state
@@ -45,6 +43,11 @@ class JsonRPCClientHelper {
 	 * @var boolean
 	 */
 	private $debug;
+
+    /**
+     * @var string[]
+     */
+	private $debugLog = [];
 	
 	/**
 	 * The server URL
@@ -52,12 +55,14 @@ class JsonRPCClientHelper {
 	 * @var string
 	 */
 	private $url;
+
 	/**
 	 * The request id
 	 *
 	 * @var integer
 	 */
 	private $id;
+
 	/**
 	 * If true, notifications are performed instead of requests
 	 *
@@ -65,10 +70,25 @@ class JsonRPCClientHelper {
 	 */
 	private $notification = false;
 
+    /**
+     * @var bool
+     */
 	private $useCurl = false;
-	private $curlProxyServer = false;
-	private $curlProxyTunnel = false;
-	private $curlProxyUserPass = false;
+
+    /**
+     * @var string
+     */
+	private $curlProxyServer = null;
+
+    /**
+     * @var string
+     */
+	private $curlProxyTunnel = null;
+
+    /**
+     * @var string
+     */
+	private $curlProxyUserPass = null;
 
 	/**
 	 * Takes the connection parameters
@@ -76,16 +96,34 @@ class JsonRPCClientHelper {
 	 * @param string $url
 	 * @param boolean $debug
 	 */
-	public function __construct($url,$debug = false) {
+    public function __construct($url, $debug = false) {
 		// server URL
 		$this->url = $url;
-		// proxy
-		empty($proxy) ? $this->proxy = '' : $this->proxy = $proxy;
 		// debug state
-		empty($debug) ? $this->debug = false : $this->debug = true;
+        $this->debug = $debug;
+
 		// message id
 		$this->id = 1;
 	}
+
+	public function setDebug($debug) {
+        $this->debug = $debug;
+    }
+
+	private function debugLog($msg) {
+	    if ($this->debug) {
+            $this->debugLog[] = $msg;
+        }
+    }
+    public function getDebugLog() {
+        return $this->debugLog;
+    }
+
+    private function printDebugLog() {
+	    if ($this->debug) {
+            echo implode("\n", $this->getDebugLog());
+        }
+    }
 
 	public function setUseCurl($curlProxyServer = null, $curlProxyTunnel = null, $curlProxyUserPass = null){
 		$this->useCurl = true;
@@ -101,7 +139,7 @@ class JsonRPCClientHelper {
 	 * @param boolean $notification
 	 */
 	public function setRPCNotification($notification) {
-		empty($notification) ? $this->notification = false : $this->notification = true;
+	    $this->notification = $notification;
 	}
 
 	/**
@@ -113,20 +151,18 @@ class JsonRPCClientHelper {
 	 * @return array|bool
 	 * @throws \Exception
 	 */
-	public function __call($method,$params) {
-		$debug = '';
-
-		// check
+    public function __call($method, $params) {
+		// check if method is string
 		if (!is_scalar($method)) {
-			throw new Exception('Method name has no scalar value');
+			throw new Exception('Method name has no scalar value', self::ERROR_CODE_METHOD_NAME_NO_STRING);
 		}
 		
-		// check
+		// check if params are Array
 		if (is_array($params)) {
-			// no keys
+			// drop the keys
 			$params = array_values($params);
 		} else {
-			throw new Exception('Params must be given as array');
+			throw new Exception('Params must be given as array', self::ERROR_CODE_PARAMS_NO_ARRAY);
 		}
 		
 		// sets notification or request task
@@ -143,7 +179,7 @@ class JsonRPCClientHelper {
 			'id' => $currentId
 		);
 		$request = json_encode($request);
-		$this->debug && $debug .='***** Request *****'."\n".$request."\n".'***** End Of request *****'."\n\n";
+		$this->debugLog('***** Request *****'."\n".$request."\n".'***** End Of request *****'."\n");
 
 
 		if ($this->useCurl && extension_loaded('curl')) {
@@ -163,9 +199,8 @@ class JsonRPCClientHelper {
 			curl_setopt_array( $ch, $options );
 
 			if (isset($_COOKIE['XDEBUG_SESSION'])) {
-				curl_setopt($ch, CURLOPT_COOKIE, 'XDEBUG_SESSION: '.urlencode($_COOKIE['XDEBUG_SESSION']));
+				curl_setopt($ch, CURLOPT_COOKIE, 'XDEBUG_SESSION='.urlencode($_COOKIE['XDEBUG_SESSION']));
 			}
-
 
 			if ($this->curlProxyServer != null) {
 				curl_setopt($ch, CURLOPT_PROXY, $this->curlProxyServer);
@@ -178,45 +213,42 @@ class JsonRPCClientHelper {
 				}
 			}
 
-
-
 			$response = trim( curl_exec( $ch ) );
-
-			$this->debug && $debug.='***** Server response *****'."\n".$response.'***** End of server response *****'."\n";
-			$response = json_decode( $response, true );
 			curl_close( $ch );
 		} else {
-			// performs the HTTP POST
+			// performs the HTTP POST via fopen
 			$opts = array (
-				'http' => array (
+				'http' => [
 					'method'  => 'POST',
-					'header'  => 'Content-type: application/json',
+					'header'  => "Content-type: application/json",
 					'content' => $request
-				));
+                ]);
+
+            if (isset($_COOKIE['XDEBUG_SESSION'])) {
+                $opts['http']['header'] .= "\r\nCookie: XDEBUG_SESSION=".urlencode($_COOKIE['XDEBUG_SESSION']);
+            }
 			$context  = stream_context_create($opts);
 
 			if ($fp = @fopen($this->url, 'r', false, $context)) {
 				$response = '';
 				while($row = fgets($fp)) {
-					$response.= trim($row)."\n";
+					$response .= trim($row)."\n";
 				}
-				$this->debug && $debug.='***** Server response *****'."\n".$response.'***** End of server response *****'."\n";
-				$response = json_decode($response,true);
 			} else {
-				throw new Exception('Unable to connect to '.$this->url);
+				throw new Exception('Unable to connect to '.$this->url, self::ERROR_CODE_UNABLE_TO_CONNECT);
 			}
 		}
 
-		// debug output
-		if ($this->debug) {
-			echo nl2br($debug);
-		}
-		
+        $this->debugLog('***** Server response *****'."\n".$response.'***** End of server response *****'."\n");
+        $response = json_decode( $response, true );
+
+		$this->printDebugLog();
+
 		// final checks and return
 		if (!$this->notification) {
 			// check
 			if ($response['id'] != $currentId) {
-				throw new Exception('Incorrect response id (request id: '.$currentId.', response id: '.$response['id'].')');
+				throw new Exception('Incorrect response id (request id: '.$currentId.', response id: '.$response['id'].')', self::ERROR_CODE_RESPONSE_ID_WRONG);
 			}
 			if (!is_null($response['error'])) {
 				throw new Exception('Request error: '.$response['error']['message'], $response['error']['code']);
