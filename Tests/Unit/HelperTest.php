@@ -844,7 +844,8 @@ namespace ScoutNet\Api\Helpers {
             case 'demoBrokenCall':
                 return false;
         }
-        throw new Exception('Mock called with wrong url');
+        return \fopen($url, $mode, $use_include_path, $context);
+        //throw new Exception('Mock called with wrong url');
     }
 
     function getMockedRequest($url, $content, $headers = []) {
@@ -899,6 +900,11 @@ namespace ScoutNet\Api\Helpers {
 
 
     function fgets(&$fd) {
+        if (is_resource($fd)) {
+            // live
+            return \fgets($fd);
+        }
+
         if ($fd != null) {
             $url = $fd['url'];
 

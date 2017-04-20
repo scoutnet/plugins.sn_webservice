@@ -24,7 +24,6 @@ use ScoutNet\Api\Helpers\CacheHelper;
 use ScoutNet\Api\Helpers\ConverterHelper;
 
 use ScoutNet\Api\Models\Event;
-use ScoutNet\Api\Models\Index;
 
 use ScoutNet\Api\Helpers\AesHelper;
 use ScoutNet\Api\Helpers\JsonRPCClientHelper;
@@ -82,7 +81,7 @@ class ScoutnetApi {
      *
      * @throws ScoutnetException_MissingConfVar
      */
-    public function set_scoutnet_connect_data($login_url = null, $provider, $aes_key, $aes_iv) {
+    public function set_scoutnet_connect_data($login_url = null, $provider = '', $aes_key = '', $aes_iv = '') {
         if ($login_url == null) {
             $login_url = 'https://www.scoutnet.de/community/scoutnetConnect.html';
         }
