@@ -497,6 +497,10 @@ namespace ScoutNet\Api\Tests {
             $cat->setUid(1);
             $cat->setText('Stufe');
 
+            $custom_cat = new Categorie();
+            $custom_cat->setUid(null);
+            $custom_cat->setText('Custom1');
+
 
             $event = new Event();
 
@@ -516,7 +520,7 @@ namespace ScoutNet\Api\Tests {
             $event->setDescription('demoDescription');
             $event->setChangedAt($changedAt);
             $event->setCreatedAt($createdAt);
-            $event->setCategories([1 => $cat]);
+            $event->setCategories([1 => $cat, -2 => $custom_cat]);
             $event->setChangedBy($changedBy);
             $event->setCreatedBy($createdBy);
             $event->setStructure($structure);
@@ -525,6 +529,7 @@ namespace ScoutNet\Api\Tests {
 
             $expected_array = [
                 "ID" => 23,
+                "UID" => 23,
                 "SSID" => 23,
                 'Title' => 'demoTitle',
                 'Organizer' => 'demoOrganizer',
@@ -543,7 +548,8 @@ namespace ScoutNet\Api\Tests {
                 "Last_Modified_By" => "user1",
                 "Last_Modified_At" => 1000305720,
                 "Created_By" => "user2",
-                "Created_At" => 1000210980
+                "Created_At" => 1000210980,
+                "Custom_Keywords" => ['Custom1'],
             ];
 
             // without cache set

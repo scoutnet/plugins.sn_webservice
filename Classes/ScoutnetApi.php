@@ -239,7 +239,7 @@ class ScoutnetApi {
         $id = $event->getUid();
         $apiData = $this->converter->convertEventToApi($event);
 
-        return $this->write_object($type, $id, $apiData);
+        return $this->converter->convertApiToEvent($this->write_object($type, $id, $apiData));
     }
 
     /**

@@ -47,6 +47,7 @@ class ConverterHelper {
     public function convertEventToApi(Event $event) {
         $array = [
             'ID' => $event->getUid() !== null?$event->getUid():-1,
+            'UID' => $event->getUid() !== null?$event->getUid():-1,
             'SSID' => $event->getStructure()->getUid(),
             'Title' => $event->getTitle(),
             'Organizer' => $event->getOrganizer(),

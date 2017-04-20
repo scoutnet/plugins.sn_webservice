@@ -34,6 +34,7 @@ use ScoutNet\Api\ScoutnetException_MissingConfVar;
 
 /**
  * @covers \ScoutNet\Api\ScoutnetApi
+ * @covers \ScoutNet\Api\ScoutnetException_MissingConfVar
  */
 final class ApiTest extends TestCase {
     const AES_KEY = "12345678901234567890123456789012";
@@ -627,36 +628,115 @@ final class ApiTest extends TestCase {
     }
 
     public function testCreateEvent() {
-        $testEvent = Array(
-            'ID' => -1, // id of event to update -1 for new event
-            'SSID' => 1,
-            'Title' => 'F+F Mitgliederversammlung',
-            'Organizer' => 'Freundes- und Förderkreis',
-            'Target_Group' => 'Freunde',
-            'Start' => 1354294800,
-            'End' => 1354294800,
-            'All_Day' => false,
-            'ZIP' => '',
-            'Location' => 'Tagungs- und Gästehaus Rolandstr.',
-            'URL_Text' => '',
-            'URL' => '',
-            'Description' => '',
-            'Stufen' => Array (),
-            'Keywords' => Array (
-                '193' => 1,
-                '543' => 1,
-            )
-        );
+        $cat = new Categorie();
+        $cat->setUid(1);
+        $cat->setText('Sonstiges');
 
 
+        $structure = new Structure();
+        $structure->setUid('4');
 
-       // $testEvent = $this->sn->write_event(-1, $testEvent, self::API_USER, self::API_KEY);
-        echo "event written. It has ID ".$testEvent['ID']."\n";
+        $kalenderUser = new User();
+        $kalenderUser->setUsername('kalender-1.0');
+        $kalenderUser->setUid('kalender-1.0');
 
-        // Stop here and mark this test as incomplete.
-        $this->markTestIncomplete(
-            'This test has not been implemented yet.'
-        );
+
+        $event = new Event();
+        $event->setUid(null);
+        $event->setTitle('Bezirksvorständestreffen');
+        $event->setOrganizer('');
+        $event->setTargetGroup('');
+        $event->setStartDate(\DateTime::createFromFormat('Y-m-d H:i:s', '2001-03-15 00:00:00'));
+        $event->setStartTime('19:30:00');
+        $event->setEndDate(\DateTime::createFromFormat('Y-m-d H:i:s', '2001-03-15 00:00:00'));
+        $event->setEndTime('19:30:00');
+        $event->setZip('');
+        $event->setLocation('');
+        $event->setUrlText('');
+        $event->setUrl('');
+        $event->setDescription("im Diözesanzentrum Rolandstraße\n\n(Autor: Webteam (mfl))");
+        $event->setStufen([]);
+        $event->setCategories([1 => $cat]);
+        $event->setStructure($structure);
+        $event->setChangedBy($kalenderUser);
+        $event->setCreatedBy($kalenderUser);
+        $event->setCreatedAt(\DateTime::createFromFormat('Y-m-d H:i:s', '2003-07-15 00:40:29'));
+        $event->setChangedAt(\DateTime::createFromFormat('Y-m-d H:i:s', '2003-07-15 00:40:29'));
+
+
+        $this->sn->loginUser(self::API_USER, self::API_KEY);
+        $res = $this->sn->write_event($event);
+
+
+        // the answer does not contain the structure, changedby and createdby, since they are not cached
+        $event->setUid(23);
+        $event->setStructure(null);
+        $event->setChangedBy(null);
+        $event->setCreatedBy(null);
+        $event->setChangedAt(new \DateTime());
+        $event->setCreatedAt(new \DateTime());
+
+        $this->assertEquals($event, $res);
+
+    }
+
+    public function testUpdateEvent() {
+        $cat = new Categorie();
+        $cat->setUid(1);
+        $cat->setText('Sonstiges');
+
+
+        $structure = new Structure();
+        $structure->setUid('4');
+
+        $kalenderUser = new User();
+        $kalenderUser->setUsername('kalender-1.0');
+        $kalenderUser->setUid('kalender-1.0');
+
+
+        $event = new Event();
+        $event->setUid(792);
+        $event->setTitle('Bezirksvorständestreffen');
+        $event->setOrganizer('');
+        $event->setTargetGroup('');
+        $event->setStartDate(\DateTime::createFromFormat('Y-m-d H:i:s', '2001-03-15 00:00:00'));
+        $event->setStartTime('19:30:00');
+        $event->setEndDate(\DateTime::createFromFormat('Y-m-d H:i:s', '2001-03-15 00:00:00'));
+        $event->setEndTime('19:30:00');
+        $event->setZip('');
+        $event->setLocation('');
+        $event->setUrlText('');
+        $event->setUrl('');
+        $event->setDescription("im Diözesanzentrum Rolandstraße\n\n(Autor: Webteam (mfl))");
+        $event->setStufen([]);
+        $event->setCategories([1 => $cat]);
+        $event->setStructure($structure);
+        $event->setChangedBy($kalenderUser);
+        $event->setCreatedBy($kalenderUser);
+        $event->setCreatedAt(\DateTime::createFromFormat('Y-m-d H:i:s', '2003-07-15 00:40:29'));
+        $event->setChangedAt(\DateTime::createFromFormat('Y-m-d H:i:s', '2003-07-15 00:40:29'));
+
+
+        $this->sn->loginUser(self::API_USER, self::API_KEY);
+        $res = $this->sn->write_event($event);
+
+
+        // the answer does not contain the structure, changedby and createdby, since they are not cached
+        $event->setStructure(null);
+        $event->setChangedBy(null);
+        $event->setCreatedBy(null);
+        $event->setChangedAt(new \DateTime());
+
+        $this->assertEquals($event, $res);
+
+    }
+
+
+    public function testDeleteEvent() {
+        $this->sn->loginUser(self::API_USER, self::API_KEY);
+        $res = $this->sn->delete_event(4, 23);
+
+        $this->assertEquals(['type' => 'ok', 'content' => ['Code' => 0, 'Value' => 'object Deleted']], $res);
     }
 
 
@@ -716,6 +796,28 @@ class JsonRPCClientHelperMock extends JsonRPCClientHelper {
         return $cache[$param_json];
     }
 
+    public function setData($type, $id, $data, $api_user, $auth) {
+        // we only return the data
+        $data['Last_Modified_At'] = time();
+        $data['Last_Modified_By'] = $api_user;
+
+        if (!is_numeric($id)) {
+            $id = -1;
+        }
+
+        if ($id == -1) {
+            $data['Created_At'] = time();
+            $data['Created_By'] = $api_user;
+            $data['UID'] = 23;
+            $data['ID'] = 23;
+        }
+
+        return $data;
+    }
+
+    public function deleteObject($type, $ssid, $id, $api_user, $auth) {
+        return ['type' => 'ok', 'content' => ['Code' => 0, 'Value' => 'object Deleted']];
+    }
 }
 
 /**
