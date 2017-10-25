@@ -15,7 +15,7 @@
   "support": {
     "issues": "https://github.com/scoutnet/plugins.sn_webservice/issues"
   },
-  "version": "1.0.0",
+  "version": "1.0.1",
   "require": {
   },
   "autoload": {
