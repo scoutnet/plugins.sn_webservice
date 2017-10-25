@@ -380,6 +380,10 @@ class ScoutnetApi {
         $json = substr($aes->decrypt($base64), strlen($this->aes_iv));
         $data = json_decode($json, true);
 
+        if ($data == '') {
+            throw new ScoutnetException('Could not verify AUTH', self::ERROR_AUTH_BROKEN);
+        }
+
         $md5 = $data['md5'];
         unset($data['md5']);
         $sha1 = $data['sha1'];
