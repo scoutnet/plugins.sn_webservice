@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Test'){
             steps {
-                sh 'composer install'
+                sh 'docker run --rm -w /opt/data -v `pwd`:/opt/data -i scoutnet/cihost:latest composer install'
                 sh 'docker run --rm -v `pwd`:/app -i phpunit/phpunit --coverage-clover=./phpunit/coverage.xml --log-junit ./phpunit/junit.xml -c Tests/Builds/UnitTests.xml'
             }
         }
