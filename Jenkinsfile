@@ -7,7 +7,7 @@ pipeline {
                 sh 'docker run --rm -w /opt/data -v `pwd`:/opt/data -i epcallan/php7-testing-phpunit:7.0-phpunit6 composer install'
                 sh 'docker run --rm -w /opt/data -v `pwd`:/opt/data -i epcallan/php7-testing-phpunit:7.0-phpunit6 phpunit --coverage-clover=phpunit/coverage.xml --log-junit phpunit/junit.xml -c Tests/Builds/UnitTests.xml'
                 withCredentials([string(credentialsId: 'CODECOV_TOKEN', variable: 'CODECOV_TOKEN')]) {
-                    sh 'ci_env=`bash <(curl -s https://codecov.io/env)` && docker run --rm $ci_env -w /opt/data -v `pwd`:/opt/data -i epcallan/php7-testing-phpunit:7.0-phpunit6 bash <(curl -s https://codecov.io/bash)'
+                    sh 'ci_env=`bash <(curl -s https://codecov.io/env)` && docker run --rm $ci_env -w /opt/data -v `pwd`:/opt/data -i epcallan/php7-testing-phpunit:7.0-phpunit6 bash -c "bash <(curl -s https://codecov.io/bash)"'
                 }
             }
         }
