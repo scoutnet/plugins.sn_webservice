@@ -15,20 +15,32 @@ Install
 
 run 
 
- composer dumpautoload
+```bash
+composer require "scoutnet/sn-webservice:^1.0"
+```
 
-to generate autoloader script
+to install ScoutNet Api Webservice. 
+
+run
+
+```bash
+composer dumpautoload
+```
+
+to regenerate autoloader script.
 
 Use API
 -------
 
 ReadApi:
 
-    // load Autoloader from composer
-    require("vendor/autoload.php");
+```php
+// load Autoloader from composer
+require_once('vendor/autoload.php');
 
-    // reading Elements from the API with this code:
-    $scoutNetApi = new \ScoutNet\Api\ScoutnetApi();
-    $events = $scoutNetApi->get_events_for_global_id_with_filter(4, ['limit' => 3]);
+// reading Elements from the API with this code:
+$scoutNetApi = new \ScoutNet\Api\ScoutnetApi();
+$events = $scoutNetApi->get_events_for_global_id_with_filter(4, ['limit' => 3]);
 
-    print_r($events);
+print_r($events);
+```
