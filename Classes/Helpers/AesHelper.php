@@ -498,7 +498,7 @@ class AesHelper {
      * @return void
      **/
     private function invShiftRows() {
-        $temp = "";
+        $temp = [];
         for ($i = 1; $i < 4; $i++) {
             for ($j = 0; $j < self::$Nb; $j++)
                 $temp[($i + $j) % self::$Nb] = $this->s[$i][$j];
