@@ -32,11 +32,15 @@ class CacheHelper {
 
     /**
      * @param AbstractModel $object
+     * @param int          $id
+     *
      * @return AbstractModel|false
      */
-    public function add(AbstractModel &$object) {
+    public function add(AbstractModel &$object, $id=Null) {
         $class = get_class($object);
-        $id = $object->getUid();
+        if ($id == Null) {
+            $id = $object->getUid();
+        }
 
         // we can only insert object with id
         if ($id == null) {
@@ -48,47 +52,16 @@ class CacheHelper {
         return $object;
     }
 
+    /**
+     * @param $class
+     * @param $id
+     *
+     * @return mixed|null
+     */
     public function get($class, $id) {
         if (isset($this->cache[$class]) && isset($this->cache[$class][$id])) {
             return $this->cache[$class][$id];
         }
         return null;
     }
-
-    /**
-     * @param $id
-     * @return null
-     * @deprecated
-     */
-    public function get_event_by_id($id) {
-        return $this->get(Event::class, $id);
-    }
-
-    /**
-     * @param $id
-     * @return null
-     * @deprecated
-     */
-    public function get_stufe_by_id($id) {
-        return $this->get(Stufe::class, $id);
-    }
-
-    /**
-     * @param $id
-     * @return null
-     * @deprecated
-     */
-    public function get_kalender_by_id($id) {
-        return $this->get(Structure::class, $id);
-    }
-
-    /**
-     * @param $id
-     * @return null
-     * @deprecated
-     */
-    public function get_user_by_id($id) {
-        return $this->get(User::class, $id);
-    }
-
 }

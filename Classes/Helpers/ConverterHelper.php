@@ -153,8 +153,8 @@ class ConverterHelper {
 
 
         if (isset($array['Stufen'])) {
-            foreach ($array['Stufen'] as $stufenId) {
-                $stufe = $this->cache->get_stufe_by_id($stufenId);
+            foreach ($array['Stufen'] as $stufenCategorieId) {
+                $stufe = $this->cache->get(Stufe::class, $stufenCategorieId);
                 if ($stufe != null) {
                     $event->addStufe($stufe);
                 }
@@ -190,7 +190,7 @@ class ConverterHelper {
         $stufe->setEndalter(isset($array['endalter']) ? intval($array['endalter']) : -1);
         $stufe->setCategorieId(isset($array['Keywords_ID']) ? $array['Keywords_ID'] : -1);
 
-        $this->cache->add($stufe);
+        $this->cache->add($stufe, $stufe->getCategorieId());
         return $stufe;
     }
 
