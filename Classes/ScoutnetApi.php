@@ -211,6 +211,23 @@ class ScoutnetApi {
     }
 
     /**
+     * Load Categories by ID
+     *
+     * @param int[]|int $ids       IDs of Categories
+     *
+     * @return \ScoutNet\Api\Models\Categorie[]
+     */
+    public function get_categories_by_ids($ids) {
+        $categories = [];
+        foreach ($this->load_data_from_scoutnet([], ['categories' => ['uid' => $ids]]) as $record) {
+            if ($record['type'] === 'categorie') {
+                $categories[] = $this->converter->convertApiToCategorie($record['content']);
+            }
+        }
+        return $categories;
+    }
+
+    /**
      * @param int[]|int $ids SSIDs to load Kalenders for
      *
      * @return \ScoutNet\Api\Models\Structure[]
