@@ -10,26 +10,24 @@
       "role": "Developer"
     }
   ],
-  "license": ["GPL-2.0+"],
+  "license": ["GPL-2.0-or-later"],
   "keywords": ["ScoutNet", "Pfadfinder", "ScoutNet API"],
   "support": {
     "issues": "https://github.com/scoutnet/plugins.sn_webservice/issues"
   },
-  "version": "1.0.3",
   "require": {
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^6"
   },
   "autoload": {
     "psr-4": {
       "ScoutNet\\Api\\": "Classes/"
     }
   },
-  "replace": {
-    "sn_webservice": "self.version"
-  },
   "extra": {
     "branch-alias": {
-      "dev-master": "1.0.x-dev",
-      "dev-development": "1.0.x-dev"
+      "dev-master": "1.0.x-dev"
     }
   }
 }
