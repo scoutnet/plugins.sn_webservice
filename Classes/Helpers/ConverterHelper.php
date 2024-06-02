@@ -1,37 +1,30 @@
 <?php
+/**
+ * Copyright (c) 2017-2024 Stefan (Mütze) Horst
+ *
+ * I don't have the time to read through all the licences to find out
+ * what they exactly say. But it's simple. It's free for non-commercial
+ * projects, but as soon as you make money with it, I want my share :-)
+ * (License: Free for non-commercial use)
+ *
+ * Authors: Stefan (Mütze) Horst <muetze@scoutnet.de>
+ */
 
 namespace ScoutNet\Api\Helpers;
 
-/***************************************************************
- *
- *  Copyright notice
- *
- *  (c) 2017 Stefan "Mütze" Horst <muetze@scoutnet.de>, ScoutNet
- *
- *  All rights reserved
- *
- *  The GNU General Public License can be found at
- *  http://www.gnu.org/copyleft/gpl.html.
- *
- *  This script is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  This copyright notice MUST APPEAR in all copies of the script!
- ***************************************************************/
 
-use ScoutNet\Api\Models\Categorie;
+use DateTime;
+use ScoutNet\Api\Models\Category;
 use ScoutNet\Api\Models\Event;
 use ScoutNet\Api\Models\Index;
 use ScoutNet\Api\Models\Permission;
+use ScoutNet\Api\Models\Section;
 use ScoutNet\Api\Models\Structure;
-use ScoutNet\Api\Models\Stufe;
 use ScoutNet\Api\Models\User;
 
 class ConverterHelper {
     /**
-     * @var \ScoutNet\Api\Helpers\CacheHelper
+     * @var CacheHelper
      */
     private $cache = null;
 
@@ -52,8 +45,8 @@ class ConverterHelper {
             'Title' => $event->getTitle(),
             'Organizer' => $event->getOrganizer(),
             'Target_Group' => $event->getTargetGroup(),
-            'Start' => $event->getStartTimestamp() instanceof \DateTime?\DateTime::createFromFormat('d.m.Y H:i:s T',$event->getStartTimestamp()->format('d.m.Y H:i:s').' UTC')->format('U'):'',
-            'End' => $event->getEndTimestamp() instanceof \DateTime?\DateTime::createFromFormat('d.m.Y H:i:s T',$event->getEndTimestamp()->format('d.m.Y H:i:s').' UTC')->format('U'):'',
+            'Start' => $event->getStartTimestamp() instanceof DateTime? DateTime::createFromFormat('d.m.Y H:i:s T',$event->getStartTimestamp()->format('d.m.Y H:i:s').' UTC')->format('U'):'',
+            'End' => $event->getEndTimestamp() instanceof DateTime? DateTime::createFromFormat('d.m.Y H:i:s T',$event->getEndTimestamp()->format('d.m.Y H:i:s').' UTC')->format('U'):'',
             'All_Day' => $event->getAllDayEvent(),
             'ZIP' => $event->getZip(),
             'Location' => $event->getLocation(),
@@ -99,11 +92,12 @@ class ConverterHelper {
 
         // Time
         if (isset($array['Start'])) {
-            $event->setStartDate(\DateTime::createFromFormat('Y-m-d H:i:s', gmstrftime("%Y-%m-%d 00:00:00", $array['Start'])));
+            $event->setStartDate(
+                DateTime::createFromFormat('Y-m-d H:i:s', gmstrftime("%Y-%m-%d 00:00:00", $array['Start'])));
             $event->setStartTime((isset($array['All_Day']) && $array['All_Day']) ? null : gmstrftime('%H:%M:00', $array['Start']));
         }
         if (isset($array['End'])) {
-            $event->setEndDate($array['End'] == 0 ? null : \DateTime::createFromFormat('Y-m-d H:i:s', gmstrftime("%Y-%m-%d 00:00:00", $array['End'])));
+            $event->setEndDate($array['End'] == 0 ? null : DateTime::createFromFormat('Y-m-d H:i:s', gmstrftime("%Y-%m-%d 00:00:00", $array['End'])));
             $event->setEndTime((isset($array['All_Day']) && $array['All_Day']) ? null : gmstrftime('%H:%M:00', $array['End']));
         }
 
@@ -118,28 +112,26 @@ class ConverterHelper {
         $event->setDescription(isset($array['Description']) ? $array['Description'] : null);
 
         if (isset($array['Last_Modified_At'])) {
-            $event->setChangedAt($array['Last_Modified_At'] == 0 ? null : \DateTime::createFromFormat('U', $array['Last_Modified_At']));
+            $event->setChangedAt($array['Last_Modified_At'] == 0 ? null : DateTime::createFromFormat('U', $array['Last_Modified_At']));
         }
         if (isset($array['Created_At'])) {
-            $event->setCreatedAt($array['Created_At'] == 0 ? null : \DateTime::createFromFormat('U', $array['Created_At']));
+            $event->setCreatedAt($array['Created_At'] == 0 ? null : DateTime::createFromFormat('U', $array['Created_At']));
         }
 
         if (isset($array['Keywords'])) {
             foreach ($array['Keywords'] as $id => $text) {
-                $categorie = $this->cache->get(Categorie::class, $id);
-                if ($categorie == null) {
-                    $categorie = $this->convertApiToCategorie(array('ID' => $id, 'Text' => $text));
+                $category = $this->cache->get(Category::class, $id);
+                if ($category === null) {
+                    $category = $this->convertApiToCategorie(array('ID' => $id, 'Text' => $text));
                 }
 
-                if ($categorie != null) {
-                    $event->addCategorie($categorie);
+                if ($category !== null) {
+                    $event->addCategory($category);
                 }
             }
         }
 
-
         // load event elements from cache
-
         if (isset($array['Last_Modified_By'])) {
             $event->setChangedBy($this->cache->get(User::class, $array['Last_Modified_By']));
         }
@@ -151,12 +143,11 @@ class ConverterHelper {
             $event->setStructure($this->cache->get(Structure::class, intval($array['Kalender'])));
         }
 
-
         if (isset($array['Stufen'])) {
-            foreach ($array['Stufen'] as $stufenCategorieId) {
-                $stufe = $this->cache->get(Stufe::class, $stufenCategorieId);
-                if ($stufe != null) {
-                    $event->addStufe($stufe);
+            foreach ($array['Stufen'] as $stufenCategoryId) {
+                $stufe = $this->cache->get(Section::class, $stufenCategoryId);
+                if ($stufe !== null) {
+                    $event->addSection($stufe);
                 }
             }
         }
@@ -179,8 +170,8 @@ class ConverterHelper {
         return $user;
     }
 
-    public function convertApiToStufe($array) {
-        $stufe = new Stufe();
+    public function convertApiToSection($array) {
+        $stufe = new Section();
 
         $stufe->setUid(isset($array['id']) ? $array['id'] : -1);
         $stufe->setVerband(isset($array['verband']) ? $array['verband'] : null);
@@ -242,7 +233,7 @@ class ConverterHelper {
     }
 
     public function convertApiToCategorie($array) {
-        $categorie = new Categorie();
+        $categorie = new Category();
 
         $categorie->setUid(isset($array['ID'])?$array['ID']:-1);
         $categorie->setText(isset($array['Text'])?$array['Text']:'');
@@ -267,7 +258,7 @@ class ConverterHelper {
 
         // this only works, because the api returns the children after the parents
         /**
-         * @var \ScoutNet\Api\Models\Index $parent
+         * @var Index $parent
          */
         if ($parent = $this->cache->get(Index::class, $index->getParentId())) {
             $parent->addChild($index);

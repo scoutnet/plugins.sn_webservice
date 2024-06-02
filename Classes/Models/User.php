@@ -1,28 +1,21 @@
 <?php
-namespace ScoutNet\Api\Models;
+/**
+ * Copyright (c) 2017-2024 Stefan (Mütze) Horst
+ *
+ * I don't have the time to read through all the licences to find out
+ * what they exactly say. But it's simple. It's free for non-commercial
+ * projects, but as soon as you make money with it, I want my share :-)
+ * (License: Free for non-commercial use)
+ *
+ * Authors: Stefan (Mütze) Horst <muetze@scoutnet.de>
+ */
 
-/***************************************************************
- *
- *  Copyright notice
- *
- *  (c) 2017 Stefan "Mütze" Horst <muetze@scoutnet.de>, ScoutNet
- *
- *  All rights reserved
- *
- *  The GNU General Public License can be found at
- *  http://www.gnu.org/copyleft/gpl.html.
- *
- *  This script is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  This copyright notice MUST APPEAR in all copies of the script!
- ***************************************************************/
+namespace ScoutNet\Api\Models;
 
 class User extends AbstractModel {
     const SEX_MALE = 'm';
     const SEX_FEMALE = 'w';
+    const SEX_DIVERSE = 'd';
 
 
     /**
@@ -30,93 +23,109 @@ class User extends AbstractModel {
      * @validate NotEmpty
      * @validate StringLength(minimum=2, maximum=80)
      */
-    protected $username = null;
+    protected string $username = '';
 
     /**
      * @var string
      * @validate NotEmpty
      * @validate StringLength(minimum=2, maximum=80)
      */
-    protected $firstName = null;
+    protected ?string $firstName = '';
 
     /**
      * @var string
      * @validate NotEmpty
      * @validate StringLength(minimum=2, maximum=80)
      */
-    protected $lastName = null;
+    protected ?string $lastName = '';
 
     /**
      * @var string
      * @validate NotEmpty
      * @validate StringLength(minimum=1, maximum=80)
      */
-    protected $sex = null;
+    protected string $sex = '';
 
     /**
      * @return string
      */
-    public function getUsername () {
+    public function getUsername(): string
+    {
         return $this->username;
     }
 
     /**
      * @param string $username
      */
-    public function setUsername ($username) {
+    public function setUsername(string $username): void
+    {
         $this->username = $username;
     }
 
-    public function getFirstName(){
-        return trim($this->firstName)?trim($this->firstName):$this->getUsername();
+    public function getFirstName(): string
+    {
+        return trim($this->firstName) ? trim($this->firstName) : $this->getUsername();
     }
 
     /**
      * @param string $firstName
      */
-    public function setFirstName ($firstName) {
+    public function setFirstName(?string $firstName): void
+    {
         $this->firstName = $firstName;
     }
 
     /**
      * @return string
      */
-    public function getLastName () {
+    public function getLastName(): ?string
+    {
         return $this->lastName;
     }
 
     /**
      * @param string $lastName
      */
-    public function setLastName ($lastName) {
+    public function setLastName(?string $lastName): void
+    {
         $this->lastName = $lastName;
     }
 
     /**
      * @return string
      */
-    public function getSex () {
+    public function getSex(): string
+    {
         return $this->sex;
     }
 
     /**
      * @param string $sex
      */
-    public function setSex ($sex) {
+    public function setSex(string $sex): void
+    {
         $this->sex = $sex;
     }
 
-    public function getFullName(){
+    /**
+     * @return string
+     */
+    public function getFullName(): string
+    {
         // we use the class functions not the getters, because the firstname can be the username
-        $full_name = $this->firstName.' '.$this->lastName;
+        $full_name = $this->firstName . ' ' . $this->lastName;
         return trim($full_name) ? trim($full_name) : $this->getUsername();
     }
-    public function getLongName(){
+
+    /**
+     * @return string
+     */
+    public function getLongName(): string
+    {
         $full_name = $this->getFullName();
-        if( $full_name !== $this->getUsername() ){
-            return $full_name.' ('.$this->getUsername().')';
-        } else {
-            return $this->getUsername();
+        if ($full_name != $this->getUsername()) {
+            return $full_name . ' (' . $this->getUsername() . ')';
         }
+        return $this->getUsername();
     }
 }

@@ -1,25 +1,16 @@
 <?php
+/**
+ * Copyright (c) 2017-2024 Stefan (Mütze) Horst
+ *
+ * I don't have the time to read through all the licences to find out
+ * what they exactly say. But it's simple. It's free for non-commercial
+ * projects, but as soon as you make money with it, I want my share :-)
+ * (License: Free for non-commercial use)
+ *
+ * Authors: Stefan (Mütze) Horst <muetze@scoutnet.de>
+ */
 
 namespace ScoutNet\Api\Helpers;
-
-/***************************************************************
- *
- *  Copyright notice
- *
- *  (c) 2017 Stefan "Mütze" Horst <muetze@scoutnet.de>, ScoutNet
- *
- *  All rights reserved
- *
- *  The GNU General Public License can be found at
- *  http://www.gnu.org/copyleft/gpl.html.
- *
- *  This script is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  This copyright notice MUST APPEAR in all copies of the script!
- ***************************************************************/
 
 use ScoutNet\Api\Models\AbstractModel;
 use ScoutNet\Api\Models\Structure;

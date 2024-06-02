@@ -1,542 +1,633 @@
 <?php
+/**
+ * Copyright (c) 2017-2024 Stefan (Mütze) Horst
+ *
+ * I don't have the time to read through all the licences to find out
+ * what they exactly say. But it's simple. It's free for non-commercial
+ * projects, but as soon as you make money with it, I want my share :-)
+ * (License: Free for non-commercial use)
+ *
+ * Authors: Stefan (Mütze) Horst <muetze@scoutnet.de>
+ */
 
 namespace ScoutNet\Api\Models;
 
-/***************************************************************
- *
- *  Copyright notice
- *
- *  (c) 2017 Stefan "Mütze" Horst <muetze@scoutnet.de>, ScoutNet
- *
- *  All rights reserved
- *
- *  The GNU General Public License can be found at
- *  http://www.gnu.org/copyleft/gpl.html.
- *
- *  This script is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  This copyright notice MUST APPEAR in all copies of the script!
- ***************************************************************/
+use DateTime;
 
 class Event extends AbstractModel {
-    /**
-     * @param $name
-     * @return mixed
-     * @deprecated
-     */
-    public function __get($name) {
-        return $this->{$name};
-    }
-
-
     /**
      * @var string
      * @validate NotEmpty
      * @validate StringLength(minimum=2, maximum=80)
      */
-    protected $title = '';
+    protected string $title = '';
 
     /**
      * @var string
      * @validate StringLength(minimum=2, maximum=255)
      */
-    protected $organizer = '';
+    protected ?string $organizer = '';
+
     /**
      * @var string
      * @validate StringLength(minimum=2, maximum=255)
      */
-    protected $targetGroup = '';
+    protected ?string $targetGroup = '';
 
     /**
-     * @var \DateTime
+     * @var DateTime
      * @validate NotEmpty
      */
-    protected $startDate;
-
+    protected DateTime $startDate;
     /**
      * @var string
      */
-    protected $startTime;
+    protected ?string $startTime = '';
 
     /**
-     * @var \DateTime
+     * @var DateTime
      */
-    protected $endDate;
-
+    protected ?DateTime $endDate = null;
     /**
      * @var string
      */
-    protected $endTime;
+    protected ?string $endTime = '';
 
     /**
      * @var string
      * @validate StringLength(minimum=3, maximum=255)
      */
-    protected $zip;
+    protected ?string $zip = null;
 
     /**
      * @var string
      * @validate StringLength(minimum=2, maximum=255)
      */
-    protected $location;
+    protected ?string $location = null;
 
     /**
      * @var string
      * @validate StringLength(minimum=3, maximum=255)
      */
-    protected $urlText;
+    protected ?string $urlText = null;
 
     /**
      * @var string
      * @validate StringLength(minimum=3, maximum=255)
      */
-    protected $url;
+    protected ?string $url;
 
     /**
      * @var string
      */
-    protected $description;
+    protected ?string $description = null;
 
     /**
-     * @var \ScoutNet\Api\Models\Stufe[]
+     * @var Section[]
      */
-    protected $stufen = array();
+    protected array $sections = [];
 
     /**
-     * @var \ScoutNet\Api\Models\Categorie[]
+     * @var Category[]
      */
-    protected $categories = array();
+    protected array $categories = [];
 
     /**
      * Structure
      *
-     * @var \ScoutNet\Api\Models\Structure
+     * @var Structure|null
      * validate NotEmpty
      * @lazy
      */
-    protected $structure = NULL;
+    protected ?Structure $structure = null;
 
     /**
      * changedBy
      *
-     * @var \ScoutNet\Api\Models\User
+     * @var User|null
      */
-    protected $changedBy = NULL;
+    protected ?User $changedBy = null;
 
     /**
      * changedBy
      *
-     * @var \ScoutNet\Api\Models\User
+     * @var User|null
      */
-    protected $createdBy = NULL;
+    protected ?User $createdBy = null;
 
     /**
      * createdAt
      *
-     * @var \DateTime
+     * @var DateTime
      */
-    protected $createdAt;
+    protected DateTime $createdAt;
 
     /**
      * changedAt
      *
-     * @var \DateTime
+     * @var DateTime
      */
-    protected $changedAt;
+    protected DateTime $changedAt;
 
     /**
      * @return string
      */
-    public function getTitle() {
-        return $this->title;
+    public function getTitle(): string
+    {
+        return $this->title ?? '';
     }
 
     /**
      * @param string $title
      */
-    public function setTitle($title) {
+    public function setTitle(string $title): void
+    {
         $this->title = $title;
     }
 
     /**
      * @return string
      */
-    public function getOrganizer() {
-        return $this->organizer;
+    public function getOrganizer(): string
+    {
+        return $this->organizer ?? '';
     }
 
     /**
      * @param string $organizer
      */
-    public function setOrganizer($organizer) {
+    public function setOrganizer(?string $organizer): void
+    {
         $this->organizer = $organizer;
     }
 
     /**
      * @return string
      */
-    public function getTargetGroup() {
-        return $this->targetGroup;
+    public function getTargetGroup(): string
+    {
+        return $this->targetGroup ?? '';
     }
 
     /**
      * @param string $targetGroup
      */
-    public function setTargetGroup($targetGroup) {
+    public function setTargetGroup(?string $targetGroup): void
+    {
         $this->targetGroup = $targetGroup;
     }
 
     /**
-     * @return \DateTime
+     * @return DateTime|null
      */
-    public function getStartDate() {
-        return $this->startDate;
+    public function getStartDate(): ?DateTime
+    {
+        return $this->startDate??null;
     }
 
     /**
-     * @param \DateTime $startDate
+     * @param DateTime $startDate
      */
-    public function setStartDate($startDate) {
+    public function setStartDate(DateTime $startDate): void
+    {
         $this->startDate = $startDate;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getStartTime() {
-        return $this->startTime;
+    public function getStartTime(): ?string
+    {
+        return $this->startTime??null;
     }
 
     /**
-     * @param string $startTime
+     * @param string|null $startTime
      */
-    public function setStartTime($startTime) {
+    public function setStartTime(?string $startTime): void
+    {
         $this->startTime = $startTime;
     }
 
     /**
-     * @return \DateTime
+     * @return DateTime|null
      */
-    public function getEndDate() {
-        return $this->endDate;
+    public function getEndDate(): ?DateTime
+    {
+        return $this->endDate??null;
     }
 
     /**
-     * @param \DateTime $endDate
+     * @param DateTime|null $endDate
      */
-    public function setEndDate($endDate) {
+    public function setEndDate(?DateTime $endDate): void
+    {
         $this->endDate = $endDate;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getEndTime() {
-        return $this->endTime;
+    public function getEndTime(): ?string
+    {
+        return $this->endTime??null;
     }
 
     /**
-     * @param string $endTime
+     * @param string|null $endTime
      */
-    public function setEndTime($endTime) {
+    public function setEndTime(?string $endTime): void
+    {
         $this->endTime = $endTime;
     }
 
     /**
      * @return string
      */
-    public function getZip() {
-        return $this->zip;
+    public function getZip(): string
+    {
+        return $this->zip ?? '';
     }
 
     /**
      * @param string $zip
      */
-    public function setZip($zip) {
+    public function setZip(?string $zip): void
+    {
         $this->zip = $zip;
     }
 
     /**
      * @return string
      */
-    public function getLocation() {
-        return $this->location;
+    public function getLocation(): string
+    {
+        return $this->location ?? '';
     }
 
     /**
      * @param string $location
      */
-    public function setLocation($location) {
+    public function setLocation(?string $location): void
+    {
         $this->location = $location;
     }
 
     /**
      * @return string
      */
-    public function getUrlText() {
-        return $this->urlText;
+    public function getUrlText(): string
+    {
+        return $this->urlText ?? '';
     }
 
     /**
      * @param string $urlText
      */
-    public function setUrlText($urlText) {
+    public function setUrlText(string $urlText): void
+    {
         $this->urlText = $urlText;
     }
 
     /**
      * @return string
      */
-    public function getUrl() {
-        return $this->url;
+    public function getUrl(): string
+    {
+        return $this->url ?? '';
     }
 
     /**
      * @param string $url
      */
-    public function setUrl($url) {
+    public function setUrl(?string $url): void
+    {
         $this->url = $url;
     }
 
     /**
      * @return string
      */
-    public function getDescription() {
-        return $this->description;
+    public function getDescription(): string
+    {
+        return $this->description ?? '';
     }
 
     /**
      * @param string $description
      */
-    public function setDescription($description) {
+    public function setDescription(?string $description): void
+    {
         $this->description = $description;
     }
 
     /**
-     * @return \ScoutNet\Api\Models\Structure
+     * @return Structure|null
      */
-    public function getStructure() {
+    public function getStructure(): ?Structure
+    {
         return $this->structure;
     }
 
     /**
-     * @param \ScoutNet\Api\Models\Structure $structure
+     * @param Structure|null $structure
      */
-    public function setStructure($structure) {
+    public function setStructure(?Structure $structure): void
+    {
         $this->structure = $structure;
     }
 
     /**
-     * @return \ScoutNet\Api\Models\User
+     * @return User|null
      */
-    public function getChangedBy() {
+    public function getChangedBy(): ?User
+    {
         return $this->changedBy;
     }
 
     /**
-     * @param \ScoutNet\Api\Models\User $changedBy
+     * @param User|null $changedBy
      */
-    public function setChangedBy($changedBy) {
+    public function setChangedBy(?User $changedBy): void
+    {
         $this->changedBy = $changedBy;
     }
 
     /**
-     * @return \ScoutNet\Api\Models\User
+     * @return User|null
      */
-    public function getCreatedBy() {
+    public function getCreatedBy(): ?User
+    {
         return $this->createdBy;
     }
 
     /**
-     * @param \ScoutNet\Api\Models\User $createdBy
+     * @param User|null $createdBy
      */
-    public function setCreatedBy($createdBy) {
+    public function setCreatedBy(?User $createdBy): void
+    {
         $this->createdBy = $createdBy;
     }
 
     /**
-     * @return \DateTime
+     * @return DateTime|null
      */
-    public function getCreatedAt() {
-        return $this->createdAt;
+    public function getCreatedAt(): ?DateTime
+    {
+        return $this->createdAt??null;
     }
 
     /**
-     * @param \DateTime $createdAt
+     * @param DateTime $createdAt
      */
-    public function setCreatedAt($createdAt) {
+    public function setCreatedAt(DateTime $createdAt): void
+    {
         $this->createdAt = $createdAt;
     }
 
     /**
-     * @return \DateTime
+     * @return DateTime
      */
-    public function getChangedAt() {
-        return $this->changedAt;
+    public function getChangedAt(): ?DateTime
+    {
+        return $this->changedAt??null;
     }
 
     /**
-     * @param \DateTime $changedAt
+     * @param DateTime $changedAt
      */
-    public function setChangedAt($changedAt) {
+    public function setChangedAt(DateTime $changedAt): void
+    {
         $this->changedAt = $changedAt;
     }
 
     /**
-     * @return \ScoutNet\Api\Models\Categorie[]
+     * @return array
      */
-    public function getCategories() {
+    public function getCategories(): array
+    {
         return $this->categories;
     }
 
     /**
      * @param array $categories
      */
-    public function setCategories($categories) {
+    public function setCategories(array $categories): void
+    {
         $this->categories = $categories;
     }
 
     /**
-     * @param \ScoutNet\Api\Models\Categorie $categorie
+     * @param Category $category
      */
-    public function addCategorie(Categorie $categorie) {
-        $this->categories[$categorie->getUid()] = $categorie;
+    public function addCategory(Category $category): void
+    {
+        $this->categories[$category->getUid()] = $category;
     }
 
-
-    public function getAuthor() {
-        if ($this->changedBy != null) return $this->changedBy;
+    /**
+     * @return User|null
+     * @deprecated
+     */
+    public function getAuthor(): ?User
+    {
+        if ($this->changedBy != null) {
+            return $this->changedBy;
+        }
         return $this->createdBy;
+    }
+
+    /**
+     * @return Section[]
+     * @deprecated
+     */
+    public function getStufen(): array
+    {
+        return $this->getSections();
+    }
+
+    /**
+     * @param Section[] $sections
+     * @deprecated
+     */
+    public function setStufen(array $sections): void
+    {
+        $this->setSections($sections);
+    }
+
+    /**
+     * @param Section $stufe
+     * @deprecated
+     */
+    public function addStufe(Section $stufe): void
+    {
+        $this->addSection($stufe);
+    }
+
+    /**
+     * @return Section[]
+     */
+    public function getSections(): array
+    {
+        return $this->sections;
+    }
+
+    /**
+     * @param Section[] $sections
+     */
+    public function setSections(array $sections): void
+    {
+        $this->sections = $sections;
+    }
+
+    /**
+     * @param Section $section
+     */
+    public function addSection(Section $section): void
+    {
+        $this->sections[] = $section;
+    }
+
+    /**
+     * @return string
+     * @deprecated
+     */
+    public function getStufenImages(): string
+    {
+        return $this->getSectionImages();
     }
 
     /**
      * @return string
      */
-    public function getStufenImages() {
-        if ($this->stufen == null) return (string)'';
-
-        $images = "";
-        /** @var \ScoutNet\Api\Models\Stufe $stufe */
-        foreach ($this->stufen as $stufe) {
-            $images .= $stufe->getImageURL();
+    public function getSectionImages(): string
+    {
+        $sections = '';
+        foreach ($this->getSections() as $section) {
+            $sections .= $section->getImageURL();
         }
-
-        return (string)$images;
+        return (string)$sections;
     }
 
-    public function getStufenCategories() {
-        $categories = array();
-        foreach ($this->stufen as $stufe) {
-            $cat = new Categorie();
-            $cat->setUid($stufe->getCategorieId());
-            $cat->setText($stufe->getBezeichnung());
+    /**
+     * @return array
+     * @deprecated
+     */
+    public function getStufenCategories(): array
+    {
+        return $this->getSectionCategories();
+    }
 
+    /**
+     * @return array
+     */
+    public function getSectionCategories(): array
+    {
+        $categories = [];
+        foreach ($this->getSections() as $section) {
+            $cat = $section->getCategory();
             $categories[$cat->getUid()] = $cat;
         }
 
         return $categories;
     }
 
-
-    public function getStartTimestamp() {
+    /**
+     * @return DateTime
+     */
+    public function getStartTimestamp(): DateTime
+    {
         if ($this->startTime) {
-            $startTimestamp = \DateTime::createFromFormat('Y-m-d H:i:s', $this->startDate->format('Y-m-d') . ' ' . $this->startTime . (substr_count($this->startTime, ':') == 1 ? ':00' : ''));
+            $startTimestamp = DateTime::createFromFormat('Y-m-d H:i:s', $this->startDate->format('Y-m-d') . ' ' . $this->startTime . ((substr_count($this->startTime, ':') === 1) ? ':00' : ''));
         } else {
-            $startTimestamp = \DateTime::createFromFormat('Y-m-d H:i:s', $this->startDate->format('Y-m-d') . ' 00:00:00');
+            $startTimestamp = DateTime::createFromFormat('Y-m-d H:i:s', $this->startDate->format('Y-m-d') . ' 00:00:00');
         }
 
         return $startTimestamp;
     }
 
-    public function getEndTimestamp() {
+    /**
+     * @return DateTime
+     */
+    public function getEndTimestamp(): DateTime
+    {
         if ($this->endDate && $this->endTime) {
-            $endTimestamp = \DateTime::createFromFormat('Y-m-d H:i:s', $this->endDate->format('Y-m-d') . ' ' . $this->endTime . (substr_count($this->endTime, ':') == 1 ? ':00' : ''));
+            $endTimestamp = DateTime::createFromFormat('Y-m-d H:i:s', $this->endDate->format('Y-m-d') . ' ' . $this->endTime . (substr_count($this->endTime, ':') == 1 ? ':00' : ''));
         } elseif ($this->endTime) {
-            $endTimestamp = \DateTime::createFromFormat('Y-m-d H:i:s', $this->startDate->format('Y-m-d') . ' ' . $this->endTime . (substr_count($this->endTime, ':') == 1 ? ':00' : ''));
+            $endTimestamp = DateTime::createFromFormat('Y-m-d H:i:s', $this->startDate->format('Y-m-d') . ' ' . $this->endTime . (substr_count($this->endTime, ':') == 1 ? ':00' : ''));
         } elseif ($this->endDate) {
-            $endTimestamp = \DateTime::createFromFormat('Y-m-d H:i:s', $this->endDate->format('Y-m-d') . ' 00:00:00');
+            $endTimestamp = DateTime::createFromFormat('Y-m-d H:i:s', $this->endDate->format('Y-m-d') . ' 00:00:00');
         } else {
             $endTimestamp = $this->getStartTimestamp();
         }
         return $endTimestamp;
     }
 
-    public function getShowEndDateOrTime() {
+    /**
+     * @return bool
+     */
+    public function getShowEndDateOrTime(): bool
+    {
         return $this->getShowEndDate() || $this->getShowEndTime();
     }
 
-    public function getShowEndDate() {
-        return !is_null($this->endDate) && $this->endDate !== $this->startDate;
+    /**
+     * @return bool
+     */
+    public function getShowEndDate(): bool
+    {
+        return !is_null($this->endDate) && $this->endDate != 0 && $this->endDate != $this->startDate;
     }
 
-    public function getShowEndTime() {
+    /**
+     * @return bool
+     */
+    public function getShowEndTime(): bool
+    {
         return !is_null($this->endTime);
     }
 
-    public function getAllDayEvent() {
+    /**
+     * @return bool
+     */
+    public function getAllDayEvent(): bool
+    {
         return is_null($this->startTime);
     }
 
-    public function getStartYear() {
+    /**
+     * @return string
+     */
+    public function getStartYear(): string
+    {
         return $this->startDate->format('Y');
     }
 
-    public function getStartMonth() {
+    /**
+     * @return string
+     */
+    public function getStartMonth(): string
+    {
         return $this->startDate->format('m');
     }
 
     /**
-     * @return \ScoutNet\Api\Models\Stufe[]
+     * @return bool
      */
-    public function getStufen() {
-        return $this->stufen;
-    }
-
-    /**
-     * @param mixed $stufen
-     */
-    public function setStufen($stufen) {
-        $this->stufen = $stufen;
-    }
-
-    /**
-     * @param $stufe
-     */
-    public function addStufe($stufe) {
-        $this->stufen[] = $stufe;
-    }
-
-    public function getShowDetails() {
+    public function getShowDetails(): bool
+    {
         return trim($this->getDescription() . $this->getZip() . $this->getLocation() . $this->getOrganizer() . $this->getTargetGroup() . $this->getUrl()) !== '';
     }
 
+    /**
+     * @param Event $event
+     */
+    public function copyProperties(Event $event): void
+    {
+        $copyProperties = [ 'title', 'organizer', 'targetGroup', 'startDate', 'startTime', 'endDate', 'endTime', 'zip', 'location', 'urlText', 'url', 'description', 'structure', 'sections', 'categories'];
 
-    public function copyProperties($event) {
-        $copyProperties = array('title', 'organizer', 'targetGroup', 'startDate', 'startTime', 'endDate', 'endTime',
-            'zip', 'location', 'urlText', 'url', 'description', 'structure', 'stufen', 'categories');
-
-        foreach ($copyProperties as $propertie) {
-            $this->{$propertie} = $event->{$propertie};
+        foreach ($copyProperties as $property) {
+            $this->{$property} = $event->{$property};
         }
     }
-
-    /**
-     * @return string
-     * @deprecated
-     */
-    public function get_Author_name() {
-        return $this->getAuthor()->getFullName();
-    }
-
-    /**
-     * @return string
-     * @deprecated
-     */
-    public function get_Stufen_Images() {
-        return $this->getStufenImages();
-    }
-
 }

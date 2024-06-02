@@ -1,4 +1,14 @@
 <?php
+/**
+ * Copyright (c) 2024 Stefan (Mütze) Horst
+ *
+ * I don't have the time to read through all the licences to find out
+ * what they exactly say. But it's simple. It's free for non-commercial
+ * projects, but as soon as you make money with it, I want my share :-)
+ * (License: Free for non-commercial use)
+ *
+ * Authors: Stefan (Mütze) Horst <muetze@scoutnet.de>
+ */
 
 namespace ScoutNet\Api\Tests {
 
@@ -26,7 +36,7 @@ namespace ScoutNet\Api\Tests {
     use ScoutNet\Api\Helpers\CacheHelper;
     use ScoutNet\Api\Helpers\ConverterHelper;
     use ScoutNet\Api\Helpers\JsonRPCClientHelper;
-    use ScoutNet\Api\Models\Categorie;
+    use ScoutNet\Api\Models\Category;
     use ScoutNet\Api\Models\Event;
     use ScoutNet\Api\Models\Index;
     use ScoutNet\Api\Models\Permission;
@@ -65,35 +75,35 @@ namespace ScoutNet\Api\Tests {
             $this->assertInstanceOf(ConverterHelper::class, new ConverterHelper());
         }
 
-        public function testConvertCategorieValidArray() {
+        public function testConvertCategoryValidArray() {
             $cache = new CacheHelper();
             $converter = new ConverterHelper($cache);
 
-            $expected_categorie = new Categorie();
+            $expected_Category = new Category();
 
-            $expected_categorie->setUid(23);
-            $expected_categorie->setText('Categorie 1');
+            $expected_Category->setUid(23);
+            $expected_Category->setText('Category 1');
 
-            $array = ['ID' => 23, 'Text' => 'Categorie 1'];
-            $is_categorie = $converter->convertApiToCategorie($array);
-            $cached_categorie = $cache->get(Categorie::class, 23);
+            $array = ['ID' => 23, 'Text' => 'Category 1'];
+            $is_Category = $converter->convertApiToCategory($array);
+            $cached_Category = $cache->get(Category::class, 23);
 
-            $this->assertEquals($expected_categorie, $is_categorie);
-            $this->assertEquals($expected_categorie, $cached_categorie);
+            $this->assertEquals($expected_Category, $is_Category);
+            $this->assertEquals($expected_Category, $cached_Category);
         }
 
-        public function testConvertCategorieEmptyArray() {
+        public function testConvertCategoryEmptyArray() {
             $converter = new ConverterHelper();
 
-            $expected_categorie = new Categorie();
+            $expected_Category = new Category();
 
-            $expected_categorie->setUid(-1);
-            $expected_categorie->setText('');
+            $expected_Category->setUid(-1);
+            $expected_Category->setText('');
 
             $array = [];
-            $is_categorie = $converter->convertApiToCategorie($array);
+            $is_Category = $converter->convertApiToCategory($array);
 
-            $this->assertEquals($expected_categorie, $is_categorie);
+            $this->assertEquals($expected_Category, $is_Category);
         }
 
         public function testConvertPermissionValidArray() {
@@ -140,19 +150,19 @@ namespace ScoutNet\Api\Tests {
             $structure->setIdent('demoIdent');
             $structure->setEbeneId(23);
 
-            $cat1 = new Categorie();
+            $cat1 = new Category();
             $cat1->setUid(1);
             $cat1->setText('cat1');
 
-            $cat2 = new Categorie();
+            $cat2 = new Category();
             $cat2->setUid(2);
             $cat2->setText('cat2');
 
-            $cat3 = new Categorie();
+            $cat3 = new Category();
             $cat3->setUid(3);
             $cat3->setText('cat3');
 
-            $cat4 = new Categorie();
+            $cat4 = new Category();
             $cat4->setUid(4);
             $cat4->setText('cat4');
 
