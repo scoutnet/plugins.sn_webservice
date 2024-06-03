@@ -14,7 +14,8 @@ namespace ScoutNet\Api\Models;
 
 use DateTime;
 
-class Event extends AbstractModel {
+class Event extends AbstractModel
+{
     /**
      * @var string
      * @validate NotEmpty
@@ -182,7 +183,7 @@ class Event extends AbstractModel {
      */
     public function getStartDate(): ?DateTime
     {
-        return $this->startDate??null;
+        return $this->startDate ?? null;
     }
 
     /**
@@ -198,7 +199,7 @@ class Event extends AbstractModel {
      */
     public function getStartTime(): ?string
     {
-        return $this->startTime??null;
+        return $this->startTime ?? null;
     }
 
     /**
@@ -214,7 +215,7 @@ class Event extends AbstractModel {
      */
     public function getEndDate(): ?DateTime
     {
-        return $this->endDate??null;
+        return $this->endDate ?? null;
     }
 
     /**
@@ -230,7 +231,7 @@ class Event extends AbstractModel {
      */
     public function getEndTime(): ?string
     {
-        return $this->endTime??null;
+        return $this->endTime ?? null;
     }
 
     /**
@@ -374,7 +375,7 @@ class Event extends AbstractModel {
      */
     public function getCreatedAt(): ?DateTime
     {
-        return $this->createdAt??null;
+        return $this->createdAt ?? null;
     }
 
     /**
@@ -390,7 +391,7 @@ class Event extends AbstractModel {
      */
     public function getChangedAt(): ?DateTime
     {
-        return $this->changedAt??null;
+        return $this->changedAt ?? null;
     }
 
     /**

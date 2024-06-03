@@ -12,50 +12,51 @@
 
 namespace ScoutNet\Api\Models;
 
-class Index extends AbstractModel {
+class Index extends AbstractModel
+{
     /**
      * @var int internal number of Index Element
      */
-	protected $number = null;
+    protected $number;
 
     /**
      * @var string
      */
-	protected $ebene = null;
+    protected $ebene;
 
     /**
      * @var string
      */
-	protected $name = null;
-
-	/**
-     * @var string
-     */
-	protected $ort = null;
-    /**
-     * @var string
-     */
-	protected $plz = null;
+    protected $name;
 
     /**
      * @var string
      */
-	protected $url = null;
+    protected $ort;
+    /**
+     * @var string
+     */
+    protected $plz;
+
+    /**
+     * @var string
+     */
+    protected $url;
 
     /**
      * @var float
      */
-	protected $latitude = null;
+    protected $latitude;
 
     /**
      * @var float
      */
-	protected $longitude = null;
+    protected $longitude;
 
     /**
      * @var int
      */
-	protected $parent_id = null;
+    protected $parent_id;
 
     /**
      * @var \ScoutNet\Api\Models\Index[]
@@ -65,145 +66,165 @@ class Index extends AbstractModel {
     /**
      * @return int
      */
-    public function getNumber() {
+    public function getNumber()
+    {
         return $this->number;
     }
 
     /**
      * @param int $number
      */
-    public function setNumber($number) {
+    public function setNumber($number)
+    {
         $this->number = $number;
     }
 
     /**
      * @return string
      */
-    public function getEbene() {
+    public function getEbene()
+    {
         return $this->ebene;
     }
 
     /**
      * @param string $ebene
      */
-    public function setEbene($ebene) {
+    public function setEbene($ebene)
+    {
         $this->ebene = $ebene;
     }
 
     /**
      * @return string
      */
-    public function getName() {
+    public function getName()
+    {
         return $this->name;
     }
 
     /**
      * @param string $name
      */
-    public function setName($name) {
+    public function setName($name)
+    {
         $this->name = $name;
     }
 
     /**
      * @return string
      */
-    public function getOrt() {
+    public function getOrt()
+    {
         return $this->ort;
     }
 
     /**
      * @param string $ort
      */
-    public function setOrt($ort) {
+    public function setOrt($ort)
+    {
         $this->ort = $ort;
     }
 
     /**
      * @return string
      */
-    public function getPlz() {
+    public function getPlz()
+    {
         return $this->plz;
     }
 
     /**
      * @param string $plz
      */
-    public function setPlz($plz) {
+    public function setPlz($plz)
+    {
         $this->plz = $plz;
     }
 
     /**
      * @return string
      */
-    public function getUrl() {
+    public function getUrl()
+    {
         return $this->url;
     }
 
     /**
      * @param string $url
      */
-    public function setUrl($url) {
+    public function setUrl($url)
+    {
         $this->url = $url;
     }
 
     /**
      * @return float
      */
-    public function getLatitude() {
+    public function getLatitude()
+    {
         return $this->latitude;
     }
 
     /**
      * @param float $latitude
      */
-    public function setLatitude($latitude) {
+    public function setLatitude($latitude)
+    {
         $this->latitude = $latitude;
     }
 
     /**
      * @return float
      */
-    public function getLongitude() {
+    public function getLongitude()
+    {
         return $this->longitude;
     }
 
     /**
      * @param float $longitude
      */
-    public function setLongitude($longitude) {
+    public function setLongitude($longitude)
+    {
         $this->longitude = $longitude;
     }
 
     /**
      * @return int
      */
-    public function getParentId() {
+    public function getParentId()
+    {
         return $this->parent_id;
     }
 
     /**
      * @param int $parent_id
      */
-    public function setParentId($parent_id) {
+    public function setParentId($parent_id)
+    {
         $this->parent_id = $parent_id;
     }
 
     /**
      * @return Index[]
      */
-    public function getChildren() {
+    public function getChildren()
+    {
         return $this->children;
     }
 
     /**
      * @param Index[] $children
      */
-    public function setChildren($children) {
+    public function setChildren($children)
+    {
         $this->children = $children;
     }
 
-    public function addChild(&$child) {
-	    $this->children[] = $child;
+    public function addChild(&$child)
+    {
+        $this->children[] = $child;
     }
-
 }

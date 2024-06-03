@@ -12,11 +12,11 @@
 
 namespace ScoutNet\Api\Models;
 
-class User extends AbstractModel {
-    const SEX_MALE = 'm';
-    const SEX_FEMALE = 'w';
-    const SEX_DIVERSE = 'd';
-
+class User extends AbstractModel
+{
+    public const SEX_MALE = 'm';
+    public const SEX_FEMALE = 'w';
+    public const SEX_DIVERSE = 'd';
 
     /**
      * @var string

@@ -11,7 +11,6 @@
  */
 
 namespace ScoutNet\Api\Tests {
-
     /***************************************************************
      *
      *  Copyright notice
@@ -44,38 +43,44 @@ namespace ScoutNet\Api\Tests {
     use ScoutNet\Api\Models\Stufe;
     use ScoutNet\Api\Models\User;
 
-    class CacheHelperTest extends TestCase {
-        public function testCanBeCreated() {
-            $this->assertInstanceOf(CacheHelper::class, new CacheHelper());
+    class CacheHelperTest extends TestCase
+    {
+        public function testCanBeCreated()
+        {
+            self::assertInstanceOf(CacheHelper::class, new CacheHelper());
         }
 
-        public function testCache() {
+        public function testCache()
+        {
             $cache = new CacheHelper();
 
             $event = new Event();
 
             // we can only insert elements with an id
             $ret = $cache->add($event);
-            $this->assertEquals(false, $ret);
+            self::assertFalse($ret);
 
             // cache miss
-            $this->assertEquals(null, $cache->get(Event::class, 23));
+            self::assertNull($cache->get(Event::class, 23));
 
             $event->setUid(23);
             $ret = $cache->add($event);
-            $this->assertEquals($event, $ret);
+            self::assertEquals($event, $ret);
 
             // cache hit
-            $this->assertEquals($event, $cache->get(Event::class, 23));
+            self::assertEquals($event, $cache->get(Event::class, 23));
         }
     }
 
-    class ConvertHelperTest extends TestCase {
-        public function testCanBeCreated() {
-            $this->assertInstanceOf(ConverterHelper::class, new ConverterHelper());
+    class ConvertHelperTest extends TestCase
+    {
+        public function testCanBeCreated()
+        {
+            self::assertInstanceOf(ConverterHelper::class, new ConverterHelper());
         }
 
-        public function testConvertCategoryValidArray() {
+        public function testConvertCategoryValidArray()
+        {
             $cache = new CacheHelper();
             $converter = new ConverterHelper($cache);
 
@@ -88,11 +93,12 @@ namespace ScoutNet\Api\Tests {
             $is_Category = $converter->convertApiToCategory($array);
             $cached_Category = $cache->get(Category::class, 23);
 
-            $this->assertEquals($expected_Category, $is_Category);
-            $this->assertEquals($expected_Category, $cached_Category);
+            self::assertEquals($expected_Category, $is_Category);
+            self::assertEquals($expected_Category, $cached_Category);
         }
 
-        public function testConvertCategoryEmptyArray() {
+        public function testConvertCategoryEmptyArray()
+        {
             $converter = new ConverterHelper();
 
             $expected_Category = new Category();
@@ -103,10 +109,11 @@ namespace ScoutNet\Api\Tests {
             $array = [];
             $is_Category = $converter->convertApiToCategory($array);
 
-            $this->assertEquals($expected_Category, $is_Category);
+            self::assertEquals($expected_Category, $is_Category);
         }
 
-        public function testConvertPermissionValidArray() {
+        public function testConvertPermissionValidArray()
+        {
             $converter = new ConverterHelper();
 
             $expected_permission = new Permission();
@@ -118,10 +125,11 @@ namespace ScoutNet\Api\Tests {
             $array = ['code' => Permission::AUTH_WRITE_ALLOWED, 'text' => 'Permission 1', 'type' => 'Type 1'];
             $is_permission = $converter->convertApiToPermission($array);
 
-            $this->assertEquals($expected_permission, $is_permission);
+            self::assertEquals($expected_permission, $is_permission);
         }
 
-        public function testConvertPermissionEmptyArray() {
+        public function testConvertPermissionEmptyArray()
+        {
             $converter = new ConverterHelper();
 
             $expected_permission = new Permission();
@@ -133,10 +141,11 @@ namespace ScoutNet\Api\Tests {
             $array = [];
             $is_permission = $converter->convertApiToPermission($array);
 
-            $this->assertEquals($expected_permission, $is_permission);
+            self::assertEquals($expected_permission, $is_permission);
         }
 
-        public function testConvertStructureValidArray() {
+        public function testConvertStructureValidArray()
+        {
             $cache = new CacheHelper();
             $converter = new ConverterHelper($cache);
 
@@ -178,21 +187,22 @@ namespace ScoutNet\Api\Tests {
                 'Ebene_Id' => 23,
                 'Used_Kategories' => [
                     1 => 'cat1',
-                    2 => 'cat2'
+                    2 => 'cat2',
                 ],
                 'Forced_Kategories' => [
                     'section1' => [3 => 'cat3'],
-                    'section2' => [4 => 'cat4']
-                ]
+                    'section2' => [4 => 'cat4'],
+                ],
             ];
             $is_structure = $converter->convertApiToStructure($array);
             $cached_structure = $cache->get(Structure::class, 23);
 
-            $this->assertEquals($structure, $is_structure);
-            $this->assertEquals($structure, $cached_structure);
+            self::assertEquals($structure, $is_structure);
+            self::assertEquals($structure, $cached_structure);
         }
 
-        public function testConvertStructureValidArrayNoCategories() {
+        public function testConvertStructureValidArrayNoCategories()
+        {
             $cache = new CacheHelper();
             $converter = new ConverterHelper($cache);
 
@@ -220,17 +230,18 @@ namespace ScoutNet\Api\Tests {
                 ],
                 'Forced_Kategories' => [
                     'section1' => '',
-                    'section2' => ''
-                ]
+                    'section2' => '',
+                ],
             ];
             $is_structure = $converter->convertApiToStructure($array);
             $cached_structure = $cache->get(Structure::class, 23);
 
-            $this->assertEquals($structure, $is_structure);
-            $this->assertEquals($structure, $cached_structure);
+            self::assertEquals($structure, $is_structure);
+            self::assertEquals($structure, $cached_structure);
         }
 
-        public function testConvertStructureEmptyArray() {
+        public function testConvertStructureEmptyArray()
+        {
             $converter = new ConverterHelper();
 
             $structure = new Structure();
@@ -247,10 +258,11 @@ namespace ScoutNet\Api\Tests {
             $array = [];
             $is_structure = $converter->convertApiToStructure($array);
 
-            $this->assertEquals($structure, $is_structure);
+            self::assertEquals($structure, $is_structure);
         }
 
-        public function testConvertStufeValidArray() {
+        public function testConvertStufeValidArray()
+        {
             $cache = new CacheHelper();
             $converter = new ConverterHelper($cache);
 
@@ -276,11 +288,12 @@ namespace ScoutNet\Api\Tests {
             $is_stufe = $converter->convertApiToStufe($array);
             $cached_stufe = $cache->get(Stufe::class, 23);
 
-            $this->assertEquals($expected_stufe, $is_stufe);
-            $this->assertEquals($expected_stufe, $cached_stufe);
+            self::assertEquals($expected_stufe, $is_stufe);
+            self::assertEquals($expected_stufe, $cached_stufe);
         }
 
-        public function testConvertStufeEmptyArray() {
+        public function testConvertStufeEmptyArray()
+        {
             $converter = new ConverterHelper();
 
             $expected_stufe = new Stufe();
@@ -296,10 +309,11 @@ namespace ScoutNet\Api\Tests {
             $array = [];
             $is_stufe = $converter->convertApiToStufe($array);
 
-            $this->assertEquals($expected_stufe, $is_stufe);
+            self::assertEquals($expected_stufe, $is_stufe);
         }
 
-        public function testConvertUserValidArray() {
+        public function testConvertUserValidArray()
+        {
             $cache = new CacheHelper();
             $converter = new ConverterHelper($cache);
 
@@ -321,11 +335,12 @@ namespace ScoutNet\Api\Tests {
             $is_user = $converter->convertApiToUser($array);
             $cached_user = $cache->get(User::class, 'demoUsername');
 
-            $this->assertEquals($expected_user, $is_user);
-            $this->assertEquals($expected_user, $cached_user);
+            self::assertEquals($expected_user, $is_user);
+            self::assertEquals($expected_user, $cached_user);
         }
 
-        public function testConvertUserEmptyArray() {
+        public function testConvertUserEmptyArray()
+        {
             $converter = new ConverterHelper();
 
             $expected_user = new User();
@@ -339,10 +354,11 @@ namespace ScoutNet\Api\Tests {
             $array = [];
             $is_user = $converter->convertApiToUser($array);
 
-            $this->assertEquals($expected_user, $is_user);
+            self::assertEquals($expected_user, $is_user);
         }
 
-        public function testConvertEventValidArray() {
+        public function testConvertEventValidArray()
+        {
             $cache = new CacheHelper();
             $converter = new ConverterHelper($cache);
 
@@ -369,7 +385,6 @@ namespace ScoutNet\Api\Tests {
             $cat = new Categorie();
             $cat->setUid(1);
             $cat->setText('Stufe');
-
 
             $expected_event = new Event();
 
@@ -398,35 +413,35 @@ namespace ScoutNet\Api\Tests {
             $expected_event->setStufen([]);
 
             $array = [
-                "ID" => 23,
+                'ID' => 23,
                 'UID' => 23,
-                "SSID" => "23",
+                'SSID' => '23',
                 'Title' => 'demoTitle',
                 'Organizer' => 'demoOrganizer',
                 'Target_Group' => 'demoTargetGroup',
-                "Start" => "1000029600",
-                "End" => "1000162800",
-                "All_Day" => false,
-                "ZIP" => "12345",
-                "Location" => "demoLocation",
-                "URL_Text" => "demoUrlText",
-                "URL" => "http://demoUrl",
-                "Description" => "demoDescription",
-                "Stufen" => [1],
-                "Keywords" => ["1" => "Stufe"],
-                "Kalender" => "23",
-                "Last_Modified_By" => "user1",
-                "Last_Modified_At" => "1000305720",
-                "Created_By" => "user2",
-                "Created_At" => "1000210980"
+                'Start' => '1000029600',
+                'End' => '1000162800',
+                'All_Day' => false,
+                'ZIP' => '12345',
+                'Location' => 'demoLocation',
+                'URL_Text' => 'demoUrlText',
+                'URL' => 'http://demoUrl',
+                'Description' => 'demoDescription',
+                'Stufen' => [1],
+                'Keywords' => ['1' => 'Stufe'],
+                'Kalender' => '23',
+                'Last_Modified_By' => 'user1',
+                'Last_Modified_At' => '1000305720',
+                'Created_By' => 'user2',
+                'Created_At' => '1000210980',
             ];
 
             // without cache set
             $is_event = $converter->convertApiToEvent($array);
             $cached_event = $cache->get(Event::class, 23);
 
-            $this->assertEquals($expected_event, $is_event);
-            $this->assertEquals($expected_event, $cached_event);
+            self::assertEquals($expected_event, $is_event);
+            self::assertEquals($expected_event, $cached_event);
 
             // cache the elements
             $cache->add($structure);
@@ -444,11 +459,12 @@ namespace ScoutNet\Api\Tests {
             $is_event = $converter->convertApiToEvent($array);
             $cached_event = $cache->get(Event::class, 23);
 
-            $this->assertEquals($expected_event, $is_event);
-            $this->assertEquals($expected_event, $cached_event);
+            self::assertEquals($expected_event, $is_event);
+            self::assertEquals($expected_event, $cached_event);
         }
 
-        public function testConvertEventEmptyArray() {
+        public function testConvertEventEmptyArray()
+        {
             $converter = new ConverterHelper();
 
             $expected_event = new Event();
@@ -476,10 +492,11 @@ namespace ScoutNet\Api\Tests {
             $array = [];
             $is_event = $converter->convertApiToEvent($array);
 
-            $this->assertEquals($expected_event, $is_event);
+            self::assertEquals($expected_event, $is_event);
         }
 
-        public function testConvertEventToApi() {
+        public function testConvertEventToApi()
+        {
             $cache = new CacheHelper();
             $converter = new ConverterHelper($cache);
 
@@ -511,7 +528,6 @@ namespace ScoutNet\Api\Tests {
             $custom_cat->setUid(null);
             $custom_cat->setText('Custom1');
 
-
             $event = new Event();
 
             $event->setUid(23);
@@ -536,38 +552,38 @@ namespace ScoutNet\Api\Tests {
             $event->setStructure($structure);
             $event->setStufen([$stufe]);
 
-
             $expected_array = [
-                "ID" => 23,
-                "UID" => 23,
-                "SSID" => 23,
+                'ID' => 23,
+                'UID' => 23,
+                'SSID' => 23,
                 'Title' => 'demoTitle',
                 'Organizer' => 'demoOrganizer',
                 'Target_Group' => 'demoTargetGroup',
-                "Start" => '1000029600',
-                "End" => '1000162800',
-                "All_Day" => false,
-                "ZIP" => "12345",
-                "Location" => "demoLocation",
-                "URL_Text" => "demoUrlText",
-                "URL" => "http://demoUrl",
-                "Description" => "demoDescription",
-                "Stufen" => [1],
-                "Keywords" => ["1" => "Stufe"],
-                "Kalender" => 23,
-                "Last_Modified_By" => "user1",
-                "Last_Modified_At" => 1000305720,
-                "Created_By" => "user2",
-                "Created_At" => 1000210980,
-                "Custom_Keywords" => ['Custom1'],
+                'Start' => '1000029600',
+                'End' => '1000162800',
+                'All_Day' => false,
+                'ZIP' => '12345',
+                'Location' => 'demoLocation',
+                'URL_Text' => 'demoUrlText',
+                'URL' => 'http://demoUrl',
+                'Description' => 'demoDescription',
+                'Stufen' => [1],
+                'Keywords' => ['1' => 'Stufe'],
+                'Kalender' => 23,
+                'Last_Modified_By' => 'user1',
+                'Last_Modified_At' => 1000305720,
+                'Created_By' => 'user2',
+                'Created_At' => 1000210980,
+                'Custom_Keywords' => ['Custom1'],
             ];
 
             // without cache set
             $is_array = $converter->convertEventToApi($event);
-            $this->assertEquals($expected_array, $is_array);
+            self::assertEquals($expected_array, $is_array);
         }
 
-        public function testConverIndexValidArray() {
+        public function testConverIndexValidArray()
+        {
             $cache = new CacheHelper();
             $converter = new ConverterHelper($cache);
 
@@ -584,7 +600,7 @@ namespace ScoutNet\Api\Tests {
             $expected_index->setNumber('10/10/10');
             $expected_index->setEbene('demoEbene');
             $expected_index->setName('demoName');
-            $expected_index->setOrt("demoOrt");
+            $expected_index->setOrt('demoOrt');
             $expected_index->setPlz('12345');
             $expected_index->setUrl('http://demoUrl');
             $expected_index->setLatitude(50.0);
@@ -608,14 +624,15 @@ namespace ScoutNet\Api\Tests {
             $is_index = $converter->convertApiToIndex($array);
             $cached_index = $cache->get(Index::class, 23);
 
-            $this->assertEquals($expected_index, $is_index);
-            $this->assertEquals($expected_index, $cached_index);
+            self::assertEquals($expected_index, $is_index);
+            self::assertEquals($expected_index, $cached_index);
 
             // parent is set
-            $this->assertEquals([$is_index], $parent->getChildren());
+            self::assertEquals([$is_index], $parent->getChildren());
         }
 
-        public function testConvertIndexEmptyArray() {
+        public function testConvertIndexEmptyArray()
+        {
             $converter = new ConverterHelper();
 
             $expected_index = new Index();
@@ -624,7 +641,7 @@ namespace ScoutNet\Api\Tests {
             $expected_index->setNumber('');
             $expected_index->setEbene('');
             $expected_index->setName('');
-            $expected_index->setOrt("");
+            $expected_index->setOrt('');
             $expected_index->setPlz('');
             $expected_index->setUrl('');
             $expected_index->setLatitude(0.0);
@@ -635,28 +652,31 @@ namespace ScoutNet\Api\Tests {
             $array = [];
             $is_index = $converter->convertApiToIndex($array);
 
-            $this->assertEquals($expected_index, $is_index);
+            self::assertEquals($expected_index, $is_index);
         }
     }
 
+    class AESHelperTest extends TestCase
+    {
+        public const AES_IV = '1234567890123456';
+        public const AES_KEY = '12345678901234567890123456789012';
 
-    class AESHelperTest extends TestCase {
-        const AES_IV = '1234567890123456';
-        const AES_KEY = '12345678901234567890123456789012';
-
-        public function testCanBeCreated() {
-            $this->assertInstanceOf(AesHelper::class, new AesHelper(self::AES_KEY));
+        public function testCanBeCreated()
+        {
+            self::assertInstanceOf(AesHelper::class, new AesHelper(self::AES_KEY));
         }
 
         /**
          * @expectedException \Exception
          * @expectedExceptionMessageRegExp /^Key is 80 bits long[.] [*]not[*] 128, 192, or 256[.]$/
          */
-        public function testWrongKeySize() {
+        public function testWrongKeySize()
+        {
             new AesHelper('1234567890');
         }
 
-        public function testWrongIvSize() {
+        public function testWrongIvSize()
+        {
             $aes = new AesHelper(self::AES_KEY, AesHelper::AES_MODE_CBC, '1234567890');
 
             $objectReflection = new \ReflectionObject($aes);
@@ -664,58 +684,66 @@ namespace ScoutNet\Api\Tests {
             $iv->setAccessible(true);
 
             // gets padded with 0x00
-            $this->assertEquals(['1', '2', '3', '4', '5', '6', '7', '8',
+            self::assertEquals(['1', '2', '3', '4', '5', '6', '7', '8',
                 '9', '0', "\0", "\0", "\0", "\0", "\0", "\0"], $iv->getValue($aes));
         }
 
-        public function testWrongCyphertextSize() {
+        public function testWrongCyphertextSize()
+        {
             $aes = new AesHelper(self::AES_KEY);
 
             $plaintext_unpadded = $aes->decrypt(base64_decode('1234')); // it gets zero padded
             $plaintext_padded = $aes->decrypt(base64_decode('1234AAAAAAAAAAAAAAAAAA==')); // no padding, since cyphertext is correct size
 
-            $this->assertEquals($plaintext_padded, $plaintext_unpadded);
+            self::assertEquals($plaintext_padded, $plaintext_unpadded);
         }
 
-        public function testEncryptionECBZeroPadding() {
+        public function testEncryptionECBZeroPadding()
+        {
             $aes = new AesHelper(self::AES_KEY);
 
             $ciphertext = $aes->encrypt('dies ist ein sehr langer test mit sehr viel text..');
 
-            $this->assertEquals('FinfuxuBJA6LrPr226ldeZwPFpGLvQqih/3CTH/6k1vqbO4VTuptsCVCKe1gwnZn8LuJfNDe+7NyaIucraohtg==', base64_encode($ciphertext));
+            self::assertEquals('FinfuxuBJA6LrPr226ldeZwPFpGLvQqih/3CTH/6k1vqbO4VTuptsCVCKe1gwnZn8LuJfNDe+7NyaIucraohtg==', base64_encode($ciphertext));
         }
 
-        public function testEncryptionCBCZeroPadding() {
+        public function testEncryptionCBCZeroPadding()
+        {
             $aes = new AesHelper(self::AES_KEY, AesHelper::AES_MODE_CBC);
 
             $ciphertext = $aes->encrypt('dies ist ein sehr langer test mit sehr viel text..');
 
-            $this->assertEquals('aKRxFwuhKcfJ4kNprkJQPoMkOUDYrEOKKGe4olQqFc0YjLF2d5P1/FV+qz/K4I1RegSP0UpT0VskDRn0tr0W2Q==', base64_encode($ciphertext));
+            self::assertEquals('aKRxFwuhKcfJ4kNprkJQPoMkOUDYrEOKKGe4olQqFc0YjLF2d5P1/FV+qz/K4I1RegSP0UpT0VskDRn0tr0W2Q==', base64_encode($ciphertext));
         }
 
-        public function testDencryptionECBZeroPadding() {
+        public function testDencryptionECBZeroPadding()
+        {
             $aes = new AesHelper(self::AES_KEY);
 
             $plaintext = $aes->decrypt(base64_decode('FinfuxuBJA6LrPr226ldeZwPFpGLvQqih/3CTH/6k1vqbO4VTuptsCVCKe1gwnZn8LuJfNDe+7NyaIucraohtg=='));
 
-            $this->assertEquals('dies ist ein sehr langer test mit sehr viel text..', $plaintext);
+            self::assertEquals('dies ist ein sehr langer test mit sehr viel text..', $plaintext);
         }
 
-        public function testDencryptionCBCZeroPadding() {
+        public function testDencryptionCBCZeroPadding()
+        {
             $aes = new AesHelper(self::AES_KEY, AesHelper::AES_MODE_CBC);
 
             $plaintext = $aes->decrypt(base64_decode('aKRxFwuhKcfJ4kNprkJQPoMkOUDYrEOKKGe4olQqFc0YjLF2d5P1/FV+qz/K4I1RegSP0UpT0VskDRn0tr0W2Q=='));
 
-            $this->assertEquals('dies ist ein sehr langer test mit sehr viel text..', $plaintext);
+            self::assertEquals('dies ist ein sehr langer test mit sehr viel text..', $plaintext);
         }
     }
 
-    class JsonRPCClientHelperTest extends TestCase {
-        public function testCanBeCreated() {
-            $this->assertInstanceOf(JsonRPCClientHelper::class, new JsonRPCClientHelper('demo'));
+    class JsonRPCClientHelperTest extends TestCase
+    {
+        public function testCanBeCreated()
+        {
+            self::assertInstanceOf(JsonRPCClientHelper::class, new JsonRPCClientHelper('demo'));
         }
 
-        public function testDebugLog() {
+        public function testDebugLog()
+        {
             $rpcClient = new JsonRPCClientHelper('demo');
 
             $objectReflection = new \ReflectionObject($rpcClient);
@@ -724,13 +752,12 @@ namespace ScoutNet\Api\Tests {
 
             // debug is off
             $debugLog->invoke($rpcClient, 'testLog');
-            $this->assertEquals([], $rpcClient->getDebugLog());
-
+            self::assertEquals([], $rpcClient->getDebugLog());
 
             // debug is on
             $rpcClient->setDebug(true);
             $debugLog->invoke($rpcClient, 'testLog');
-            $this->assertEquals(['testLog'], $rpcClient->getDebugLog());
+            self::assertEquals(['testLog'], $rpcClient->getDebugLog());
 
             $printDebugLog = $objectReflection->getMethod('printDebugLog');
             $printDebugLog->setAccessible(true);
@@ -744,7 +771,8 @@ namespace ScoutNet\Api\Tests {
          * @expectedException \Exception
          * @expectedExceptionCode  1492673555
          */
-        public function testRPCCallWrongMethodName() {
+        public function testRPCCallWrongMethodName()
+        {
             $rpcClient = new JsonRPCClientHelper('demo');
             $rpcClient->__call([], []);
         }
@@ -753,7 +781,8 @@ namespace ScoutNet\Api\Tests {
          * @expectedException \Exception
          * @expectedExceptionCode  1492673563
          */
-        public function testRPCCallWrongParameter() {
+        public function testRPCCallWrongParameter()
+        {
             $rpcClient = new JsonRPCClientHelper('demo');
             $rpcClient->__call('demoCall', '');
         }
@@ -762,7 +791,8 @@ namespace ScoutNet\Api\Tests {
          * @expectedException \Exception
          * @expectedExceptionCode  1492673515
          */
-        public function testRPCCallWrongID() {
+        public function testRPCCallWrongID()
+        {
             $rpcClient = new JsonRPCClientHelper('demo');
             $rpcClient->__call('demoCallBrokenID', []);
         }
@@ -772,18 +802,20 @@ namespace ScoutNet\Api\Tests {
          * @expectedExceptionCode 23
          * @expectedExceptionMessage demoError
          */
-        public function testRPCCallError() {
+        public function testRPCCallError()
+        {
             $rpcClient = new JsonRPCClientHelper('demo');
             $rpcClient->__call('demoCallError', []);
         }
 
-        public function testRPCNotification() {
+        public function testRPCNotification()
+        {
             $rpcClient = new JsonRPCClientHelper('demo');
             $rpcClient->setRPCNotification(true);
 
             $ret = $rpcClient->__call('demoNotification', []);
 
-            $this->assertEquals(true, $ret);
+            self::assertTrue($ret);
         }
 
         // Call per Fopen
@@ -792,67 +824,70 @@ namespace ScoutNet\Api\Tests {
          * @expectedException \Exception
          * @expectedExceptionCode  1492679926
          */
-        public function testRPCCallFopenCannotconnect() {
+        public function testRPCCallFopenCannotconnect()
+        {
             $rpcClient = new JsonRPCClientHelper('demoBrokenCall');
             $rpcClient->__call('demoCall', []);
         }
 
-
-        public function testRPCCallFopenCookieTest() {
+        public function testRPCCallFopenCookieTest()
+        {
             $_COOKIE['XDEBUG_SESSION'] = '123';
             $rpcClient = new JsonRPCClientHelper('demo');
             $ret = $rpcClient->__call('demoCallCookie', []);
-            $this->assertEquals(['Cookie' => 'XDEBUG_SESSION=123'], $ret);
+            self::assertEquals(['Cookie' => 'XDEBUG_SESSION=123'], $ret);
         }
 
-        public function testRPCCallFopenWorking() {
+        public function testRPCCallFopenWorking()
+        {
             $rpcClient = new JsonRPCClientHelper('demo');
 
             $ret = $rpcClient->__call('demoCall', []);
 
-            $this->assertEquals(['demoAnswer'], $ret);
+            self::assertEquals(['demoAnswer'], $ret);
         }
 
         // Call per Curl
-        public function testRPCCallCurlCookieTest() {
+        public function testRPCCallCurlCookieTest()
+        {
             $_COOKIE['XDEBUG_SESSION'] = '123';
             $rpcClient = new JsonRPCClientHelper('demo');
             $rpcClient->setUseCurl();
 
             $ret = $rpcClient->__call('demoCallCookie', []);
-            $this->assertEquals(['Cookie' => 'XDEBUG_SESSION=123'], $ret);
+            self::assertEquals(['Cookie' => 'XDEBUG_SESSION=123'], $ret);
         }
 
-        public function testRPCCallCurlProxyTest() {
+        public function testRPCCallCurlProxyTest()
+        {
             $rpcClient = new JsonRPCClientHelper('demo');
             $rpcClient->setUseCurl('demoProxyServer', 'demoProxyTunnel', 'demoUserPass');
 
             $ret = $rpcClient->__call('demoCallOptions', []);
-            $this->assertEquals(['options' => [
+            self::assertEquals(['options' => [
                 CURLOPT_PROXY => 'demoProxyServer',
                 CURLOPT_HTTPPROXYTUNNEL => 'demoProxyTunnel',
-                CURLOPT_PROXYUSERPWD => 'demoUserPass'
+                CURLOPT_PROXYUSERPWD => 'demoUserPass',
             ]], $ret);
         }
 
-        public function testRPCCallCurlWorking() {
+        public function testRPCCallCurlWorking()
+        {
             $rpcClient = new JsonRPCClientHelper('demo');
             $rpcClient->setUseCurl();
 
             $ret = $rpcClient->__call('demoCall', []);
 
-            $this->assertEquals(['demoAnswer'], $ret);
+            self::assertEquals(['demoAnswer'], $ret);
         }
-
     }
-
 }
 
 namespace ScoutNet\Api\Helpers {
-
     use Exception;
 
-    function fopen($url, $mode, $use_include_path = null, $context = null) {
+    function fopen($url, $mode, $use_include_path = null, $context = null)
+    {
         switch ($url) {
             case 'demo':
                 return ['url' => $url, 'context' => $context];
@@ -863,27 +898,28 @@ namespace ScoutNet\Api\Helpers {
         //throw new Exception('Mock called with wrong url');
     }
 
-    function getMockedRequest($url, $content, $headers = []) {
+    function getMockedRequest($url, $content, $headers = [])
+    {
         switch ($content['method']) {
             case 'demoCall':
                 $response = [
                     'id' => $content['id'],
                     'error' => null,
-                    'result' => ['demoAnswer']
+                    'result' => ['demoAnswer'],
                 ];
                 break;
             case 'demoCallBrokenID':
                 $response = [
                     'id' => -23,
                     'error' => null,
-                    'result' => ['demoAnswer']
+                    'result' => ['demoAnswer'],
                 ];
                 break;
             case 'demoCallError':
                 $response = [
                     'id' => $content['id'],
                     'error' => ['message' => 'demoError', 'code' => 23],
-                    'result' => null
+                    'result' => null,
                 ];
                 break;
             case 'demoCallCookie':
@@ -900,7 +936,7 @@ namespace ScoutNet\Api\Helpers {
                 $response = [
                     'id' => $content['id'],
                     'error' => null,
-                    'result' => ['Cookie' => $cookies]
+                    'result' => ['Cookie' => $cookies],
                 ];
                 break;
             case 'demoNotification':
@@ -913,8 +949,8 @@ namespace ScoutNet\Api\Helpers {
         return $response;
     }
 
-
-    function fgets(&$fd) {
+    function fgets(&$fd)
+    {
         if (is_resource($fd)) {
             // live
             return \fgets($fd);
@@ -931,37 +967,39 @@ namespace ScoutNet\Api\Helpers {
             $post_data = $opt['http']['content'];
             $request = json_decode($post_data, true);
 
-            $headers = explode("\r\n",$opt['http']['header']);
+            $headers = explode("\r\n", $opt['http']['header']);
 
             $response = getMockedRequest($url, $request, $headers);
 
             $fd = null;
             return json_encode($response);
-        } else {
-            return false;
         }
+        return false;
     }
 
-
-    function curl_init() {
+    function curl_init()
+    {
         return [];
     }
 
-    function curl_setopt_array(&$ch, $options) {
+    function curl_setopt_array(&$ch, $options)
+    {
         foreach ($options as $key => $value) {
             $ch[$key] = $value;
         }
     }
 
-    function curl_setopt(&$ch, $opt, $value) {
+    function curl_setopt(&$ch, $opt, $value)
+    {
         $ch[$opt] = $value;
     }
-    function curl_exec($ch) {
+    function curl_exec($ch)
+    {
         $url = $ch[CURLOPT_URL];
         $request = json_decode($ch[CURLOPT_POSTFIELDS], true);
         $headers = $ch[CURLOPT_HTTPHEADER];
 
-        $headers[] = 'Cookie: '.$ch[CURLOPT_COOKIE];
+        $headers[] = 'Cookie: ' . $ch[CURLOPT_COOKIE];
 
         if ($request['method'] == 'demoCallOptions') {
             $response = [
@@ -969,7 +1007,7 @@ namespace ScoutNet\Api\Helpers {
                 'error' => null,
                 'result' => [
                     'options' => [],
-                ]
+                ],
             ];
             foreach ([CURLOPT_PROXY, CURLOPT_HTTPPROXYTUNNEL, CURLOPT_PROXYUSERPWD] as $option) {
                 $response['result']['options'][$option] = $ch[$option];
@@ -981,8 +1019,5 @@ namespace ScoutNet\Api\Helpers {
         return json_encode($response);
     }
 
-    function curl_close($ch) {
-
-    }
+    function curl_close($ch) {}
 }
-

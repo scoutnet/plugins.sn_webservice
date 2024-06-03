@@ -15,7 +15,8 @@ namespace ScoutNet\Api\Models;
 /**
  * Section
  */
-class Section extends AbstractModel {
+class Section extends AbstractModel
+{
     /**
      * @var string
      */
@@ -148,7 +149,7 @@ class Section extends AbstractModel {
      */
     public function getCategorieId(): string
     {
-        return $this->category?->getUid()??'';
+        return $this->category?->getUid() ?? '';
     }
 
     /**
@@ -157,8 +158,8 @@ class Section extends AbstractModel {
      */
     public function setCategorieId(int $categoryId): void
     {
-//        $categoryRepository = GeneralUtility::makeInstance(CategoryRepository::class);
-//        $this->category = $categoryRepository->findByUid($categoryId);
+        //        $categoryRepository = GeneralUtility::makeInstance(CategoryRepository::class);
+        //        $this->category = $categoryRepository->findByUid($categoryId);
     }
 
     /**

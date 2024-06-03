@@ -12,7 +12,8 @@
 
 namespace ScoutNet\Api\Models;
 
-class Category extends AbstractModel {
+class Category extends AbstractModel
+{
     /**
      * @var string
      */

@@ -11,6 +11,7 @@
  */
 
 namespace ScoutNet\Api\Tests;
+
 /***************************************************************
  *
  *  Copyright notice
@@ -45,20 +46,22 @@ use ScoutNet\Api\Models\Structure;
 use ScoutNet\Api\Models\User;
 use ScoutNet\Api\ScoutnetApi;
 
-final class ApiTest extends TestCase {
-    const AES_KEY = "12345678901234567890123456789012";
-    const AES_IV = "1234567890123456";
+final class ApiTest extends TestCase
+{
+    public const AES_KEY = '12345678901234567890123456789012';
+    public const AES_IV = '1234567890123456';
 
-    const API_PROVIDER = "phpunit";
-    const API_USER = "phpunit";
-    const API_KEY = "12345678901234567890123456789012";
+    public const API_PROVIDER = 'phpunit';
+    public const API_USER = 'phpunit';
+    public const API_KEY = '12345678901234567890123456789012';
 
-    const MOCKED_TIME_VALUE = 1;
-    const MOCKED_RAND_VALUE = 4;
+    public const MOCKED_TIME_VALUE = 1;
+    public const MOCKED_RAND_VALUE = 4;
 
-    private $sn = null;
+    private $sn;
 
-    public function __construct($name = null, array $data = array(), $dataName = '') {
+    public function __construct($name = null, array $data = [], $dataName = '')
+    {
         parent::__construct($name, $data, $dataName);
         $this->sn = new ScoutnetApi();
         $jsonRPCClientHelperMock = new JsonRPCClientHelperMock('https://www.scoutnet.de/jsonrpc/server.php', false, CACHE_DIR); // load data to be mocked from $url
@@ -73,7 +76,8 @@ final class ApiTest extends TestCase {
     /**
      * set correct Write Credentials, so we can test the wrong Credentials too
      */
-    private function _setCorrectWriteCredentials() {
+    private function _setCorrectWriteCredentials()
+    {
         $this->sn->set_scoutnet_connect_data('https://www.scoutnet.de/community/scoutnetConnect.html', self::API_PROVIDER, self::AES_KEY, self::AES_IV);
     }
 
@@ -90,8 +94,9 @@ final class ApiTest extends TestCase {
      *
      * @return string AUTH
      */
-    private function _generateAuth($time = self::MOCKED_TIME_VALUE, $provider = self::API_PROVIDER, $user = self::API_USER, $api_key = self::API_KEY, $broken_md5 = false, $broken_sha1 = false) {
-        $aes = new AesHelper(self::AES_KEY, "CBC", self::AES_IV);
+    private function _generateAuth($time = self::MOCKED_TIME_VALUE, $provider = self::API_PROVIDER, $user = self::API_USER, $api_key = self::API_KEY, $broken_md5 = false, $broken_sha1 = false)
+    {
+        $aes = new AesHelper(self::AES_KEY, 'CBC', self::AES_IV);
 
         $content = [];
         $content['time'] = $time;
@@ -102,8 +107,8 @@ final class ApiTest extends TestCase {
         // generate temp json to build hashes from
         $json = json_encode($content);
 
-        $content['md5'] = $broken_md5 ? "12345678901234567890123456789012" : md5($json);
-        $content['sha1'] = $broken_sha1 ? "1234567890123456789012345678901234567890" : sha1($json);
+        $content['md5'] = $broken_md5 ? '12345678901234567890123456789012' : md5($json);
+        $content['sha1'] = $broken_sha1 ? '1234567890123456789012345678901234567890' : sha1($json);
 
         $json = json_encode($content);
 
@@ -112,45 +117,48 @@ final class ApiTest extends TestCase {
         return $data;
     }
 
-    public function testCanBeCreated() {
-        $this->assertInstanceOf(
+    public function testCanBeCreated()
+    {
+        self::assertInstanceOf(
             ScoutnetApi::class,
             new ScoutnetApi()
         );
     }
 
-    public function testGetEventsForGlobalId() {
+    public function testGetEventsForGlobalId()
+    {
+        $events = $this->sn->get_events_for_global_id_with_filter(4, ['limit' => '1', 'before' => '12.01.2012']);
 
-        $events = $this->sn->get_events_for_global_id_with_filter(4, array('limit' => '1', 'before' => '12.01.2012'));
-
-        $this->assertEquals(1, count($events), "got more than one event");
-        $this->assertEquals(4, $events[0]->getStructure()->getUid(), "wrong kalender id for event");
+        self::assertEquals(1, count($events), 'got more than one event');
+        self::assertEquals(4, $events[0]->getStructure()->getUid(), 'wrong kalender id for event');
     }
 
-    public function testGetKalenderElements() {
+    public function testGetKalenderElements()
+    {
         $kalender = $this->sn->get_kalender_by_global_id('4');
-        $this->assertEquals(1, count($kalender), "got more than one kalender");
-        $this->assertEquals(4, $kalender[0]->getUid(), "wrong kalender id returned");
+        self::assertEquals(1, count($kalender), 'got more than one kalender');
+        self::assertEquals(4, $kalender[0]->getUid(), 'wrong kalender id returned');
     }
 
-    public function testGetIndexElements() {
-        $indexes = $this->sn->get_index_for_global_id_with_filter(4, array('deeps' => '2'));
+    public function testGetIndexElements()
+    {
+        $indexes = $this->sn->get_index_for_global_id_with_filter(4, ['deeps' => '2']);
 
-        $this->assertGreaterThan(13, count($indexes), 'to few structures returned, as of writing there were 113');
+        self::assertGreaterThan(13, count($indexes), 'to few structures returned, as of writing there were 113');
 
         $diozese = $indexes['4']; // diozese Köln
-        $this->assertGreaterThan(5, count($diozese->getChildren()), 'less than 5 Bezirke, as of writing there were 12');
+        self::assertGreaterThan(5, count($diozese->getChildren()), 'less than 5 Bezirke, as of writing there were 12');
 
         $bezirk = $indexes['17']; // bezirk erft
-        $this->assertGreaterThan(5, count($bezirk->getChildren()), "less than 5 Stämme, as of writing there were 12");
+        self::assertGreaterThan(5, count($bezirk->getChildren()), 'less than 5 Stämme, as of writing there were 12');
     }
 
-
-    public function testException() {
+    public function testException()
+    {
         $ext = new ScoutNetExceptionMissingConfVar('test', 23);
 
-        $this->assertEquals(23, $ext->getCode());
-        $this->assertEquals("Missing 'test'. Please Contact your Admin to enter a valid credentials for ScoutNet Connect. You can request them via <a href=\"mailto:scoutnetconnect@scoutnet.de\">scoutnetConnect@ScoutNet.de</a>.", $ext->getMessage());
+        self::assertEquals(23, $ext->getCode());
+        self::assertEquals("Missing 'test'. Please Contact your Admin to enter a valid credentials for ScoutNet Connect. You can request them via <a href=\"mailto:scoutnetconnect@scoutnet.de\">scoutnetConnect@ScoutNet.de</a>.", $ext->getMessage());
     }
 
     public function testSetScoutnetConnectDataFailureAES_KEY(): void
@@ -193,7 +201,7 @@ final class ApiTest extends TestCase {
         $login_url = $objectReflection->getProperty('login_url');
         $login_url->setAccessible(true);
 
-        $this->assertEquals('https://www.scoutnet.de/community/scoutnetConnect.html', $login_url->getValue($this->sn));
+        self::assertEquals('https://www.scoutnet.de/community/scoutnetConnect.html', $login_url->getValue($this->sn));
     }
 
     public function testScoutNetConnectLogin(): void
@@ -201,10 +209,9 @@ final class ApiTest extends TestCase {
         $this->_setCorrectWriteCredentials();
 
         $connect_button = $this->sn->get_scoutnet_connect_login_button('http://localhost/testclient.php', true, 'https://www.scoutnet.de/images/scoutnetConnect.png', 'de');
-        $expected_connect_button = file_get_contents(CACHE_DIR . "ConnectButton.html");
+        $expected_connect_button = file_get_contents(CACHE_DIR . 'ConnectButton.html');
 
-
-        $this->assertEquals($expected_connect_button, $connect_button);
+        self::assertEquals($expected_connect_button, $connect_button);
     }
 
     public function testSetLoginDetailsUserEmpty(): void
@@ -220,7 +227,8 @@ final class ApiTest extends TestCase {
         $method->invokeArgs($this->sn, []);
     }
 
-    public function testSetLoginDetailsApiKeyEmpty() {
+    public function testSetLoginDetailsApiKeyEmpty()
+    {
         $this->expectException(ScoutNetExceptionMissingConfVar::class);
         $this->expectExceptionCode(1491938183);
 
@@ -232,7 +240,8 @@ final class ApiTest extends TestCase {
         $method->invokeArgs($this->sn, []);
     }
 
-    public function testSetLoginDetailsApiKeyWrongLength() {
+    public function testSetLoginDetailsApiKeyWrongLength()
+    {
         $this->expectException(ScoutNetExceptionMissingConfVar::class);
         $this->expectExceptionCode(1491938183);
 
@@ -244,7 +253,8 @@ final class ApiTest extends TestCase {
         $method->invokeArgs($this->sn, []);
     }
 
-    public function testSetLoginDetails() {
+    public function testSetLoginDetails()
+    {
         $this->sn->loginUser(self::API_USER, self::API_KEY);
         $objectReflection = new ReflectionObject($this->sn);
         $method = $objectReflection->getMethod('_check_login');
@@ -254,7 +264,8 @@ final class ApiTest extends TestCase {
         self::assertEquals('', $ret);
     }
 
-    public function testGenerateAuthWithoutApiKey() {
+    public function testGenerateAuthWithoutApiKey()
+    {
         $this->expectException(ScoutNetExceptionMissingConfVar::class);
         $this->expectExceptionCode(1491938183);
 
@@ -280,7 +291,7 @@ final class ApiTest extends TestCase {
 
         $exp = 'cGJcjkxp40dKZP6Cf8QfpCiqDcXTRmrD50zdjtjBATWDeSMbj0Ro0etFtMJBASd-NBn41PC-y6IvI-h2QejUNm7g9IVpaSJj1_ibUSDoSwVNTdS_c0RSem8XyO-gTrl78gVH0AnJ13B9PUDj_mMsuquZ3teK7pJvZ5ynur4mNxc~'; // pkcs#7
         // $exp = "cGJcjkxp40dKZP6Cf8QfpCiqDcXTRmrD50zdjtjBATWDeSMbj0Ro0etFtMJBASd-NBn41PC-y6IvI-h2QejUNm7g9IVpaSJj1_ibUSDoSwVNTdS_c0RSem8XyO-gTrl78gVH0AnJ13B9PUDj_mMsuhmTe_YWh-DuQ-x4ZTlM3IQ~"; // nullPadding
-        $this->assertEquals($exp, $auth);
+        self::assertEquals($exp, $auth);
     }
 
     public function testGetApiKeyFromDataWithNoAuth(): void
@@ -289,7 +300,7 @@ final class ApiTest extends TestCase {
 
         $data = $this->sn->getApiKeyFromData();
 
-        $this->assertEquals(false, $data);
+        self::assertFalse($data);
     }
 
     public function testGetApiKeyFromDataWithEmptyAuth(): void
@@ -304,7 +315,8 @@ final class ApiTest extends TestCase {
         $this->sn->getApiKeyFromData();
     }
 
-    public function testGetApiKeyFromDataWithBrokenMd5() {
+    public function testGetApiKeyFromDataWithBrokenMd5()
+    {
         $this->expectException(ScoutNetException::class);
         $this->expectExceptionMessage('Could not verify AUTH');
 
@@ -315,7 +327,8 @@ final class ApiTest extends TestCase {
         $this->sn->getApiKeyFromData();
     }
 
-    public function testGetApiKeyFromDataWithBrokenSha1() {
+    public function testGetApiKeyFromDataWithBrokenSha1()
+    {
         $this->expectException(ScoutNetException::class);
         $this->expectExceptionMessage('Could not verify AUTH');
 
@@ -326,7 +339,8 @@ final class ApiTest extends TestCase {
         $this->sn->getApiKeyFromData();
     }
 
-    public function testGetApiKeyFromDataWithExpiredTime() {
+    public function testGetApiKeyFromDataWithExpiredTime()
+    {
         $this->expectException(ScoutnetException::class);
         $this->expectExceptionMessage('AUTH is too old');
 
@@ -337,7 +351,8 @@ final class ApiTest extends TestCase {
         $this->sn->getApiKeyFromData();
     }
 
-    public function testGetApiKeyFromDataWithWrongProvider() {
+    public function testGetApiKeyFromDataWithWrongProvider()
+    {
         $this->expectException(ScoutnetException::class);
         $this->expectExceptionMessage('AUTH for wrong provider');
 
@@ -348,7 +363,8 @@ final class ApiTest extends TestCase {
         $this->sn->getApiKeyFromData();
     }
 
-    public function testGetApiKeyFromData() {
+    public function testGetApiKeyFromData()
+    {
         $this->_setCorrectWriteCredentials();
 
         // we mocked the time for the API
@@ -360,11 +376,12 @@ final class ApiTest extends TestCase {
         $scoutnetUser = $data['user'];
         $api_key = $data['api_key'];
 
-        $this->assertEquals(self::API_USER, $scoutnetUser);
-        $this->assertEquals(self::API_KEY, $api_key);
+        self::assertEquals(self::API_USER, $scoutnetUser);
+        self::assertEquals(self::API_KEY, $api_key);
     }
 
-    public function testGetApiKeyFromDataCheckCache() {
+    public function testGetApiKeyFromDataCheckCache()
+    {
         $this->_setCorrectWriteCredentials();
 
         // we mocked the time for the API
@@ -373,7 +390,7 @@ final class ApiTest extends TestCase {
         $first_run = $this->sn->getApiKeyFromData();
         $second_run = $this->sn->getApiKeyFromData();
 
-        $this->assertEquals($first_run, $second_run);
+        self::assertEquals($first_run, $second_run);
     }
 
     public function testWritePermissions(): void
@@ -381,7 +398,7 @@ final class ApiTest extends TestCase {
         $this->sn->loginUser(self::API_USER, self::API_KEY);
         $rights = $this->sn->has_write_permission_to_calender(1);
 
-        $this->assertEquals(Permission::AUTH_WRITE_ALLOWED, $rights);
+        self::assertEquals(Permission::AUTH_WRITE_ALLOWED, $rights);
     }
 
     public function testWritePermissionsNoAuth(): void
@@ -389,7 +406,7 @@ final class ApiTest extends TestCase {
         $this->sn->loginUser(self::API_USER, self::API_KEY);
         $rights = $this->sn->has_write_permission_to_calender(2);
 
-        $this->assertEquals(Permission::AUTH_NO_RIGHT, $rights);
+        self::assertEquals(Permission::AUTH_NO_RIGHT, $rights);
     }
 
     public function testWritePermissionsPending(): void
@@ -397,27 +414,29 @@ final class ApiTest extends TestCase {
         $this->sn->loginUser(self::API_USER, self::API_KEY);
         $rights = $this->sn->has_write_permission_to_calender(3);
 
-        $this->assertEquals(Permission::AUTH_REQUEST_PENDING, $rights);
+        self::assertEquals(Permission::AUTH_REQUEST_PENDING, $rights);
     }
 
-    public function testRequestPermissionWorking() {
+    public function testRequestPermissionWorking()
+    {
         $this->sn->loginUser(self::API_USER, self::API_KEY);
         // ask for rights
         $ret = $this->sn->request_write_permissions_for_calender(1);
 
-        $this->assertEquals(Permission::AUTH_REQUESTED, $ret['code']);
+        self::assertEquals(Permission::AUTH_REQUESTED, $ret['code']);
     }
 
-    public function testRequestPermissionAlreadyRequested() {
+    public function testRequestPermissionAlreadyRequested()
+    {
         $this->sn->loginUser(self::API_USER, self::API_KEY);
         // ask for rights
         $ret = $this->sn->request_write_permissions_for_calender(2);
 
-        $this->assertEquals(Permission::AUTH_REQUEST_PENDING, $ret['code']);
+        self::assertEquals(Permission::AUTH_REQUEST_PENDING, $ret['code']);
     }
 
-    public function testRequestSingleEvent() {
-
+    public function testRequestSingleEvent()
+    {
         $cat = new Category();
         $cat->setUid(1);
         $cat->setText('Sonstiges');
@@ -598,7 +617,7 @@ final class ApiTest extends TestCase {
             9 => $cat9,
             881 => $cat881,
             38 => $cat38,
-            6 => $cat6
+            6 => $cat6,
         ]);
         $structure->setForcedCategories([
             'sections/leaders' => [886 => $cat886, 16 => $cat16, 17 => $cat17, 18 => $cat18, 19 => $cat19, 20 => $cat20],
@@ -611,7 +630,6 @@ final class ApiTest extends TestCase {
         $kalenderUser->setLastName('1.0');
         $kalenderUser->setSex('m');
         $kalenderUser->setUid('kalender-1.0');
-
 
         $event = new Event();
         $event->setUid(792);
@@ -636,14 +654,14 @@ final class ApiTest extends TestCase {
         $event->setChangedAt(DateTime::createFromFormat('Y-m-d H:i:s', '2003-07-15 00:40:29'));
 
         $ret = $this->sn->get_events_with_ids(4, [792]);
-        $this->assertEquals([$event], $ret);
+        self::assertEquals([$event], $ret);
     }
 
-    public function testCreateEvent() {
+    public function testCreateEvent()
+    {
         $cat = new Category();
         $cat->setUid(1);
         $cat->setText('Sonstiges');
-
 
         $structure = new Structure();
         $structure->setUid('4');
@@ -651,7 +669,6 @@ final class ApiTest extends TestCase {
         $kalenderUser = new User();
         $kalenderUser->setUsername('kalender-1.0');
         $kalenderUser->setUid('kalender-1.0');
-
 
         $event = new Event();
         $event->setUid(null);
@@ -675,10 +692,8 @@ final class ApiTest extends TestCase {
         $event->setCreatedAt(DateTime::createFromFormat('Y-m-d H:i:s', '2003-07-15 00:40:29'));
         $event->setChangedAt(DateTime::createFromFormat('Y-m-d H:i:s', '2003-07-15 00:40:29'));
 
-
         $this->sn->loginUser(self::API_USER, self::API_KEY);
         $res = $this->sn->write_event($event);
-
 
         // the answer does not contain the structure, changedBy and createdBy, since they are not cached
         $event->setUid(23);
@@ -688,15 +703,14 @@ final class ApiTest extends TestCase {
         $event->setCreatedAt(DateTime::createFromFormat('Y-m-d H:i:s', '2024-06-02 21:55:11'));
         $event->setChangedAt(DateTime::createFromFormat('Y-m-d H:i:s', '2024-06-02 21:55:11'));
 
-        $this->assertEquals($event, $res);
-
+        self::assertEquals($event, $res);
     }
 
-    public function testUpdateEvent() {
+    public function testUpdateEvent()
+    {
         $cat = new Category();
         $cat->setUid(1);
         $cat->setText('Sonstiges');
-
 
         $structure = new Structure();
         $structure->setUid('4');
@@ -704,7 +718,6 @@ final class ApiTest extends TestCase {
         $kalenderUser = new User();
         $kalenderUser->setUsername('kalender-1.0');
         $kalenderUser->setUid('kalender-1.0');
-
 
         $event = new Event();
         $event->setUid(792);
@@ -728,10 +741,8 @@ final class ApiTest extends TestCase {
         $event->setCreatedAt(DateTime::createFromFormat('Y-m-d H:i:s', '2003-07-15 00:40:29'));
         $event->setChangedAt(DateTime::createFromFormat('Y-m-d H:i:s', '2003-07-15 00:40:29'));
 
-
         $this->sn->loginUser(self::API_USER, self::API_KEY);
         $res = $this->sn->write_event($event);
-
 
         // the answer does not contain the structure, changedBy and createdBy, since they are not cached
         $event->setStructure(null);
@@ -739,32 +750,29 @@ final class ApiTest extends TestCase {
         $event->setCreatedBy(null);
         $event->setChangedAt(DateTime::createFromFormat('Y-m-d H:i:s', '2024-06-02 21:55:11'));
 
-        $this->assertEquals($event, $res);
-
+        self::assertEquals($event, $res);
     }
 
-
-    public function testDeleteEvent() {
+    public function testDeleteEvent()
+    {
         $this->sn->loginUser(self::API_USER, self::API_KEY);
         $res = $this->sn->delete_event(4, 23);
 
-        $this->assertEquals(['type' => 'ok', 'content' => ['Code' => 0, 'Value' => 'object Deleted']], $res);
+        self::assertEquals(['type' => 'ok', 'content' => ['Code' => 0, 'Value' => 'object Deleted']], $res);
     }
-
-
 }
-
 
 /**
  * Mocks
  */
+define('CACHE_DIR', dirname(__DIR__) . '/Fixtures/');
 
-DEFINE('CACHE_DIR', dirname(dirname(__FILE__)) . "/Fixtures/");
+class JsonRPCClientHelperMock extends JsonRPCClientHelper
+{
+    private $cache_dir;
 
-class JsonRPCClientHelperMock extends JsonRPCClientHelper {
-    private $cache_dir = null;
-
-    public function __construct($url, $debug = false, $cache_dir) {
+    public function __construct($url, $debug = false, $cache_dir)
+    {
         parent::__construct($url, $debug);
         $this->cache_dir = $cache_dir;
     }
@@ -778,7 +786,8 @@ class JsonRPCClientHelperMock extends JsonRPCClientHelper {
      * @return array|bool
      * @throws Exception
      */
-    public function __call($method, $params) {
+    public function __call($method, $params)
+    {
         // check
         if (!is_scalar($method)) {
             throw new Exception('Method name has no scalar value');
@@ -792,7 +801,7 @@ class JsonRPCClientHelperMock extends JsonRPCClientHelper {
             throw new Exception('Params must be given as array');
         }
 
-        $cache_file = $this->cache_dir . $method . ".json";
+        $cache_file = $this->cache_dir . $method . '.json';
         $cache = [];
         if (is_file($cache_file)) {
             $cache = json_decode(file_get_contents($cache_file), true);
@@ -808,7 +817,8 @@ class JsonRPCClientHelperMock extends JsonRPCClientHelper {
         return $cache[$param_json];
     }
 
-    public function setData($type, $id, $data, $api_user, $auth) {
+    public function setData($type, $id, $data, $api_user, $auth)
+    {
         // we only return the data
         $data['Last_Modified_At'] = 1717365311;
         $data['Last_Modified_By'] = $api_user;
@@ -827,7 +837,8 @@ class JsonRPCClientHelperMock extends JsonRPCClientHelper {
         return $data;
     }
 
-    public function deleteObject($type, $ssid, $id, $api_user, $auth) {
+    public function deleteObject($type, $ssid, $id, $api_user, $auth)
+    {
         return ['type' => 'ok', 'content' => ['Code' => 0, 'Value' => 'object Deleted']];
     }
 }
@@ -835,6 +846,7 @@ class JsonRPCClientHelperMock extends JsonRPCClientHelper {
 /**
  * We mock time() and rand() so we have predictable values.
  */
+
 namespace ScoutNet\Api;
 
 use ScoutNet\Api\Tests\ApiTest;
@@ -844,7 +856,8 @@ use ScoutNet\Api\Tests\ApiTest;
  *
  * @return int
  */
-function time() {
+function time()
+{
     return ApiTest::MOCKED_TIME_VALUE;
 }
 
@@ -853,31 +866,32 @@ function time() {
  *
  * @return int
  */
-function rand() {
+function rand()
+{
     return ApiTest::MOCKED_RAND_VALUE;
 }
 
 /*
 
 $testEvent = Array(
-	'ID' => -1, // id of event to update -1 for new event
-	'SSID' => $ssid,
-	'Title' => 'F+F Mitgliederversammlung',
-	'Organizer' => 'Freundes- und Förderkreis',
-	'Target_Group' => 'Freunde',
-	'Start' => 1354294800,
-	'End' => 1354294800,
-	'All_Day' => false,
-	'ZIP' => '',
-	'Location' => 'Tagungs- und Gästehaus Rolandstr.',
-	'URL_Text' => '',
-	'URL' => '',
-	'Description' => '',
-	'Stufen' => Array (),
-	'Keywords' => Array (
-		'193' => 1,
-		'543' => 1,
-	)
+    'ID' => -1, // id of event to update -1 for new event
+    'SSID' => $ssid,
+    'Title' => 'F+F Mitgliederversammlung',
+    'Organizer' => 'Freundes- und Förderkreis',
+    'Target_Group' => 'Freunde',
+    'Start' => 1354294800,
+    'End' => 1354294800,
+    'All_Day' => false,
+    'ZIP' => '',
+    'Location' => 'Tagungs- und Gästehaus Rolandstr.',
+    'URL_Text' => '',
+    'URL' => '',
+    'Description' => '',
+    'Stufen' => Array (),
+    'Keywords' => Array (
+        '193' => 1,
+        '543' => 1,
+    )
 );
 
 $testEvent = $sn->write_event($testEvent['ID'], $testEvent, $scoutnetUser, $api_key);

@@ -24,11 +24,12 @@ use ScoutNet\Api\Exceptions\ScoutNetException;
  * @method requestPermission(string $type, ?int $globalId, string $username, $auth)
  * @method test()
  */
-class JsonRPCClientHelper {
-    const ERROR_CODE_METHOD_NAME_NO_STRING = 1492673555;
-    const ERROR_CODE_PARAMS_NO_ARRAY = 1492673563;
-    const ERROR_CODE_UNABLE_TO_CONNECT = 1492679926;
-    const ERROR_CODE_RESPONSE_ID_WRONG = 1492673515;
+class JsonRPCClientHelper
+{
+    public const ERROR_CODE_METHOD_NAME_NO_STRING = 1492673555;
+    public const ERROR_CODE_PARAMS_NO_ARRAY = 1492673563;
+    public const ERROR_CODE_UNABLE_TO_CONNECT = 1492679926;
+    public const ERROR_CODE_RESPONSE_ID_WRONG = 1492673515;
 
     /**
      * Debug state
@@ -59,7 +60,7 @@ class JsonRPCClientHelper {
     /**
      * If true, notifications are performed instead of requests
      *
-     * @var boolean
+     * @var bool
      */
     private bool $notification = false;
 
@@ -151,7 +152,8 @@ class JsonRPCClientHelper {
      * @return array|bool
      * @throws ScoutNetException
      */
-    public function __call(string $method, array $params) {
+    public function __call(string $method, array $params)
+    {
         // check if method is string
         if (!is_scalar($method)) {
             throw new ScoutNetException('Method name has no scalar value', self::ERROR_CODE_METHOD_NAME_NO_STRING);
@@ -180,27 +182,26 @@ class JsonRPCClientHelper {
             'id' => $currentId,
         ];
         $request = json_encode($request);
-        $this->debugLog('***** Request *****'."\n".$request."\n".'***** End Of request *****'."\n");
-
+        $this->debugLog('***** Request *****' . "\n" . $request . "\n" . '***** End Of request *****' . "\n");
 
         if ($this->useCurl && extension_loaded('curl')) {
             // performs the HTTP POST by use of libcurl
-            $options = array(
+            $options = [
                 CURLOPT_URL		=> $this->url,
                 CURLOPT_POST		=> true,
                 CURLOPT_POSTFIELDS	=> $request,
-                CURLOPT_HTTPHEADER	=> array( 'Content-Type: application/json' ),
+                CURLOPT_HTTPHEADER	=> [ 'Content-Type: application/json' ],
                 CURLINFO_HEADER_OUT	=> true,
                 CURLOPT_RETURNTRANSFER	=> true,
                 CURLOPT_SSL_VERIFYHOST 	=> false,
                 CURLOPT_SSL_VERIFYPEER 	=> false,
                 CURLOPT_FOLLOWLOCATION	=> true,
-            );
+            ];
             $ch = curl_init();
-            curl_setopt_array( $ch, $options );
+            curl_setopt_array($ch, $options);
 
             if (isset($_COOKIE['XDEBUG_SESSION'])) {
-                curl_setopt($ch, CURLOPT_COOKIE, 'XDEBUG_SESSION='.urlencode($_COOKIE['XDEBUG_SESSION']));
+                curl_setopt($ch, CURLOPT_COOKIE, 'XDEBUG_SESSION=' . urlencode($_COOKIE['XDEBUG_SESSION']));
             }
 
             if ($this->curlProxyServer != null) {
@@ -209,39 +210,39 @@ class JsonRPCClientHelper {
                 if ($this->curlProxyTunnel != null) {
                     curl_setopt($ch, CURLOPT_HTTPPROXYTUNNEL, $this->curlProxyTunnel);
                 }
-                if ($this->curlProxyUserPass != null)	{
+                if ($this->curlProxyUserPass != null) {
                     curl_setopt($ch, CURLOPT_PROXYUSERPWD, $this->curlProxyUserPass);
                 }
             }
 
-            $response = trim( curl_exec( $ch ) );
-            curl_close( $ch );
+            $response = trim(curl_exec($ch));
+            curl_close($ch);
         } else {
             // performs the HTTP POST via fopen
             $opts = [
                 'http' => [
                     'method'  => 'POST',
-                    'header'  => "Content-type: application/json",
-                    'content' => $request
+                    'header'  => 'Content-type: application/json',
+                    'content' => $request,
                 ]];
 
             if (isset($_COOKIE['XDEBUG_SESSION'])) {
-                $opts['http']['header'] .= "\r\nCookie: XDEBUG_SESSION=".urlencode($_COOKIE['XDEBUG_SESSION']);
+                $opts['http']['header'] .= "\r\nCookie: XDEBUG_SESSION=" . urlencode($_COOKIE['XDEBUG_SESSION']);
             }
             $context  = stream_context_create($opts);
 
             if ($fp = @fopen($this->url, 'r', false, $context)) {
                 $response = '';
-                while($row = fgets($fp)) {
-                    $response .= trim($row)."\n";
+                while ($row = fgets($fp)) {
+                    $response .= trim($row) . "\n";
                 }
             } else {
-                throw new ScoutNetException('Unable to connect to '.$this->url, self::ERROR_CODE_UNABLE_TO_CONNECT);
+                throw new ScoutNetException('Unable to connect to ' . $this->url, self::ERROR_CODE_UNABLE_TO_CONNECT);
             }
         }
 
-        $this->debugLog('***** Server response *****'."\n".$response.'***** End of server response *****'."\n");
-        $response = json_decode( $response, true );
+        $this->debugLog('***** Server response *****' . "\n" . $response . '***** End of server response *****' . "\n");
+        $response = json_decode($response, true);
 
         $this->printDebugLog();
 

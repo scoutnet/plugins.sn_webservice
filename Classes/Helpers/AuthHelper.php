@@ -14,10 +14,8 @@ namespace ScoutNet\Api\Helpers;
 
 use DateTime;
 use Exception;
-use ScoutNet\Api\Helpers\AesHelper;
 use ScoutNet\Api\Exceptions\ScoutNetException;
 use ScoutNet\Api\Exceptions\ScoutNetExceptionMissingConfVar;
-use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Crypto\Random;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
@@ -66,9 +64,9 @@ class AuthHelper
             throw new ScoutNetException('the auth is broken', 1608717350);
         }
 
-        $md5 = $data['md5']??'';
+        $md5 = $data['md5'] ?? '';
         unset($data['md5']);
-        $sha1 = $data['sha1']??'';
+        $sha1 = $data['sha1'] ?? '';
         unset($data['sha1']);
 
         if (md5(json_encode($data)) != $md5) {

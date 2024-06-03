@@ -12,7 +12,8 @@
 
 namespace ScoutNet\Api\Models;
 
-class Structure extends AbstractModel {
+class Structure extends AbstractModel
+{
     /**
      * @var string
      */
@@ -81,7 +82,7 @@ class Structure extends AbstractModel {
      */
     public function getVerband(): string
     {
-        return $this->verband??'';
+        return $this->verband ?? '';
     }
 
     /**
@@ -97,7 +98,7 @@ class Structure extends AbstractModel {
      */
     public function getIdent(): string
     {
-        return $this->ident??'';
+        return $this->ident ?? '';
     }
 
     /**
@@ -202,7 +203,8 @@ class Structure extends AbstractModel {
      * @return string
      * @deprecated
      */
-    public function get_long_Name() {
+    public function get_long_Name()
+    {
         return $this->getLongName();
     }
 

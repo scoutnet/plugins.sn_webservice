@@ -12,58 +12,66 @@
 
 namespace ScoutNet\Api\Models;
 
-class Permission {
-    const AUTH_NO_RIGHT = 1;
-    const AUTH_WRITE_ALLOWED = 0;
-    const AUTH_REQUESTED = 0;
-    const AUTH_REQUEST_PENDING = 2;
+class Permission
+{
+    public const AUTH_NO_RIGHT = 1;
+    public const AUTH_WRITE_ALLOWED = 0;
+    public const AUTH_REQUESTED = 0;
+    public const AUTH_REQUEST_PENDING = 2;
 
     protected $state = self::AUTH_NO_RIGHT;
     protected $text = '';
     protected $type = '';
 
-
-    public function setState($state) {
+    public function setState($state)
+    {
         $this->state = $state;
     }
 
-    public function getState() {
+    public function getState()
+    {
         return $this->state;
     }
 
-    public function hasWritePermissionsPending() {
+    public function hasWritePermissionsPending()
+    {
         return $this->state == self::AUTH_REQUEST_PENDING;
     }
 
-    public function hasWritePermissions() {
+    public function hasWritePermissions()
+    {
         return $this->state == self::AUTH_WRITE_ALLOWED;
     }
 
     /**
      * @return mixed|string
      */
-    public function getText() {
+    public function getText()
+    {
         return $this->text;
     }
 
     /**
      * @param mixed|string $text
      */
-    public function setText($text) {
+    public function setText($text)
+    {
         $this->text = $text;
     }
 
     /**
      * @return mixed|string
      */
-    public function getType() {
+    public function getType()
+    {
         return $this->type;
     }
 
     /**
      * @param mixed|string $type
      */
-    public function setType($type) {
+    public function setType($type)
+    {
         $this->type = $type;
     }
 }

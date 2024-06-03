@@ -12,34 +12,37 @@
 
 namespace ScoutNet\Api\Models;
 
-abstract class AbstractModel {
+abstract class AbstractModel
+{
     /**
      * @param $name
      *
      * @return mixed
      * @deprecated
      */
-    public function __get($name) {
+    public function __get($name)
+    {
         return $this->{$name};
     }
 
     /**
      * @var int
      */
-    protected $uid = null;
+    protected $uid;
 
     /**
      * @return int
      */
-    public function getUid(){
+    public function getUid()
+    {
         return $this->uid;
     }
 
     /**
      * @param $uid int
      */
-    public function setUid($uid){
+    public function setUid($uid)
+    {
         $this->uid = $uid;
     }
-
 }

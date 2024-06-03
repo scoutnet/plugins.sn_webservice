@@ -13,57 +13,54 @@
 namespace ScoutNet\Api\Tests\Unit\Model;
 
 use PHPUnit\Framework\TestCase;
-use ScoutNet\Api\Models\Category;
-use ScoutNet\Api\Models\Event;
-use ScoutNet\Api\Models\Index;
-use ScoutNet\Api\Models\Permission;
-use ScoutNet\Api\Models\Structure;
-use ScoutNet\Api\Models\Section;
 use ScoutNet\Api\Models\User;
 
-class UserModelTest extends TestCase {
-    public function testCanBeCreated() {
-        $this->assertInstanceOf(User::class, new User());
+class UserModelTest extends TestCase
+{
+    public function testCanBeCreated()
+    {
+        self::assertInstanceOf(User::class, new User());
     }
 
-    public function testDefaultParameters() {
+    public function testDefaultParameters()
+    {
         $user = new User();
 
-        $this->assertEquals(null, $user->getUid());
-        $this->assertEquals(null, $user->getUsername());
-        $this->assertEquals(null, $user->getFirstName());
-        $this->assertEquals(null, $user->getLastName());
-        $this->assertEquals(null, $user->getSex());
+        self::assertNull($user->getUid());
+        self::assertNull($user->getUsername());
+        self::assertNull($user->getFirstName());
+        self::assertNull($user->getLastName());
+        self::assertNull($user->getSex());
     }
 
-    public function testSetParameter() {
+    public function testSetParameter()
+    {
         $user = new User();
 
         $user->setUid(23);
         $user->setUsername('demoUsername');
-        $user->setFirstName("demoFirstName");
+        $user->setFirstName('demoFirstName');
         $user->setLastName('demoLastName');
         $user->setSex(User::SEX_FEMALE);
 
         // check if values stored correct
-        $this->assertEquals(23, $user->getUid());
-        $this->assertEquals('demoUsername', $user->getUsername());
-        $this->assertEquals("demoFirstName", $user->getFirstName());
-        $this->assertEquals('demoLastName', $user->getLastName());
-        $this->assertEquals(User::SEX_FEMALE, $user->getSex());
+        self::assertEquals(23, $user->getUid());
+        self::assertEquals('demoUsername', $user->getUsername());
+        self::assertEquals('demoFirstName', $user->getFirstName());
+        self::assertEquals('demoLastName', $user->getLastName());
+        self::assertEquals(User::SEX_FEMALE, $user->getSex());
 
         // check derived values
-        $this->assertEquals("demoFirstName demoLastName", $user->getFullName());
-        $this->assertEquals("demoFirstName demoLastName (demoUsername)", $user->getLongName());
-
+        self::assertEquals('demoFirstName demoLastName', $user->getFullName());
+        self::assertEquals('demoFirstName demoLastName (demoUsername)', $user->getLongName());
 
         // if the firstname is empty we get the Username
         $user->setFirstName(null);
         $user->setLastName(null);
 
-        $this->assertEquals("demoUsername", $user->getFirstName());
-        $this->assertEquals("demoUsername", $user->getFullName());
+        self::assertEquals('demoUsername', $user->getFirstName());
+        self::assertEquals('demoUsername', $user->getFullName());
 
-        $this->assertEquals("demoUsername", $user->getLongName());
+        self::assertEquals('demoUsername', $user->getLongName());
     }
 }

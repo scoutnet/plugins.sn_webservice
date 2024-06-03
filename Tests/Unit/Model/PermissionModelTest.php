@@ -13,49 +13,47 @@
 namespace ScoutNet\Api\Tests\Unit\Model;
 
 use PHPUnit\Framework\TestCase;
-use ScoutNet\Api\Models\Category;
-use ScoutNet\Api\Models\Event;
-use ScoutNet\Api\Models\Index;
 use ScoutNet\Api\Models\Permission;
-use ScoutNet\Api\Models\Structure;
-use ScoutNet\Api\Models\Section;
-use ScoutNet\Api\Models\User;
 
-class PermissionModelTest extends TestCase {
-    public function testCanBeCreated() {
-        $this->assertInstanceOf(Permission::class, new Permission());
+class PermissionModelTest extends TestCase
+{
+    public function testCanBeCreated()
+    {
+        self::assertInstanceOf(Permission::class, new Permission());
     }
 
-    public function testDefaultParameters() {
+    public function testDefaultParameters()
+    {
         $permission = new Permission();
 
-        $this->assertEquals(Permission::AUTH_NO_RIGHT, $permission->getState());
-        $this->assertEquals('', $permission->getText());
-        $this->assertEquals('', $permission->getType());
+        self::assertEquals(Permission::AUTH_NO_RIGHT, $permission->getState());
+        self::assertEquals('', $permission->getText());
+        self::assertEquals('', $permission->getType());
     }
 
-    public function testSetParameters() {
+    public function testSetParameters()
+    {
         $permission = new Permission();
 
         $permission->setState(Permission::AUTH_REQUEST_PENDING);
         $permission->setText('demoText');
         $permission->setType('demoType');
 
-        $this->assertEquals(Permission::AUTH_REQUEST_PENDING, $permission->getState());
-        $this->assertEquals('demoText', $permission->getText());
-        $this->assertEquals('demoType', $permission->getType());
+        self::assertEquals(Permission::AUTH_REQUEST_PENDING, $permission->getState());
+        self::assertEquals('demoText', $permission->getText());
+        self::assertEquals('demoType', $permission->getType());
 
         // test state further
         $permission->setState(Permission::AUTH_REQUEST_PENDING);
-        $this->assertEquals(false, $permission->hasWritePermissions());
-        $this->assertEquals(true, $permission->hasWritePermissionsPending());
+        self::assertFalse($permission->hasWritePermissions());
+        self::assertTrue($permission->hasWritePermissionsPending());
 
         $permission->setState(Permission::AUTH_WRITE_ALLOWED);
-        $this->assertEquals(true, $permission->hasWritePermissions());
-        $this->assertEquals(false, $permission->hasWritePermissionsPending());
+        self::assertTrue($permission->hasWritePermissions());
+        self::assertFalse($permission->hasWritePermissionsPending());
 
         $permission->setState(Permission::AUTH_NO_RIGHT);
-        $this->assertEquals(false, $permission->hasWritePermissions());
-        $this->assertEquals(false, $permission->hasWritePermissionsPending());
+        self::assertFalse($permission->hasWritePermissions());
+        self::assertFalse($permission->hasWritePermissionsPending());
     }
 }

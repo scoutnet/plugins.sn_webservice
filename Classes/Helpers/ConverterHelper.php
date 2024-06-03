@@ -12,7 +12,6 @@
 
 namespace ScoutNet\Api\Helpers;
 
-
 use DateTime;
 use ScoutNet\Api\Models\Category;
 use ScoutNet\Api\Models\Event;
@@ -22,13 +21,15 @@ use ScoutNet\Api\Models\Section;
 use ScoutNet\Api\Models\Structure;
 use ScoutNet\Api\Models\User;
 
-class ConverterHelper {
+class ConverterHelper
+{
     /**
      * @var CacheHelper
      */
-    private $cache = null;
+    private $cache;
 
-    public function __construct($cache = null) {
+    public function __construct($cache = null)
+    {
         if ($cache == null) {
             $cache = new CacheHelper();
         }
@@ -36,17 +37,17 @@ class ConverterHelper {
         $this->cache = $cache;
     }
 
-
-    public function convertEventToApi(Event $event) {
+    public function convertEventToApi(Event $event)
+    {
         $array = [
-            'ID' => $event->getUid() !== null?$event->getUid():-1,
-            'UID' => $event->getUid() !== null?$event->getUid():-1,
+            'ID' => $event->getUid() !== null ? $event->getUid() : -1,
+            'UID' => $event->getUid() !== null ? $event->getUid() : -1,
             'SSID' => $event->getStructure()->getUid(),
             'Title' => $event->getTitle(),
             'Organizer' => $event->getOrganizer(),
             'Target_Group' => $event->getTargetGroup(),
-            'Start' => $event->getStartTimestamp() instanceof DateTime? DateTime::createFromFormat('d.m.Y H:i:s T',$event->getStartTimestamp()->format('d.m.Y H:i:s').' UTC')->format('U'):'',
-            'End' => $event->getEndTimestamp() instanceof DateTime? DateTime::createFromFormat('d.m.Y H:i:s T',$event->getEndTimestamp()->format('d.m.Y H:i:s').' UTC')->format('U'):'',
+            'Start' => $event->getStartTimestamp() instanceof DateTime ? DateTime::createFromFormat('d.m.Y H:i:s T', $event->getStartTimestamp()->format('d.m.Y H:i:s') . ' UTC')->format('U') : '',
+            'End' => $event->getEndTimestamp() instanceof DateTime ? DateTime::createFromFormat('d.m.Y H:i:s T', $event->getEndTimestamp()->format('d.m.Y H:i:s') . ' UTC')->format('U') : '',
             'All_Day' => $event->getAllDayEvent(),
             'ZIP' => $event->getZip(),
             'Location' => $event->getLocation(),
@@ -59,14 +60,14 @@ class ConverterHelper {
             'Last_Modified_By' => $event->getChangedBy()->getUid(),
             'Last_Modified_At' => $event->getChangedAt()->getTimestamp(),
             'Created_By' => $event->getCreatedBy()->getUid(),
-            'Created_At' => $event->getCreatedAt()->getTimestamp()
+            'Created_At' => $event->getCreatedAt()->getTimestamp(),
         ];
 
         foreach ($event->getStufen() as $stufe) {
             $array['Stufen'][] = $stufe->getUid();
         }
 
-        $customKeywords = array();
+        $customKeywords = [];
         foreach ($event->getCategories() as $category) {
             if ($category->getUid() == null) {
                 $customKeywords[] = $category->getText();
@@ -82,7 +83,8 @@ class ConverterHelper {
         return $array;
     }
 
-    public function convertApiToEvent($array) {
+    public function convertApiToEvent($array)
+    {
         $event = new Event();
 
         $event->setUid(isset($array['UID']) ? $array['UID'] : -1);
@@ -93,14 +95,14 @@ class ConverterHelper {
         // Time
         if (isset($array['Start'])) {
             $event->setStartDate(
-                DateTime::createFromFormat('Y-m-d H:i:s', gmstrftime("%Y-%m-%d 00:00:00", $array['Start'])));
+                DateTime::createFromFormat('Y-m-d H:i:s', gmstrftime('%Y-%m-%d 00:00:00', $array['Start']))
+            );
             $event->setStartTime((isset($array['All_Day']) && $array['All_Day']) ? null : gmstrftime('%H:%M:00', $array['Start']));
         }
         if (isset($array['End'])) {
-            $event->setEndDate($array['End'] == 0 ? null : DateTime::createFromFormat('Y-m-d H:i:s', gmstrftime("%Y-%m-%d 00:00:00", $array['End'])));
+            $event->setEndDate($array['End'] == 0 ? null : DateTime::createFromFormat('Y-m-d H:i:s', gmstrftime('%Y-%m-%d 00:00:00', $array['End'])));
             $event->setEndTime((isset($array['All_Day']) && $array['All_Day']) ? null : gmstrftime('%H:%M:00', $array['End']));
         }
-
 
         // Location
         $event->setZip(isset($array['ZIP']) ? $array['ZIP'] : null);
@@ -122,7 +124,7 @@ class ConverterHelper {
             foreach ($array['Keywords'] as $id => $text) {
                 $category = $this->cache->get(Category::class, $id);
                 if ($category === null) {
-                    $category = $this->convertApiToCategorie(array('ID' => $id, 'Text' => $text));
+                    $category = $this->convertApiToCategorie(['ID' => $id, 'Text' => $text]);
                 }
 
                 if ($category !== null) {
@@ -140,7 +142,7 @@ class ConverterHelper {
         }
 
         if (isset($array['Kalender'])) {
-            $event->setStructure($this->cache->get(Structure::class, intval($array['Kalender'])));
+            $event->setStructure($this->cache->get(Structure::class, (int)($array['Kalender'])));
         }
 
         if (isset($array['Stufen'])) {
@@ -156,8 +158,8 @@ class ConverterHelper {
         return $event;
     }
 
-
-    public function convertApiToUser($array) {
+    public function convertApiToUser($array)
+    {
         $user = new User();
 
         $user->setUid(isset($array['userid']) ? $array['userid'] : -1);
@@ -170,22 +172,24 @@ class ConverterHelper {
         return $user;
     }
 
-    public function convertApiToSection($array) {
+    public function convertApiToSection($array)
+    {
         $stufe = new Section();
 
         $stufe->setUid(isset($array['id']) ? $array['id'] : -1);
         $stufe->setVerband(isset($array['verband']) ? $array['verband'] : null);
         $stufe->setBezeichnung(isset($array['bezeichnung']) ? $array['bezeichnung'] : '');
         $stufe->setFarbe(isset($array['farbe']) ? $array['farbe'] : '');
-        $stufe->setStartalter(isset($array['startalter']) ? intval($array['startalter']) : -1);
-        $stufe->setEndalter(isset($array['endalter']) ? intval($array['endalter']) : -1);
+        $stufe->setStartalter(isset($array['startalter']) ? (int)($array['startalter']) : -1);
+        $stufe->setEndalter(isset($array['endalter']) ? (int)($array['endalter']) : -1);
         $stufe->setCategorieId(isset($array['Keywords_ID']) ? $array['Keywords_ID'] : -1);
 
         $this->cache->add($stufe, $stufe->getCategorieId());
         return $stufe;
     }
 
-    public function convertApiToStructure($array) {
+    public function convertApiToStructure($array)
+    {
         $structure = new Structure();
         $structure->setUid(isset($array['ID']) ? $array['ID'] : -1);
         $structure->setEbene(isset($array['Ebene']) ? $array['Ebene'] : '');
@@ -222,39 +226,42 @@ class ConverterHelper {
         return $structure;
     }
 
-    public function convertApiToPermission($array) {
+    public function convertApiToPermission($array)
+    {
         $permission = new Permission();
 
-        $permission->setState(isset($array['code'])?$array['code']:Permission::AUTH_NO_RIGHT);
-        $permission->setText(isset($array['text'])?$array['text']:'');
-        $permission->setType(isset($array['type'])?$array['type']:'');
+        $permission->setState(isset($array['code']) ? $array['code'] : Permission::AUTH_NO_RIGHT);
+        $permission->setText(isset($array['text']) ? $array['text'] : '');
+        $permission->setType(isset($array['type']) ? $array['type'] : '');
 
         return $permission;
     }
 
-    public function convertApiToCategorie($array) {
+    public function convertApiToCategorie($array)
+    {
         $categorie = new Category();
 
-        $categorie->setUid(isset($array['ID'])?$array['ID']:-1);
-        $categorie->setText(isset($array['Text'])?$array['Text']:'');
+        $categorie->setUid(isset($array['ID']) ? $array['ID'] : -1);
+        $categorie->setText(isset($array['Text']) ? $array['Text'] : '');
 
         $this->cache->add($categorie);
         return $categorie;
     }
 
-    public function convertApiToIndex($array) {
+    public function convertApiToIndex($array)
+    {
         $index = new Index();
 
-        $index->setUid(isset($array['id'])?$array['id']:-1);
-        $index->setNumber(isset($array['number'])?$array['number']:'');
-        $index->setEbene(isset($array['ebene'])?$array['ebene']:'');
-        $index->setName(isset($array['name'])?$array['name']:'');
-        $index->setOrt(isset($array['ort'])?$array['ort']:'');
-        $index->setPlz(isset($array['plz'])?$array['plz']:'');
-        $index->setUrl(isset($array['url'])?$array['url']:'');
-        $index->setLatitude(isset($array['latitude'])?$array['latitude']:0.0);
-        $index->setLongitude(isset($array['longitude'])?$array['longitude']:0.0);
-        $index->setParentId(isset($array['parent_id'])?$array['parent_id']:null);
+        $index->setUid(isset($array['id']) ? $array['id'] : -1);
+        $index->setNumber(isset($array['number']) ? $array['number'] : '');
+        $index->setEbene(isset($array['ebene']) ? $array['ebene'] : '');
+        $index->setName(isset($array['name']) ? $array['name'] : '');
+        $index->setOrt(isset($array['ort']) ? $array['ort'] : '');
+        $index->setPlz(isset($array['plz']) ? $array['plz'] : '');
+        $index->setUrl(isset($array['url']) ? $array['url'] : '');
+        $index->setLatitude(isset($array['latitude']) ? $array['latitude'] : 0.0);
+        $index->setLongitude(isset($array['longitude']) ? $array['longitude'] : 0.0);
+        $index->setParentId(isset($array['parent_id']) ? $array['parent_id'] : null);
 
         // this only works, because the api returns the children after the parents
         /**

@@ -13,12 +13,9 @@
 namespace ScoutNet\Api\Helpers;
 
 use ScoutNet\Api\Models\AbstractModel;
-use ScoutNet\Api\Models\Structure;
-use ScoutNet\Api\Models\Stufe;
-use ScoutNet\Api\Models\User;
-use ScoutNet\Api\Models\Event;
 
-class CacheHelper {
+class CacheHelper
+{
     private $cache = [];
 
     /**
@@ -27,9 +24,10 @@ class CacheHelper {
      *
      * @return AbstractModel|false
      */
-    public function add(AbstractModel &$object, $id=Null) {
+    public function add(AbstractModel &$object, $id = null)
+    {
         $class = get_class($object);
-        if ($id == Null) {
+        if ($id == null) {
             $id = $object->getUid();
         }
 
@@ -49,7 +47,8 @@ class CacheHelper {
      *
      * @return mixed|null
      */
-    public function get($class, $id) {
+    public function get($class, $id)
+    {
         if (isset($this->cache[$class]) && isset($this->cache[$class][$id])) {
             return $this->cache[$class][$id];
         }

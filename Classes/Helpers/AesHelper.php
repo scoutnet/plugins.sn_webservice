@@ -46,8 +46,9 @@ class AesHelper
         for ($j = 0; $j < 16; $j++) {
             if (($j) < $xsize) {
                 $this->iv[$j] = $iv[$j];
-            } else
+            } else {
                 $this->iv[$j] = chr(0);
+            }
         }
     }
 

@@ -21,8 +21,6 @@
 	"support": {
 		"issues": "https://github.com/scoutnet/plugins.sn_webservice/issues"
 	},
-	"require": {
-	},
 	"config": {
 		"vendor-dir": ".Build/vendor",
 		"bin-dir": ".Build/bin",
@@ -42,7 +40,8 @@
 		"codeception/codeception": "^5.1",
 		"codeception/module-webdriver": "^4.0",
 		"codeception/module-asserts": "^3.0",
-		"doctrine/inflector": "^2.0"
+		"doctrine/inflector": "^2.0",
+		"friendsofphp/php-cs-fixer": "^3.58"
 	},
 	"autoload": {
 		"psr-4": {
@@ -58,5 +57,8 @@
 		"branch-alias": {
 			"dev-main": "1.0.x-dev"
 		}
+	},
+	"require": {
+		"typo3/coding-standards": "^0.7.1"
 	}
 }
