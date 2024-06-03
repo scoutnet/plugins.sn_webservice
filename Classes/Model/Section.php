@@ -10,7 +10,7 @@
  * Authors: Stefan (Mütze) Horst <muetze@scoutnet.de>
  */
 
-namespace ScoutNet\Api\Models;
+namespace ScoutNet\Api\Model;
 
 /**
  * Section
@@ -20,39 +20,39 @@ class Section extends AbstractModel
     /**
      * @var string
      */
-    protected string $verband;
+    protected string $verband = '';
 
     /**
      * @var string
      */
-    protected string $bezeichnung;
+    protected string $bezeichnung = '';
 
     /**
      * @var string
      */
-    protected string $farbe;
+    protected string $farbe = '';
 
     /**
      * @var int
      */
-    protected int $startalter = -1;
+    protected int $startalter = 0;
 
     /**
      * @var int
      */
-    protected int $endalter = -1;
+    protected int $endalter = 0;
 
     /**
      * @var Category
      */
-    protected Category $categoriy;
+    protected ?Category $category = null;
 
     /**
      * @return string
      */
     public function getVerband(): string
     {
-        return $this->verband ?? '';
+        return $this->verband;
     }
 
     /**
@@ -68,7 +68,7 @@ class Section extends AbstractModel
      */
     public function getBezeichnung(): string
     {
-        return $this->bezeichnung ?? '';
+        return $this->bezeichnung;
     }
 
     /**
@@ -84,7 +84,7 @@ class Section extends AbstractModel
      */
     public function getFarbe(): string
     {
-        return $this->farbe ?? '';
+        return $this->farbe;
     }
 
     /**
@@ -100,7 +100,7 @@ class Section extends AbstractModel
      */
     public function getStartalter(): int
     {
-        return $this->startalter ?? -1;
+        return $this->startalter;
     }
 
     /**
@@ -116,7 +116,7 @@ class Section extends AbstractModel
      */
     public function getEndalter(): int
     {
-        return $this->endalter ?? -1;
+        return $this->endalter;
     }
 
     /**
@@ -147,7 +147,7 @@ class Section extends AbstractModel
      * @return string
      * @deprecated
      */
-    public function getCategorieId(): string
+    public function getCategoryId(): string
     {
         return $this->category?->getUid() ?? '';
     }
@@ -156,8 +156,9 @@ class Section extends AbstractModel
      * @param int $categoryId
      * @deprecated
      */
-    public function setCategorieId(int $categoryId): void
+    public function setCategoryId(int $categoryId): void
     {
+        // TODO: load from cache?
         //        $categoryRepository = GeneralUtility::makeInstance(CategoryRepository::class);
         //        $this->category = $categoryRepository->findByUid($categoryId);
     }
@@ -167,6 +168,6 @@ class Section extends AbstractModel
      */
     public function getImageURL(): string
     {
-        return (string)"<img src='https://kalender.scoutnet.de/2.0/images/" . $this->getUid() . ".gif' alt='" . htmlentities($this->getBezeichnung(), ENT_COMPAT | ENT_HTML401, 'UTF-8') . "' />";
+        return "<img src='https://kalender.scoutnet.de/2.0/images/" . $this->getUid() . ".gif' alt='" . htmlentities($this->getBezeichnung(), ENT_COMPAT | ENT_HTML401, 'UTF-8') . "' />";
     }
 }

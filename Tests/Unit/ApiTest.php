@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2024-2024 Stefan (Mütze) Horst
+ * Copyright (c) 2017-2024 Stefan (Mütze) Horst
  *
  * I don't have the time to read through all the licences to find out
  * what they exactly say. But it's simple. It's free for non-commercial
@@ -10,26 +10,7 @@
  * Authors: Stefan (Mütze) Horst <muetze@scoutnet.de>
  */
 
-namespace ScoutNet\Api\Tests;
-
-/***************************************************************
- *
- *  Copyright notice
- *
- *  (c) 2017 Stefan "Mütze" Horst <muetze@scoutnet.de>, ScoutNet
- *
- *  All rights reserved
- *
- *  The GNU General Public License can be found at
- *  http://www.gnu.org/copyleft/gpl.html.
- *
- *  This script is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  This copyright notice MUST APPEAR in all copies of the script!
- ***************************************************************/
+namespace ScoutNet\Api\Tests\Unit;
 
 use DateTime;
 use Exception;
@@ -39,11 +20,11 @@ use ScoutNet\Api\Exceptions\ScoutNetException;
 use ScoutNet\Api\Exceptions\ScoutNetExceptionMissingConfVar;
 use ScoutNet\Api\Helpers\AesHelper;
 use ScoutNet\Api\Helpers\JsonRPCClientHelper;
-use ScoutNet\Api\Models\Category;
-use ScoutNet\Api\Models\Event;
-use ScoutNet\Api\Models\Permission;
-use ScoutNet\Api\Models\Structure;
-use ScoutNet\Api\Models\User;
+use ScoutNet\Api\Model\Category;
+use ScoutNet\Api\Model\Event;
+use ScoutNet\Api\Model\Permission;
+use ScoutNet\Api\Model\Structure;
+use ScoutNet\Api\Model\User;
 use ScoutNet\Api\ScoutnetApi;
 
 final class ApiTest extends TestCase
@@ -670,15 +651,15 @@ final class ApiTest extends TestCase
         $kalenderUser->setUsername('kalender-1.0');
         $kalenderUser->setUid('kalender-1.0');
 
-        $event = new Event();
+        $event = new Event('Bezirksvorständetreffen', new DateTime('2001-03-15'));
         $event->setUid(null);
         $event->setTitle('Bezirksvorständestreffen');
         $event->setOrganizer('');
         $event->setTargetGroup('');
-        $event->setStartDate(DateTime::createFromFormat('Y-m-d H:i:s', '2001-03-15 00:00:00'));
-        $event->setStartTime('19:30:00');
+        //        $event->setStartDate(DateTime::createFromFormat('Y-m-d H:i:s', '2001-03-15 00:00:00'));
+        $event->setStartTime('19:30');
         $event->setEndDate(DateTime::createFromFormat('Y-m-d H:i:s', '2001-03-15 00:00:00'));
-        $event->setEndTime('19:30:00');
+        $event->setEndTime('19:30');
         $event->setZip('');
         $event->setLocation('');
         $event->setUrlText('');
@@ -849,7 +830,7 @@ class JsonRPCClientHelperMock extends JsonRPCClientHelper
 
 namespace ScoutNet\Api;
 
-use ScoutNet\Api\Tests\ApiTest;
+use ScoutNet\Api\Tests\Unit\ApiTest;
 
 /**
  * mock time

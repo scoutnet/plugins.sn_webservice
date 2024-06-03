@@ -10,45 +10,45 @@
  * Authors: Stefan (Mütze) Horst <muetze@scoutnet.de>
  */
 
-namespace ScoutNet\Api\Models;
+namespace ScoutNet\Api\Model;
 
 class Structure extends AbstractModel
 {
     /**
      * @var string
      */
-    protected string $level;
+    protected string $level = '';
     /**
      * @var string
      */
-    protected string $name;
+    protected string $name = '';
     /**
      * @var string
      */
-    protected string $verband;
+    protected string $verband = '';
     /**
      * @var string
      */
-    protected string $ident;
+    protected string $ident = '';
     /**
      * @var int
      */
-    protected int $levelId;
+    protected int $levelId = -1;
     /**
      * @var array
      */
-    protected array $usedCategories;
+    protected array $usedCategories = [];
     /**
      * @var array
      */
-    protected array $forcedCategories;
+    protected array $forcedCategories = [];
 
     /**
      * @return string
      */
     public function getLevel(): string
     {
-        return $this->level ?? '';
+        return $this->level;
     }
 
     /**
@@ -82,7 +82,7 @@ class Structure extends AbstractModel
      */
     public function getVerband(): string
     {
-        return $this->verband ?? '';
+        return $this->verband;
     }
 
     /**
@@ -98,7 +98,7 @@ class Structure extends AbstractModel
      */
     public function getIdent(): string
     {
-        return $this->ident ?? '';
+        return $this->ident;
     }
 
     /**
@@ -114,7 +114,7 @@ class Structure extends AbstractModel
      */
     public function getLevelId(): int
     {
-        return $this->levelId ?? -1;
+        return $this->levelId;
     }
 
     /**
@@ -148,7 +148,7 @@ class Structure extends AbstractModel
      */
     public function getUsedCategories(): array
     {
-        return $this->usedCategories ?? [];
+        return $this->usedCategories;
     }
 
     /**
@@ -164,7 +164,7 @@ class Structure extends AbstractModel
      */
     public function getForcedCategories(): array
     {
-        return $this->forcedCategories ?? [];
+        return $this->forcedCategories;
     }
 
     /**
@@ -180,7 +180,7 @@ class Structure extends AbstractModel
      */
     public function getName(): string
     {
-        return $this->name ?? '';
+        return $this->name;
     }
 
     /**
@@ -214,6 +214,6 @@ class Structure extends AbstractModel
      */
     public function get_Name(): string
     {
-        return (string)$this->getLevel() . (($this->getLevelId() >= 7) ? '&nbsp;' . $this->getName() : '');
+        return $this->getLevel() . (($this->getLevelId() >= 7) ? '&nbsp;' . $this->getName() : '');
     }
 }

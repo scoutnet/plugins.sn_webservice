@@ -10,30 +10,30 @@
  * Authors: Stefan (Mütze) Horst <muetze@scoutnet.de>
  */
 
-namespace ScoutNet\Api\Tests\Unit\Model;
+namespace ScoutNet\Api\Tests\Unit\Unit\Model;
 
 use PHPUnit\Framework\TestCase;
-use ScoutNet\Api\Models\User;
+use ScoutNet\Api\Model\User;
 
 class UserModelTest extends TestCase
 {
-    public function testCanBeCreated()
+    public function testCanBeCreated(): void
     {
         self::assertInstanceOf(User::class, new User());
     }
 
-    public function testDefaultParameters()
+    public function testDefaultParameters(): void
     {
         $user = new User();
 
         self::assertNull($user->getUid());
-        self::assertNull($user->getUsername());
-        self::assertNull($user->getFirstName());
-        self::assertNull($user->getLastName());
-        self::assertNull($user->getSex());
+        self::assertEquals('', $user->getUsername());
+        self::assertEquals('', $user->getFirstName());
+        self::assertEquals('', $user->getLastName());
+        self::assertEquals('', $user->getSex());
     }
 
-    public function testSetParameter()
+    public function testSetParameter(): void
     {
         $user = new User();
 
@@ -55,8 +55,8 @@ class UserModelTest extends TestCase
         self::assertEquals('demoFirstName demoLastName (demoUsername)', $user->getLongName());
 
         // if the firstname is empty we get the Username
-        $user->setFirstName(null);
-        $user->setLastName(null);
+        $user->setFirstName('');
+        $user->setLastName('');
 
         self::assertEquals('demoUsername', $user->getFirstName());
         self::assertEquals('demoUsername', $user->getFullName());

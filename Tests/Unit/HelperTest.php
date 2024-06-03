@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2024 Stefan (Mütze) Horst
+ * Copyright (c) 2024-2024 Stefan (Mütze) Horst
  *
  * I don't have the time to read through all the licences to find out
  * what they exactly say. But it's simple. It's free for non-commercial
@@ -35,13 +35,13 @@ namespace ScoutNet\Api\Tests {
     use ScoutNet\Api\Helpers\CacheHelper;
     use ScoutNet\Api\Helpers\ConverterHelper;
     use ScoutNet\Api\Helpers\JsonRPCClientHelper;
-    use ScoutNet\Api\Models\Category;
-    use ScoutNet\Api\Models\Event;
-    use ScoutNet\Api\Models\Index;
-    use ScoutNet\Api\Models\Permission;
-    use ScoutNet\Api\Models\Structure;
-    use ScoutNet\Api\Models\Stufe;
-    use ScoutNet\Api\Models\User;
+    use ScoutNet\Api\Model\Category;
+    use ScoutNet\Api\Model\Event;
+    use ScoutNet\Api\Model\Index;
+    use ScoutNet\Api\Model\Permission;
+    use ScoutNet\Api\Model\Structure;
+    use ScoutNet\Api\Model\Stufe;
+    use ScoutNet\Api\Model\User;
 
     class CacheHelperTest extends TestCase
     {

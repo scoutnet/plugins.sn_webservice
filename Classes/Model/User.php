@@ -10,7 +10,7 @@
  * Authors: Stefan (Mütze) Horst <muetze@scoutnet.de>
  */
 
-namespace ScoutNet\Api\Models;
+namespace ScoutNet\Api\Model;
 
 class User extends AbstractModel
 {
@@ -30,14 +30,14 @@ class User extends AbstractModel
      * @validate NotEmpty
      * @validate StringLength(minimum=2, maximum=80)
      */
-    protected ?string $firstName = '';
+    protected string $firstName = '';
 
     /**
      * @var string
      * @validate NotEmpty
      * @validate StringLength(minimum=2, maximum=80)
      */
-    protected ?string $lastName = '';
+    protected string $lastName = '';
 
     /**
      * @var string
@@ -64,13 +64,13 @@ class User extends AbstractModel
 
     public function getFirstName(): string
     {
-        return trim($this->firstName) ? trim($this->firstName) : $this->getUsername();
+        return trim($this->firstName) ?: $this->getUsername();
     }
 
     /**
      * @param string $firstName
      */
-    public function setFirstName(?string $firstName): void
+    public function setFirstName(string $firstName): void
     {
         $this->firstName = $firstName;
     }
@@ -78,7 +78,7 @@ class User extends AbstractModel
     /**
      * @return string
      */
-    public function getLastName(): ?string
+    public function getLastName(): string
     {
         return $this->lastName;
     }
@@ -86,7 +86,7 @@ class User extends AbstractModel
     /**
      * @param string $lastName
      */
-    public function setLastName(?string $lastName): void
+    public function setLastName(string $lastName): void
     {
         $this->lastName = $lastName;
     }
@@ -114,7 +114,7 @@ class User extends AbstractModel
     {
         // we use the class functions not the getters, because the firstname can be the username
         $full_name = $this->firstName . ' ' . $this->lastName;
-        return trim($full_name) ? trim($full_name) : $this->getUsername();
+        return trim($full_name) ?: $this->getUsername();
     }
 
     /**
@@ -123,7 +123,7 @@ class User extends AbstractModel
     public function getLongName(): string
     {
         $full_name = $this->getFullName();
-        if ($full_name != $this->getUsername()) {
+        if ($full_name !== $this->getUsername()) {
             return $full_name . ' (' . $this->getUsername() . ')';
         }
         return $this->getUsername();

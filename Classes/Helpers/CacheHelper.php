@@ -12,7 +12,7 @@
 
 namespace ScoutNet\Api\Helpers;
 
-use ScoutNet\Api\Models\AbstractModel;
+use ScoutNet\Api\Model\AbstractModel;
 
 class CacheHelper
 {

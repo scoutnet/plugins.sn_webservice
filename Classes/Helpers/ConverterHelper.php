@@ -13,31 +13,31 @@
 namespace ScoutNet\Api\Helpers;
 
 use DateTime;
-use ScoutNet\Api\Models\Category;
-use ScoutNet\Api\Models\Event;
-use ScoutNet\Api\Models\Index;
-use ScoutNet\Api\Models\Permission;
-use ScoutNet\Api\Models\Section;
-use ScoutNet\Api\Models\Structure;
-use ScoutNet\Api\Models\User;
+use ScoutNet\Api\Model\Category;
+use ScoutNet\Api\Model\Event;
+use ScoutNet\Api\Model\Index;
+use ScoutNet\Api\Model\Permission;
+use ScoutNet\Api\Model\Section;
+use ScoutNet\Api\Model\Structure;
+use ScoutNet\Api\Model\User;
 
 class ConverterHelper
 {
     /**
      * @var CacheHelper
      */
-    private $cache;
+    private CacheHelper $cache;
 
     public function __construct($cache = null)
     {
-        if ($cache == null) {
+        if ($cache === null) {
             $cache = new CacheHelper();
         }
 
         $this->cache = $cache;
     }
 
-    public function convertEventToApi(Event $event)
+    public function convertEventToApi(Event $event): array
     {
         $array = [
             'ID' => $event->getUid() !== null ? $event->getUid() : -1,
@@ -182,9 +182,9 @@ class ConverterHelper
         $stufe->setFarbe(isset($array['farbe']) ? $array['farbe'] : '');
         $stufe->setStartalter(isset($array['startalter']) ? (int)($array['startalter']) : -1);
         $stufe->setEndalter(isset($array['endalter']) ? (int)($array['endalter']) : -1);
-        $stufe->setCategorieId(isset($array['Keywords_ID']) ? $array['Keywords_ID'] : -1);
+        $stufe->setCategoryId(isset($array['Keywords_ID']) ? $array['Keywords_ID'] : -1);
 
-        $this->cache->add($stufe, $stufe->getCategorieId());
+        $this->cache->add($stufe, $stufe->getCategoryId());
         return $stufe;
     }
 

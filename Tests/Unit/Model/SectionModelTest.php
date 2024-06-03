@@ -10,33 +10,37 @@
  * Authors: Stefan (Mütze) Horst <muetze@scoutnet.de>
  */
 
-namespace ScoutNet\Api\Tests\Unit\Model;
+namespace ScoutNet\Api\Tests\Unit\Unit\Model;
 
 use PHPUnit\Framework\TestCase;
-use ScoutNet\Api\Models\Section;
+use ScoutNet\Api\Model\Category;
+use ScoutNet\Api\Model\Section;
 
 class SectionModelTest extends TestCase
 {
-    public function testCanBeCreated()
+    public function testCanBeCreated(): void
     {
         self::assertInstanceOf(Section::class, new Section());
     }
 
-    public function testDefaultParameters()
+    public function testDefaultParameters(): void
     {
         $stufe = new Section();
 
         self::assertNull($stufe->getUid());
-        self::assertNull($stufe->getVerband());
-        self::assertNull($stufe->getBezeichnung());
-        self::assertNull($stufe->getFarbe());
-        self::assertEquals(-1, $stufe->getStartalter());
-        self::assertEquals(-1, $stufe->getEndalter());
+        self::assertEquals('', $stufe->getVerband());
+        self::assertEquals('', $stufe->getBezeichnung());
+        self::assertEquals('', $stufe->getFarbe());
+        self::assertEquals(0, $stufe->getStartalter());
+        self::assertEquals(0, $stufe->getEndalter());
         self::assertNull($stufe->getCategory());
     }
 
-    public function testSetParameter()
+    public function testSetParameter(): void
     {
+        $cat1 = new Category();
+        $cat1->setText('Section 1');
+        $cat1->setUid(1);
         $stufe = new Section();
 
         $stufe->setUid(23);
@@ -45,7 +49,7 @@ class SectionModelTest extends TestCase
         $stufe->setFarbe('demoFarbe');
         $stufe->setStartalter(9);
         $stufe->setEndalter(23);
-        //        $stufe->setCategorieId(42);
+        $stufe->setCategory($cat1);
 
         self::assertEquals(23, $stufe->getUid());
         self::assertEquals('demoVerband', $stufe->getVerband());
@@ -53,7 +57,8 @@ class SectionModelTest extends TestCase
         self::assertEquals('demoFarbe', $stufe->getFarbe());
         self::assertEquals(9, $stufe->getStartalter());
         self::assertEquals(23, $stufe->getEndalter());
-        //        $this->assertEquals(42, $stufe->getCategorieId());
+        self::assertEquals($cat1, $stufe->getCategory());
+        self::assertEquals(1, $stufe->getCategoryId());
         self::assertEquals("<img src='https://kalender.scoutnet.de/2.0/images/23.gif' alt='demoName' />", $stufe->getImageURL());
     }
 }

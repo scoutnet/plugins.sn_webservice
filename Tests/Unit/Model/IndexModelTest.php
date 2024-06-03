@@ -10,10 +10,10 @@
  * Authors: Stefan (Mütze) Horst <muetze@scoutnet.de>
  */
 
-namespace ScoutNet\Api\Tests\Unit\Model;
+namespace ScoutNet\Api\Tests\Unit\Unit\Model;
 
 use PHPUnit\Framework\TestCase;
-use ScoutNet\Api\Models\Index;
+use ScoutNet\Api\Model\Index;
 
 class IndexModelTest extends TestCase
 {

@@ -10,7 +10,7 @@
  * Authors: Stefan (Mütze) Horst <muetze@scoutnet.de>
  */
 
-namespace ScoutNet\Api\Models;
+namespace ScoutNet\Api\Model;
 
 use DateTime;
 
@@ -21,19 +21,19 @@ class Event extends AbstractModel
      * @validate NotEmpty
      * @validate StringLength(minimum=2, maximum=80)
      */
-    protected string $title = '';
+    protected string $title = 'new Event';
 
     /**
      * @var string
      * @validate StringLength(minimum=2, maximum=255)
      */
-    protected ?string $organizer = '';
+    protected string $organizer = '';
 
     /**
      * @var string
      * @validate StringLength(minimum=2, maximum=255)
      */
-    protected ?string $targetGroup = '';
+    protected string $targetGroup = '';
 
     /**
      * @var DateTime
@@ -41,50 +41,51 @@ class Event extends AbstractModel
      */
     protected DateTime $startDate;
     /**
-     * @var string
+     * @var string|null
      */
-    protected ?string $startTime = '';
+    protected ?string $startTime = null;
 
     /**
-     * @var DateTime
+     * @var DateTime|null
      */
     protected ?DateTime $endDate = null;
     /**
-     * @var string
+     * @var string|null
      */
-    protected ?string $endTime = '';
+    protected ?string $endTime = null;
 
     /**
      * @var string
      * @validate StringLength(minimum=3, maximum=255)
      */
-    protected ?string $zip = null;
+    protected string $zip = '';
 
     /**
      * @var string
      * @validate StringLength(minimum=2, maximum=255)
      */
-    protected ?string $location = null;
+    protected string $location = '';
 
     /**
      * @var string
      * @validate StringLength(minimum=3, maximum=255)
      */
-    protected ?string $urlText = null;
+    protected string $urlText = '';
 
     /**
      * @var string
      * @validate StringLength(minimum=3, maximum=255)
      */
-    protected ?string $url;
+    protected string $url = '';
 
     /**
      * @var string
      */
-    protected ?string $description = null;
+    protected string $description = '';
 
     /**
      * @var Section[]
+     * // TODO: check if we need this, since this is part of a category
      */
     protected array $sections = [];
 
@@ -96,11 +97,11 @@ class Event extends AbstractModel
     /**
      * Structure
      *
-     * @var Structure|null
+     * @var Structure
      * validate NotEmpty
      * @lazy
      */
-    protected ?Structure $structure = null;
+    protected Structure $structure;
 
     /**
      * changedBy
@@ -126,16 +127,28 @@ class Event extends AbstractModel
     /**
      * changedAt
      *
-     * @var DateTime
+     * @var DateTime|null
      */
-    protected DateTime $changedAt;
+    protected ?DateTime $changedAt = null;
+
+    /**
+     * @param string $title
+     * @param DateTime|null $startDate
+     */
+    public function __construct(string $title = 'new Event', DateTime $startDate = null)
+    {
+        $this->title = $title;
+        $this->startDate = $startDate ?? new DateTime('now');
+
+        $this->createdAt = $this->createdAt ?? new DateTime('now');
+    }
 
     /**
      * @return string
      */
     public function getTitle(): string
     {
-        return $this->title ?? '';
+        return $this->title;
     }
 
     /**
@@ -151,13 +164,13 @@ class Event extends AbstractModel
      */
     public function getOrganizer(): string
     {
-        return $this->organizer ?? '';
+        return $this->organizer;
     }
 
     /**
      * @param string $organizer
      */
-    public function setOrganizer(?string $organizer): void
+    public function setOrganizer(string $organizer): void
     {
         $this->organizer = $organizer;
     }
@@ -167,23 +180,23 @@ class Event extends AbstractModel
      */
     public function getTargetGroup(): string
     {
-        return $this->targetGroup ?? '';
+        return $this->targetGroup;
     }
 
     /**
      * @param string $targetGroup
      */
-    public function setTargetGroup(?string $targetGroup): void
+    public function setTargetGroup(string $targetGroup): void
     {
         $this->targetGroup = $targetGroup;
     }
 
     /**
-     * @return DateTime|null
+     * @return DateTime
      */
-    public function getStartDate(): ?DateTime
+    public function getStartDate(): DateTime
     {
-        return $this->startDate ?? null;
+        return $this->startDate;
     }
 
     /**
@@ -199,7 +212,7 @@ class Event extends AbstractModel
      */
     public function getStartTime(): ?string
     {
-        return $this->startTime ?? null;
+        return $this->startTime;
     }
 
     /**
@@ -215,7 +228,7 @@ class Event extends AbstractModel
      */
     public function getEndDate(): ?DateTime
     {
-        return $this->endDate ?? null;
+        return $this->endDate;
     }
 
     /**
@@ -231,7 +244,7 @@ class Event extends AbstractModel
      */
     public function getEndTime(): ?string
     {
-        return $this->endTime ?? null;
+        return $this->endTime;
     }
 
     /**
@@ -247,13 +260,13 @@ class Event extends AbstractModel
      */
     public function getZip(): string
     {
-        return $this->zip ?? '';
+        return $this->zip;
     }
 
     /**
      * @param string $zip
      */
-    public function setZip(?string $zip): void
+    public function setZip(string $zip): void
     {
         $this->zip = $zip;
     }
@@ -263,13 +276,13 @@ class Event extends AbstractModel
      */
     public function getLocation(): string
     {
-        return $this->location ?? '';
+        return $this->location;
     }
 
     /**
      * @param string $location
      */
-    public function setLocation(?string $location): void
+    public function setLocation(string $location): void
     {
         $this->location = $location;
     }
@@ -279,7 +292,7 @@ class Event extends AbstractModel
      */
     public function getUrlText(): string
     {
-        return $this->urlText ?? '';
+        return $this->urlText;
     }
 
     /**
@@ -295,13 +308,13 @@ class Event extends AbstractModel
      */
     public function getUrl(): string
     {
-        return $this->url ?? '';
+        return $this->url;
     }
 
     /**
      * @param string $url
      */
-    public function setUrl(?string $url): void
+    public function setUrl(string $url): void
     {
         $this->url = $url;
     }
@@ -311,29 +324,29 @@ class Event extends AbstractModel
      */
     public function getDescription(): string
     {
-        return $this->description ?? '';
+        return $this->description;
     }
 
     /**
      * @param string $description
      */
-    public function setDescription(?string $description): void
+    public function setDescription(string $description): void
     {
         $this->description = $description;
     }
 
     /**
-     * @return Structure|null
+     * @return Structure
      */
-    public function getStructure(): ?Structure
+    public function getStructure(): Structure
     {
         return $this->structure;
     }
 
     /**
-     * @param Structure|null $structure
+     * @param Structure $structure
      */
-    public function setStructure(?Structure $structure): void
+    public function setStructure(Structure $structure): void
     {
         $this->structure = $structure;
     }
@@ -375,29 +388,29 @@ class Event extends AbstractModel
      */
     public function getCreatedAt(): ?DateTime
     {
-        return $this->createdAt ?? null;
+        return $this->createdAt;
     }
 
     /**
-     * @param DateTime $createdAt
+     * @param DateTime|null $createdAt
      */
-    public function setCreatedAt(DateTime $createdAt): void
+    public function setCreatedAt(?DateTime $createdAt): void
     {
         $this->createdAt = $createdAt;
     }
 
     /**
-     * @return DateTime
+     * @return DateTime|null
      */
     public function getChangedAt(): ?DateTime
     {
-        return $this->changedAt ?? null;
+        return $this->changedAt;
     }
 
     /**
-     * @param DateTime $changedAt
+     * @param DateTime|null $changedAt
      */
-    public function setChangedAt(DateTime $changedAt): void
+    public function setChangedAt(?DateTime $changedAt): void
     {
         $this->changedAt = $changedAt;
     }
@@ -432,10 +445,7 @@ class Event extends AbstractModel
      */
     public function getAuthor(): ?User
     {
-        if ($this->changedBy != null) {
-            return $this->changedBy;
-        }
-        return $this->createdBy;
+        return $this->changedBy ?? $this->createdBy;
     }
 
     /**
@@ -507,7 +517,7 @@ class Event extends AbstractModel
         foreach ($this->getSections() as $section) {
             $sections .= $section->getImageURL();
         }
-        return (string)$sections;
+        return $sections;
     }
 
     /**
@@ -553,9 +563,9 @@ class Event extends AbstractModel
     public function getEndTimestamp(): DateTime
     {
         if ($this->endDate && $this->endTime) {
-            $endTimestamp = DateTime::createFromFormat('Y-m-d H:i:s', $this->endDate->format('Y-m-d') . ' ' . $this->endTime . (substr_count($this->endTime, ':') == 1 ? ':00' : ''));
+            $endTimestamp = DateTime::createFromFormat('Y-m-d H:i:s', $this->endDate->format('Y-m-d') . ' ' . $this->endTime . (substr_count($this->endTime, ':') === 1 ? ':00' : ''));
         } elseif ($this->endTime) {
-            $endTimestamp = DateTime::createFromFormat('Y-m-d H:i:s', $this->startDate->format('Y-m-d') . ' ' . $this->endTime . (substr_count($this->endTime, ':') == 1 ? ':00' : ''));
+            $endTimestamp = DateTime::createFromFormat('Y-m-d H:i:s', $this->startDate->format('Y-m-d') . ' ' . $this->endTime . (substr_count($this->endTime, ':') === 1 ? ':00' : ''));
         } elseif ($this->endDate) {
             $endTimestamp = DateTime::createFromFormat('Y-m-d H:i:s', $this->endDate->format('Y-m-d') . ' 00:00:00');
         } else {

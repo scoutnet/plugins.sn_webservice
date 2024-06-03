@@ -18,11 +18,11 @@ use ScoutNet\Api\Helpers\AesHelper;
 use ScoutNet\Api\Helpers\CacheHelper;
 use ScoutNet\Api\Helpers\ConverterHelper;
 use ScoutNet\Api\Helpers\JsonRPCClientHelper;
-use ScoutNet\Api\Models\Category;
-use ScoutNet\Api\Models\Event;
-use ScoutNet\Api\Models\Index;
-use ScoutNet\Api\Models\Permission;
-use ScoutNet\Api\Models\Structure;
+use ScoutNet\Api\Model\Category;
+use ScoutNet\Api\Model\Event;
+use ScoutNet\Api\Model\Index;
+use ScoutNet\Api\Model\Permission;
+use ScoutNet\Api\Model\Structure;
 
 class ScoutnetApi
 {

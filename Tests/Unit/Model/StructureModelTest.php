@@ -10,10 +10,10 @@
  * Authors: Stefan (Mütze) Horst <muetze@scoutnet.de>
  */
 
-namespace ScoutNet\Api\Tests\Unit\Model;
+namespace ScoutNet\Api\Tests\Unit\Unit\Model;
 
 use PHPUnit\Framework\TestCase;
-use ScoutNet\Api\Models\Structure;
+use ScoutNet\Api\Model\Structure;
 
 class StructureModelTest extends TestCase
 {
@@ -22,45 +22,47 @@ class StructureModelTest extends TestCase
         self::assertInstanceOf(Structure::class, new Structure());
     }
 
-    public function testDefaultParameters()
+    public function testDefaultParameters(): void
     {
         $structure = new Structure();
 
         self::assertNull($structure->getUid());
-        self::assertNull($structure->getEbene());
-        self::assertNull($structure->getName());
-        self::assertNull($structure->getVerband());
-        self::assertNull($structure->getIdent());
+        self::assertEquals('', $structure->getLevel());
+        self::assertEquals('', $structure->getEbene());
+        self::assertEquals('', $structure->getName());
+        self::assertEquals('', $structure->getVerband());
+        self::assertEquals('', $structure->getIdent());
+        self::assertEquals(-1, $structure->getLevelId());
         self::assertEquals(-1, $structure->getEbeneId());
         self::assertEquals([], $structure->getUsedCategories());
         self::assertEquals([], $structure->getForcedCategories());
     }
 
-    public function testSetParameter()
+    public function testSetParameter(): void
     {
         $structure = new Structure();
 
         $structure->setUid(23);
-        $structure->setEbene('demoEbene');
+        $structure->setLevel('demoEbene');
         $structure->setName('demoName');
         $structure->setVerband('demoVerband');
         $structure->setIdent('demoIdent');
-        $structure->setEbeneId(23);
+        $structure->setLevelId(23);
         $structure->setUsedCategories(['categorie_1', 'categorie_2']);
         $structure->setForcedCategories(['categorie_3', 'categorie_4']);
 
         self::assertEquals(23, $structure->getUid());
-        self::assertEquals('demoEbene', $structure->getEbene());
+        self::assertEquals('demoEbene', $structure->getLevel());
         self::assertEquals('demoName', $structure->getName());
         self::assertEquals('demoVerband', $structure->getVerband());
         self::assertEquals('demoIdent', $structure->getIdent());
-        self::assertEquals(23, $structure->getEbeneId());
+        self::assertEquals(23, $structure->getLevelId());
         self::assertEquals(['categorie_1', 'categorie_2'], $structure->getUsedCategories());
         self::assertEquals(['categorie_3', 'categorie_4'], $structure->getForcedCategories());
         self::assertEquals('demoEbene demoName', $structure->getLongName());
 
         // if ebene < 4 do not show name
-        $structure->setEbeneId(1);
+        $structure->setLevelId(1);
         self::assertEquals('demoEbene', $structure->getLongName());
     }
 }

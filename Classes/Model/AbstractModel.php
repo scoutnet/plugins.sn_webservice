@@ -10,7 +10,7 @@
  * Authors: Stefan (Mütze) Horst <muetze@scoutnet.de>
  */
 
-namespace ScoutNet\Api\Models;
+namespace ScoutNet\Api\Model;
 
 abstract class AbstractModel
 {

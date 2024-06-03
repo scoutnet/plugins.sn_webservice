@@ -10,7 +10,7 @@
  * Authors: Stefan (Mütze) Horst <muetze@scoutnet.de>
  */
 
-namespace ScoutNet\Api\Models;
+namespace ScoutNet\Api\Model;
 
 class Index extends AbstractModel
 {
@@ -59,7 +59,7 @@ class Index extends AbstractModel
     protected $parent_id;
 
     /**
-     * @var \ScoutNet\Api\Models\Index[]
+     * @var \ScoutNet\Api\Model\Index[]
      */
     protected $children = [];
 
