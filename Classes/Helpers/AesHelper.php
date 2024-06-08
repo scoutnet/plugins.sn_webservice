@@ -19,6 +19,9 @@ use InvalidArgumentException;
  */
 class AesHelper
 {
+    public const AES_MODE_CBC = 'CBC';
+    public const AES_MODE_ECB = 'ECB';
+
     private string $z;
     private string $iv;
     private string $cypher;

@@ -40,8 +40,8 @@ class ConverterHelper
     public function convertEventToApi(Event $event): array
     {
         $array = [
-            'ID' => $event->getUid() !== null ? $event->getUid() : -1,
-            'UID' => $event->getUid() !== null ? $event->getUid() : -1,
+            'ID' => $event->getUid() ?? -1,
+            'UID' => $event->getUid() ?? -1,
             'SSID' => $event->getStructure()->getUid(),
             'Title' => $event->getTitle(),
             'Organizer' => $event->getOrganizer(),
@@ -83,14 +83,14 @@ class ConverterHelper
         return $array;
     }
 
-    public function convertApiToEvent($array)
+    public function convertApiToEvent($array): Event
     {
         $event = new Event();
 
-        $event->setUid(isset($array['UID']) ? $array['UID'] : -1);
-        $event->setTitle(isset($array['Title']) ? $array['Title'] : null);
-        $event->setOrganizer(isset($array['Organizer']) ? $array['Organizer'] : null);
-        $event->setTargetGroup(isset($array['Target_Group']) ? $array['Target_Group'] : null);
+        $event->setUid($array['UID'] ?? -1);
+        $event->setTitle($array['Title'] ?? '');
+        $event->setOrganizer($array['Organizer'] ?? '');
+        $event->setTargetGroup($array['Target_Group'] ?? '');
 
         // Time
         if (isset($array['Start'])) {
@@ -100,31 +100,31 @@ class ConverterHelper
             $event->setStartTime((isset($array['All_Day']) && $array['All_Day']) ? null : gmstrftime('%H:%M:00', $array['Start']));
         }
         if (isset($array['End'])) {
-            $event->setEndDate($array['End'] == 0 ? null : DateTime::createFromFormat('Y-m-d H:i:s', gmstrftime('%Y-%m-%d 00:00:00', $array['End'])));
+            $event->setEndDate($array['End'] === 0 ? null : DateTime::createFromFormat('Y-m-d H:i:s', gmstrftime('%Y-%m-%d 00:00:00', $array['End'])));
             $event->setEndTime((isset($array['All_Day']) && $array['All_Day']) ? null : gmstrftime('%H:%M:00', $array['End']));
         }
 
         // Location
-        $event->setZip(isset($array['ZIP']) ? $array['ZIP'] : null);
-        $event->setLocation(isset($array['Location']) ? $array['Location'] : null);
+        $event->setZip($array['ZIP'] ?? '');
+        $event->setLocation($array['Location'] ?? '');
 
         // Links
-        $event->setUrlText(isset($array['URL_Text']) ? $array['URL_Text'] : null);
-        $event->setUrl(isset($array['URL']) ? $array['URL'] : null);
-        $event->setDescription(isset($array['Description']) ? $array['Description'] : null);
+        $event->setUrlText($array['URL_Text'] ?? '');
+        $event->setUrl($array['URL'] ?? '');
+        $event->setDescription($array['Description'] ?? '');
 
         if (isset($array['Last_Modified_At'])) {
-            $event->setChangedAt($array['Last_Modified_At'] == 0 ? null : DateTime::createFromFormat('U', $array['Last_Modified_At']));
+            $event->setChangedAt($array['Last_Modified_At'] === 0 ? null : DateTime::createFromFormat('U', $array['Last_Modified_At']));
         }
         if (isset($array['Created_At'])) {
-            $event->setCreatedAt($array['Created_At'] == 0 ? null : DateTime::createFromFormat('U', $array['Created_At']));
+            $event->setCreatedAt($array['Created_At'] === 0 ? null : DateTime::createFromFormat('U', $array['Created_At']));
         }
 
         if (isset($array['Keywords'])) {
             foreach ($array['Keywords'] as $id => $text) {
                 $category = $this->cache->get(Category::class, $id);
                 if ($category === null) {
-                    $category = $this->convertApiToCategorie(['ID' => $id, 'Text' => $text]);
+                    $category = $this->convertApiToCategory(['ID' => $id, 'Text' => $text]);
                 }
 
                 if ($category !== null) {
@@ -135,14 +135,23 @@ class ConverterHelper
 
         // load event elements from cache
         if (isset($array['Last_Modified_By'])) {
-            $event->setChangedBy($this->cache->get(User::class, $array['Last_Modified_By']));
+            $last_modified_by = $this->cache->get(User::class, $array['Last_Modified_By']);
+            if ($last_modified_by) {
+                $event->setChangedBy($last_modified_by);
+            }
         }
         if (isset($array['Created_By'])) {
-            $event->setCreatedBy($this->cache->get(User::class, $array['Created_By']));
+            $created_by = $this->cache->get(User::class, $array['Created_By']);
+            if ($created_by) {
+                $event->setCreatedBy($created_by);
+            }
         }
 
         if (isset($array['Kalender'])) {
-            $event->setStructure($this->cache->get(Structure::class, (int)($array['Kalender'])));
+            $structure = $this->cache->get(Structure::class, (int)($array['Kalender']));
+            if ($structure) {
+                $event->setStructure($structure);
+            }
         }
 
         if (isset($array['Stufen'])) {
@@ -158,31 +167,31 @@ class ConverterHelper
         return $event;
     }
 
-    public function convertApiToUser($array)
+    public function convertApiToUser($array): User
     {
         $user = new User();
 
-        $user->setUid(isset($array['userid']) ? $array['userid'] : -1);
-        $user->setUsername(isset($array['userid']) ? $array['userid'] : null);
-        $user->setFirstName(isset($array['firstname']) ? $array['firstname'] : null);
-        $user->setLastName(isset($array['surname']) ? $array['surname'] : null);
-        $user->setSex(isset($array['sex']) ? $array['sex'] : null);
+        $user->setUid($array['userid'] ?? -1);
+        $user->setUsername($array['userid'] ?? '');
+        $user->setFirstName($array['firstname'] ?? '');
+        $user->setLastName($array['surname'] ?? '');
+        $user->setSex($array['sex'] ?? '');
 
         $this->cache->add($user);
         return $user;
     }
 
-    public function convertApiToSection($array)
+    public function convertApiToSection($array): Section
     {
         $stufe = new Section();
 
-        $stufe->setUid(isset($array['id']) ? $array['id'] : -1);
-        $stufe->setVerband(isset($array['verband']) ? $array['verband'] : null);
-        $stufe->setBezeichnung(isset($array['bezeichnung']) ? $array['bezeichnung'] : '');
-        $stufe->setFarbe(isset($array['farbe']) ? $array['farbe'] : '');
+        $stufe->setUid($array['id'] ?? -1);
+        $stufe->setVerband($array['verband'] ?? '');
+        $stufe->setBezeichnung($array['bezeichnung'] ?? '');
+        $stufe->setFarbe($array['farbe'] ?? '');
         $stufe->setStartalter(isset($array['startalter']) ? (int)($array['startalter']) : -1);
         $stufe->setEndalter(isset($array['endalter']) ? (int)($array['endalter']) : -1);
-        $stufe->setCategoryId(isset($array['Keywords_ID']) ? $array['Keywords_ID'] : -1);
+        $stufe->setCategoryId($array['Keywords_ID'] ?? -1);
 
         $this->cache->add($stufe, $stufe->getCategoryId());
         return $stufe;
@@ -201,7 +210,7 @@ class ConverterHelper
         if (isset($array['Used_Kategories']) && is_array($array['Used_Kategories'])) {
             $used_categories = [];
             foreach ($array['Used_Kategories'] as $id => $text) {
-                $used_categories[$id] = $this->convertApiToCategorie(['ID' => $id, 'Text' => $text]);
+                $used_categories[$id] = $this->convertApiToCategory(['ID' => $id, 'Text' => $text]);
             }
 
             $structure->setUsedCategories($used_categories);
@@ -215,7 +224,7 @@ class ConverterHelper
                 }
 
                 foreach ($cat_array as $id => $text) {
-                    $forced_categories[$name][$id] = $this->convertApiToCategorie(['ID' => $id, 'Text' => $text]);
+                    $forced_categories[$name][$id] = $this->convertApiToCategory(['ID' => $id, 'Text' => $text]);
                 }
             }
 
@@ -237,18 +246,18 @@ class ConverterHelper
         return $permission;
     }
 
-    public function convertApiToCategorie($array)
+    public function convertApiToCategory($array): Category
     {
-        $categorie = new Category();
+        $category = new Category();
 
-        $categorie->setUid(isset($array['ID']) ? $array['ID'] : -1);
-        $categorie->setText(isset($array['Text']) ? $array['Text'] : '');
+        $category->setUid($array['ID'] ?? -1);
+        $category->setText($array['Text'] ?? '');
 
-        $this->cache->add($categorie);
-        return $categorie;
+        $this->cache->add($category);
+        return $category;
     }
 
-    public function convertApiToIndex($array)
+    public function convertApiToIndex($array): Index
     {
         $index = new Index();
 

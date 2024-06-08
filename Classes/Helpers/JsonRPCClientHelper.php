@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015 Stefan (Mütze) Horst
+ * Copyright (c) 2015-2024 Stefan (Mütze) Horst
  *
  * I don't have the time to read through all the licences to find out
  * what they exactly say. But it's simple. It's free for non-commercial
@@ -154,19 +154,6 @@ class JsonRPCClientHelper
      */
     public function __call(string $method, array $params)
     {
-        // check if method is string
-        if (!is_scalar($method)) {
-            throw new ScoutNetException('Method name has no scalar value', self::ERROR_CODE_METHOD_NAME_NO_STRING);
-        }
-
-        // check if params are Array
-        if (is_array($params)) {
-            // drop the keys
-            $params = array_values($params);
-        } else {
-            throw new ScoutNetException('Params must be given as array', self::ERROR_CODE_PARAMS_NO_ARRAY);
-        }
-
         // sets notification or request task
         if ($this->notification) {
             $currentId = null;

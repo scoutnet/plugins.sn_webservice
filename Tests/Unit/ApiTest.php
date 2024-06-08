@@ -10,7 +10,7 @@
  * Authors: Stefan (Mütze) Horst <muetze@scoutnet.de>
  */
 
-namespace ScoutNet\Api\Tests\Unit;
+namespace ScoutNet\Api\Tests\Unit\Helpers\Helpers\Helpers\Helpers\Helpers\Unit;
 
 use DateTime;
 use Exception;
@@ -638,14 +638,16 @@ final class ApiTest extends TestCase
         self::assertEquals([$event], $ret);
     }
 
-    public function testCreateEvent()
+    public function testCreateEvent(): void
     {
+        // so we have the structure in cache
+        self::assertNotNull($this->sn->get_kalender_by_global_id(4));
+
         $cat = new Category();
         $cat->setUid(1);
         $cat->setText('Sonstiges');
 
-        $structure = new Structure();
-        $structure->setUid('4');
+        $structure = $this->getTestStructure();
 
         $kalenderUser = new User();
         $kalenderUser->setUsername('kalender-1.0');
@@ -656,10 +658,10 @@ final class ApiTest extends TestCase
         $event->setTitle('Bezirksvorständestreffen');
         $event->setOrganizer('');
         $event->setTargetGroup('');
-        //        $event->setStartDate(DateTime::createFromFormat('Y-m-d H:i:s', '2001-03-15 00:00:00'));
-        $event->setStartTime('19:30');
+        // $event->setStartDate(DateTime::createFromFormat('Y-m-d H:i:s', '2001-03-15 00:00:00'));
+        $event->setStartTime('19:30:00');
         $event->setEndDate(DateTime::createFromFormat('Y-m-d H:i:s', '2001-03-15 00:00:00'));
-        $event->setEndTime('19:30');
+        $event->setEndTime('19:30:00');
         $event->setZip('');
         $event->setLocation('');
         $event->setUrlText('');
@@ -676,9 +678,8 @@ final class ApiTest extends TestCase
         $this->sn->loginUser(self::API_USER, self::API_KEY);
         $res = $this->sn->write_event($event);
 
-        // the answer does not contain the structure, changedBy and createdBy, since they are not cached
+        // the answer does not contain changedBy and createdBy, since they are not cached
         $event->setUid(23);
-        $event->setStructure(null);
         $event->setChangedBy(null);
         $event->setCreatedBy(null);
         $event->setCreatedAt(DateTime::createFromFormat('Y-m-d H:i:s', '2024-06-02 21:55:11'));
@@ -687,14 +688,16 @@ final class ApiTest extends TestCase
         self::assertEquals($event, $res);
     }
 
-    public function testUpdateEvent()
+    public function testUpdateEvent(): void
     {
+        // so we have the structure in cache
+        self::assertNotNull($this->sn->get_kalender_by_global_id(4));
+
         $cat = new Category();
         $cat->setUid(1);
         $cat->setText('Sonstiges');
 
-        $structure = new Structure();
-        $structure->setUid('4');
+        $structure = $this->getTestStructure();
 
         $kalenderUser = new User();
         $kalenderUser->setUsername('kalender-1.0');
@@ -725,8 +728,7 @@ final class ApiTest extends TestCase
         $this->sn->loginUser(self::API_USER, self::API_KEY);
         $res = $this->sn->write_event($event);
 
-        // the answer does not contain the structure, changedBy and createdBy, since they are not cached
-        $event->setStructure(null);
+        // the answer does not contain changedBy and createdBy, since they are not cached
         $event->setChangedBy(null);
         $event->setCreatedBy(null);
         $event->setChangedAt(DateTime::createFromFormat('Y-m-d H:i:s', '2024-06-02 21:55:11'));
@@ -734,12 +736,206 @@ final class ApiTest extends TestCase
         self::assertEquals($event, $res);
     }
 
-    public function testDeleteEvent()
+    public function testDeleteEvent(): void
     {
         $this->sn->loginUser(self::API_USER, self::API_KEY);
         $res = $this->sn->delete_event(4, 23);
 
         self::assertEquals(['type' => 'ok', 'content' => ['Code' => 0, 'Value' => 'object Deleted']], $res);
+    }
+
+    private function getTestStructure(): Structure
+    {
+        $cat = new Category();
+        $cat->setUid(1);
+        $cat->setText('Sonstiges');
+
+        $cat858 = new Category();
+        $cat858->setUid(858);
+        $cat858->setText('AGMedien');
+        $cat4 = new Category();
+        $cat4->setUid(4);
+        $cat4->setText('Aktion');
+        $cat882 = new Category();
+        $cat882->setUid(882);
+        $cat882->setText('Bausteinwochenende');
+        $cat7 = new Category();
+        $cat7->setUid(7);
+        $cat7->setText('Bezirksleitung');
+        $cat12 = new Category();
+        $cat12->setUid(12);
+        $cat12->setText('Diözesanleitung');
+        $cat3 = new Category();
+        $cat3->setUid(3);
+        $cat3->setText('Fahrt/Lager');
+        $cat105 = new Category();
+        $cat105->setUid(105);
+        $cat105->setText('Freunde und Förderer');
+        $cat5 = new Category();
+        $cat5->setUid(5);
+        $cat5->setText('Gemeinde');
+        $cat11 = new Category();
+        $cat11->setUid(11);
+        $cat11->setText('Gremium/AK');
+        $cat182 = new Category();
+        $cat182->setUid(182);
+        $cat182->setText('Gruppenstunde');
+        $cat810 = new Category();
+        $cat810->setUid(810);
+        $cat810->setText('Jamb');
+        $cat43 = new Category();
+        $cat43->setUid(43);
+        $cat43->setText('Leiterrunde');
+        $cat125 = new Category();
+        $cat125->setUid(125);
+        $cat125->setText('Ranger & Rover');
+        $cat59 = new Category();
+        $cat59->setUid(59);
+        $cat59->setText('Ranger/Rover');
+        $cat10 = new Category();
+        $cat10->setUid(10);
+        $cat10->setText('Schulung/Kurs');
+        $cat2 = new Category();
+        $cat2->setUid(2);
+        $cat2->setText('Stamm');
+        $cat9 = new Category();
+        $cat9->setUid(9);
+        $cat9->setText('Stufenkonferenz');
+        $cat881 = new Category();
+        $cat881->setUid(881);
+        $cat881->setText('Teamer Starter Training');
+        $cat38 = new Category();
+        $cat38->setUid(38);
+        $cat38->setText('Truppstunde');
+        $cat6 = new Category();
+        $cat6->setUid(6);
+        $cat6->setText('Vorstände');
+
+        $cat886 = new Category();
+        $cat886->setUid(886);
+        $cat886->setText('Vorgruppe');
+        $cat16 = new Category();
+        $cat16->setUid(16);
+        $cat16->setText('Wölflinge');
+        $cat17 = new Category();
+        $cat17->setUid(17);
+        $cat17->setText('Jungpfadfinder');
+        $cat18 = new Category();
+        $cat18->setUid(18);
+        $cat18->setText('Pfadfinder');
+        $cat19 = new Category();
+        $cat19->setUid(19);
+        $cat19->setText('Rover');
+        $cat20 = new Category();
+        $cat20->setUid(20);
+        $cat20->setText('Leiter');
+        $cat476 = new Category();
+        $cat476->setUid(476);
+        $cat476->setText('Einstieg Schritt 1');
+        $cat179 = new Category();
+        $cat179->setUid(179);
+        $cat179->setText('Einstieg Schritt 2');
+        $cat331 = new Category();
+        $cat331->setUid(331);
+        $cat331->setText('Baustein 1 a');
+        $cat330 = new Category();
+        $cat330->setUid(330);
+        $cat330->setText('Baustein 1 b');
+        $cat477 = new Category();
+        $cat477->setUid(477);
+        $cat477->setText('Baustein 1 c');
+        $cat865 = new Category();
+        $cat865->setUid(865);
+        $cat865->setText('Baustein 1 d');
+        $cat478 = new Category();
+        $cat478->setUid(478);
+        $cat478->setText('Baustein 2 a');
+        $cat479 = new Category();
+        $cat479->setUid(479);
+        $cat479->setText('Baustein 2 b');
+        $cat333 = new Category();
+        $cat333->setUid(333);
+        $cat333->setText('Baustein 2 c');
+        $cat480 = new Category();
+        $cat480->setUid(480);
+        $cat480->setText('Baustein 2 d');
+        $cat820 = new Category();
+        $cat820->setUid(820);
+        $cat820->setText('Baustein 2 e');
+        $cat332 = new Category();
+        $cat332->setUid(332);
+        $cat332->setText('Baustein 3 a');
+        $cat328 = new Category();
+        $cat328->setUid(328);
+        $cat328->setText('Baustein 3 b');
+        $cat481 = new Category();
+        $cat481->setUid(481);
+        $cat481->setText('Baustein 3 c');
+        $cat483 = new Category();
+        $cat483->setUid(483);
+        $cat483->setText('Baustein 3 e');
+        $cat484 = new Category();
+        $cat484->setUid(484);
+        $cat484->setText('Baustein 3 f');
+        $cat485 = new Category();
+        $cat485->setUid(485);
+        $cat485->setText('Woodbadgekurs');
+        $cat36 = new Category();
+        $cat36->setUid(36);
+        $cat36->setText('Ausbildungstagung');
+        $cat486 = new Category();
+        $cat486->setUid(486);
+        $cat486->setText('Modulleitungstraining (MLT)');
+        $cat701 = new Category();
+        $cat701->setUid(701);
+        $cat701->setText('Teamer-Training I');
+        $cat702 = new Category();
+        $cat702->setUid(702);
+        $cat702->setText('Teamer-Training II');
+        $cat489 = new Category();
+        $cat489->setUid(489);
+        $cat489->setText('Assistent Leader Training (ALT)');
+        $cat897 = new Category();
+        $cat897->setUid(897);
+        $cat897->setText('Fort-/Weiterbildung');
+        $cat950 = new Category();
+        $cat950->setUid(950);
+        $cat950->setText('Leiter*innen');
+
+        $cat952 = new Category();
+        $cat952->setUid(952);
+        $cat952->setText('Biber');
+
+        $structure = new Structure();
+        $structure->setUid('4');
+        $structure->setEbene('Diözese');
+        $structure->setName('Köln');
+        $structure->setVerband('DPSG');
+        $structure->setIdent('Diözesanverband Köln');
+        $structure->setEbeneId(7);
+        $structure->setUsedCategories([
+            4 => $cat4,
+            7 => $cat7,
+            12 => $cat12,
+            3 => $cat3,
+            5 => $cat5,
+            11 => $cat11,
+            182 => $cat182,
+            43 => $cat43,
+            59 => $cat59,
+            10 => $cat10,
+            2 => $cat2,
+            9 => $cat9,
+            38 => $cat38,
+            6 => $cat6,
+            950 => $cat950,
+        ]);
+        $structure->setForcedCategories([
+            'sections/leaders' => [16 => $cat16, 17 => $cat17, 18 => $cat18, 19 => $cat19, 20 => $cat20, 952 => $cat952],
+            'DPSG-Ausbildung' => [476 => $cat476, 179 => $cat179, 331 => $cat331, 330 => $cat330, 477 => $cat477, 865 => $cat865, 478 => $cat478, 479 => $cat479, 333 => $cat333, 480 => $cat480, 820 => $cat820, 332 => $cat332, 328 => $cat328, 481 => $cat481, 483 => $cat483, 484 => $cat484, 485 => $cat485, 36 => $cat36, 486 => $cat486, 701 => $cat701, 702 => $cat702, 489 => $cat489, 897 => $cat897],
+        ]);
+
+        return $structure;
     }
 }
 
@@ -750,9 +946,9 @@ define('CACHE_DIR', dirname(__DIR__) . '/Fixtures/');
 
 class JsonRPCClientHelperMock extends JsonRPCClientHelper
 {
-    private $cache_dir;
+    private string $cache_dir;
 
-    public function __construct($url, $debug = false, $cache_dir)
+    public function __construct(string $url, bool $debug = false, string $cache_dir = null)
     {
         parent::__construct($url, $debug);
         $this->cache_dir = $cache_dir;
@@ -830,7 +1026,7 @@ class JsonRPCClientHelperMock extends JsonRPCClientHelper
 
 namespace ScoutNet\Api;
 
-use ScoutNet\Api\Tests\Unit\ApiTest;
+use ScoutNet\Api\Tests\Unit\Helpers\Helpers\Helpers\Helpers\Helpers\Unit\ApiTest;
 
 /**
  * mock time

@@ -14,7 +14,7 @@ namespace ScoutNet\Api\Exceptions;
 
 class ScoutNetExceptionMissingConfVar extends ScoutNetException
 {
-    public function __construct($var, $code = null)
+    public function __construct(string $var = '', int $code = 0)
     {
         parent::__construct("Missing '$var'. Please Contact your Admin to enter a valid credentials for ScoutNet Connect. You can request them via <a href=\"mailto:scoutnetconnect@scoutnet.de\">scoutnetConnect@ScoutNet.de</a>.", $code);
     }

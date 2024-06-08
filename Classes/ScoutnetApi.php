@@ -226,7 +226,7 @@ class ScoutnetApi
         $categories = [];
         foreach ($this->load_data_from_scoutnet([], ['categories' => ['uid' => $ids]]) as $record) {
             if ($record['type'] === 'categorie') {
-                $categories[] = $this->converter->convertApiToCategorie($record['content']);
+                $categories[] = $this->converter->convertApiToCategory($record['content']);
             }
         }
         return $categories;
