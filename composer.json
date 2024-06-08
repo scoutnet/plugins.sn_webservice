@@ -41,7 +41,8 @@
 		"codeception/module-webdriver": "^4.0",
 		"codeception/module-asserts": "^3.0",
 		"doctrine/inflector": "^2.0",
-		"typo3/coding-standards": "^0.7.1"
+		"typo3/coding-standards": "^0.7.1",
+		"ext-curl": "*"
 	},
 	"autoload": {
 		"psr-4": {
@@ -57,5 +58,8 @@
 		"branch-alias": {
 			"dev-main": "1.0.x-dev"
 		}
+	},
+	"require": {
+		"ext-openssl": "*"
 	}
 }

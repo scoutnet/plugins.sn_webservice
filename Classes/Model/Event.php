@@ -587,7 +587,7 @@ class Event extends AbstractModel
      */
     public function getShowEndDate(): bool
     {
-        return !is_null($this->endDate) && $this->endDate != 0 && $this->endDate != $this->startDate;
+        return !is_null($this->endDate) && $this->endDate !== new DateTime('1970-01-01') && $this->endDate != $this->startDate;
     }
 
     /**

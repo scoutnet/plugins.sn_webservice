@@ -18,12 +18,12 @@ use ScoutNet\Api\Model\Event;
 
 class CacheHelperTest extends TestCase
 {
-    public function testCanBeCreated()
+    public function testCanBeCreated(): void
     {
         self::assertInstanceOf(CacheHelper::class, new CacheHelper());
     }
 
-    public function testCache()
+    public function testCache(): void
     {
         $cache = new CacheHelper();
 

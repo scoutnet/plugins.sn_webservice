@@ -44,13 +44,15 @@ class AesHelper
 
         $this->z = $z;
 
-        $xsize = strlen($iv);
         $this->iv = '';
-        for ($j = 0; $j < 16; $j++) {
-            if (($j) < $xsize) {
-                $this->iv[$j] = $iv[$j];
-            } else {
-                $this->iv[$j] = chr(0);
+        if ($mode === self::AES_MODE_CBC) {
+            $xsize = strlen($iv);
+            for ($j = 0; $j < 16; $j++) {
+                if (($j) < $xsize) {
+                    $this->iv[$j] = $iv[$j];
+                } else {
+                    $this->iv[$j] = chr(0);
+                }
             }
         }
     }

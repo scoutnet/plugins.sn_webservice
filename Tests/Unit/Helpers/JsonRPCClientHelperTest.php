@@ -270,9 +270,11 @@ function curl_exec($ch)
     $request = json_decode($ch[CURLOPT_POSTFIELDS], true);
     $headers = $ch[CURLOPT_HTTPHEADER];
 
-    $headers[] = 'Cookie: ' . $ch[CURLOPT_COOKIE];
+    if (isset($ch[CURLOPT_COOKIE])) {
+        $headers[] = 'Cookie: ' . $ch[CURLOPT_COOKIE];
+    }
 
-    if ($request['method'] == 'demoCallOptions') {
+    if ($request['method'] === 'demoCallOptions') {
         $response = [
             'id' => $request['id'],
             'error' => null,
