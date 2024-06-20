@@ -14,7 +14,7 @@ Install
 -------
 
 ```bash
-composer require "scoutnet/sn-webservice:^1.0"
+composer require "scoutnet/sn-webservice:^2.0"
 ```
 
 Use API
