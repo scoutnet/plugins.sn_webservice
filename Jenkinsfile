@@ -1,13 +1,44 @@
+// This file is a generic Scoutnet Jenkins file. The original is found in the dummy extension
+// https://github.com/scoutnet/plugins.typo3.scoutnet_dummy/blob/main/Jenkinsfile
+// Jenkinsfile Version: 3.0.3
 pipeline {
     agent any
+
+
+    environment {
+        TYPO3_PATH_WEB = '/opt/typo3/web'
+    }
 
     stages {
         stage('Test'){
             steps {
-                sh 'docker run --rm -w /opt/data -v `pwd`:/opt/data -i epcallan/php7-testing-phpunit:7.0-phpunit6 composer install'
-                sh 'docker run --rm -w /opt/data -v `pwd`:/opt/data -i epcallan/php7-testing-phpunit:7.0-phpunit6 phpunit --coverage-clover=phpunit/coverage.xml --log-junit phpunit/junit.xml -c Tests/Builds/UnitTests.xml'
-                withCredentials([string(credentialsId: 'CODECOV_TOKEN', variable: 'CODECOV_TOKEN')]) {
-                    sh 'ci_env=`bash -c "bash <(curl -s https://codecov.io/env)"` && docker run --rm $ci_env -w /opt/data -v `pwd`:/opt/data -i epcallan/php7-testing-phpunit:7.0-phpunit6 bash -c "bash <(curl -s https://codecov.io/bash)"'
+                withCredentials([usernamePassword(credentialsId: 'REPO_AUTH', passwordVariable: 'REPO_AUTH_PASSWORD', usernameVariable: 'REPO_AUTH_USER')]) {
+                    script {
+                        def PHP_VERSIONS = ['8.1', '8.3'] // Only support first and last supported Version to Speed Tests up
+                        def tests = [:]
+
+                        sh "echo '{\"http-basic\": {\"repo.scoutnet.de\": {\"username\": \"${REPO_AUTH_USER}\", \"password\": \"${REPO_AUTH_PASSWORD}\"}}}' > auth.json"
+                        sh "make init"
+
+                        tests['cgl Test'] = {
+                            echo "Testing CGL"
+                            sh "make cglTest"
+                        }
+
+                        for (x in PHP_VERSIONS) {
+                            def PHP_VERSION = x.replace('.','')
+
+                            tests[PHP_VERSION] = {
+                                echo "Testing PHP Version ${PHP_VERSION}"
+                                sh "make lintTest-php${PHP_VERSION}"
+                                sh "make unitTest-php${PHP_VERSION}"
+                            }
+                        }
+                        parallel tests
+
+                        // we only test for php version 8.3, since this should execute the same way
+                        sh 'rm -f auth.json'
+                    }
                 }
             }
         }
@@ -18,18 +49,47 @@ pipeline {
                 }
             }
             steps {
-                withCredentials([string(credentialsId: 'GITHUB_TOKEN', variable: 'GITHUB_TOKEN')]) {
-                    sh 'git pull --tags'
-                    sh 'docker run --rm -e GITHUB_TOKEN -w /opt/data -v `pwd`:/opt/data -i scoutnet/buildhost:latest make checkVersion'
-                    sh 'docker run --rm -e GITHUB_TOKEN -w /opt/data -v `pwd`:/opt/data -i scoutnet/buildhost:latest make release'
+                withCredentials([string(credentialsId: 'GITHUB_TOKEN', variable: 'GITHUB_TOKEN'), usernamePassword(credentialsId: 'ac854e35-e62e-4aa1-b7ac-2ced736da9e6', passwordVariable: 'TYPO3_TER_PASSWORD', usernameVariable: 'TYPO3_TER_USER')]) {
+                    sh 'docker run --rm -e TYPO3_TER_PASSWORD -e TYPO3_TER_USER -e GITHUB_TOKEN -w /opt/data -v `pwd`:/opt/data -i scoutnet/buildhost:latest make checkVersion'
+                    sh 'docker run --rm -e TYPO3_TER_PASSWORD -e TYPO3_TER_USER -e GITHUB_TOKEN -w /opt/data -v `pwd`:/opt/data -i scoutnet/buildhost:latest make release'
+                    sh 'docker run --rm -e TYPO3_TER_PASSWORD -e TYPO3_TER_USER -e GITHUB_TOKEN -w /opt/data -v `pwd`:/opt/data -i scoutnet/buildhost:latest make deploy'
                 }
             }
         }
         stage('Notify') {
             steps {
-                slackSend color: 'good', message: 'Building sn_webservice: Done'
+                withCredentials([usernamePassword(credentialsId: 'REPO_AUTH', passwordVariable: 'REPO_AUTH_PASSWORD', usernameVariable: 'REPO_AUTH_USER')]) {
+                    sh 'curl -s -u ${REPO_AUTH_USER}:${REPO_AUTH_PASSWORD} https://repo.scoutnet.de/trigger.php'
+                }
+                withCredentials([string(credentialsId: 'CODECOV_TOKEN', variable: 'CODECOV_TOKEN')]) {
+                    script {
+                        def uploads = [:]
+
+                        uploads["unit"] = {
+                                echo "Uploading Covereage for UnitTests"
+                                sh "codecovcli upload-process --disable-search --plugin none -F unitTests -f '${WORKSPACE}/.Build/coverage-php*-unit.xml'"
+                        }
+
+                        parallel uploads
+                    }
+                }
             }
         }
 
+    }
+    post {
+        always {
+            script {
+                sh 'rm -f auth.json'
+                sh 'make cleanDocker'
+
+                if (currentBuild.currentResult == 'FAILURE') {
+                    color = 'danger'
+                } else {
+                    color = 'good'
+                }
+                slackSend color: color, message: "<${env.JOB_URL}|${env.JOB_NAME}>: Build ${currentBuild.currentResult}"
+            }
+        }
     }
 }

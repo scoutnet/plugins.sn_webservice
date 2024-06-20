@@ -1,60 +1,56 @@
 <?php
+/**
+ * Copyright (c) 2017-2024 Stefan (Mütze) Horst
+ *
+ * I don't have the time to read through all the licences to find out
+ * what they exactly say. But it's simple. It's free for non-commercial
+ * projects, but as soon as you make money with it, I want my share :-)
+ * (License: Free for non-commercial use)
+ *
+ * Authors: Stefan (Mütze) Horst <muetze@scoutnet.de>
+ */
 
 namespace ScoutNet\Api;
 
-/***************************************************************
- *
- *  Copyright notice
- *
- *  (c) 2017 Stefan "Mütze" Horst <muetze@scoutnet.de>, ScoutNet
- *
- *  All rights reserved
- *
- *  The GNU General Public License can be found at
- *  http://www.gnu.org/copyleft/gpl.html.
- *
- *  This script is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  This copyright notice MUST APPEAR in all copies of the script!
- ***************************************************************/
-
+use ScoutNet\Api\Exceptions\ScoutNetException;
+use ScoutNet\Api\Exceptions\ScoutNetExceptionMissingConfVar;
+use ScoutNet\Api\Helpers\AesHelper;
 use ScoutNet\Api\Helpers\CacheHelper;
 use ScoutNet\Api\Helpers\ConverterHelper;
-
-use ScoutNet\Api\Models\Event;
-
-use ScoutNet\Api\Helpers\AesHelper;
 use ScoutNet\Api\Helpers\JsonRPCClientHelper;
+use ScoutNet\Api\Model\Category;
+use ScoutNet\Api\Model\Event;
+use ScoutNet\Api\Model\Index;
+use ScoutNet\Api\Model\Permission;
+use ScoutNet\Api\Model\Structure;
 
-class ScoutnetApi {
-    const UNSECURE_START_IV = '1234567890123456';
+class ScoutnetApi
+{
+    public const UNSECURE_START_IV = '1234567890123456';
 
-    const ERROR_AUTH_BROKEN = 1491935269;
-    const ERROR_WRONG_PROVIDER = 1491935295;
-    const ERROR_AUTH_TOO_OLD = 1491935476;
-    const ERROR_AUTH_EMPTY = 1491935505;
+    public const ERROR_AUTH_BROKEN = 1491935269;
+    public const ERROR_WRONG_PROVIDER = 1491935295;
+    public const ERROR_AUTH_TOO_OLD = 1491935476;
+    public const ERROR_AUTH_EMPTY = 1491935505;
 
-    const ERROR_MISSING_API_KEY = 1491938183;
-    const ERROR_MISSING_API_USER = 1492695814;
+    public const ERROR_MISSING_API_KEY = 1491938183;
+    public const ERROR_MISSING_API_USER = 1492695814;
 
-    var $SN = null;
+    public $SN;
 
-    var $snData;
+    public $snData;
 
-    private $provider = null;
-    private $aes_key = null;
-    private $aes_iv = null;
+    private $provider;
+    private $aes_key;
+    private $aes_iv;
 
-    private $api_user = null;
-    private $api_key = null;
+    private $api_user;
+    private $api_key;
 
-    private $login_url = null;
+    private $login_url;
 
-    private $cache = null;
-    private $converter = null;
+    private $cache;
+    private $converter;
 
     /**
      * Construct the ScoutNet API. To read you need not set anything. For Writing access you must set the
@@ -66,7 +62,8 @@ class ScoutnetApi {
      * @param string $aes_key   set aes key for the provider
      * @param string $aes_iv    set aes iv for the provider
      */
-    public function __construct($api_url = "https://www.scoutnet.de/jsonrpc/server.php", $login_url = 'https://www.scoutnet.de/community/scoutnetConnect.html', $provider = '', $aes_key = '', $aes_iv = '') {
+    public function __construct($api_url = 'https://www.scoutnet.de/jsonrpc/server.php', $login_url = 'https://www.scoutnet.de/community/scoutnetConnect.html', $provider = '', $aes_key = '', $aes_iv = '')
+    {
         $this->SN = new JsonRPCClientHelper($api_url);
 
         $this->set_scoutnet_connect_data($login_url, $provider, $aes_key, $aes_iv);
@@ -83,9 +80,10 @@ class ScoutnetApi {
      * @param string $aes_key
      * @param string $aes_iv
      *
-     * @throws ScoutnetException_MissingConfVar
+     * @throws ScoutNetExceptionMissingConfVar
      */
-    public function set_scoutnet_connect_data($login_url = null, $provider = '', $aes_key = '', $aes_iv = '') {
+    public function set_scoutnet_connect_data($login_url = null, $provider = '', $aes_key = '', $aes_iv = '')
+    {
         if ($login_url == null) {
             $login_url = 'https://www.scoutnet.de/community/scoutnetConnect.html';
         }
@@ -105,34 +103,37 @@ class ScoutnetApi {
     /**
      * checks if ScoutNet connect Values are set correctly
      *
-     * @throws ScoutnetException_MissingConfVar
+     * @throws ScoutNetExceptionMissingConfVar
      */
-    private function _check_for_all_configValues() {
-        if (trim($this->aes_key) == '' || strlen($this->aes_key) != 32) {
-            throw new ScoutnetException_MissingConfVar('aes_key');
+    private function _check_for_all_configValues(): void
+    {
+        if (trim($this->aes_key) === '' || strlen($this->aes_key) !== 32) {
+            throw new ScoutNetExceptionMissingConfVar('aes_key');
         }
-        if (trim($this->aes_iv) == '' || strlen($this->aes_iv) != 16) {
-            throw new ScoutnetException_MissingConfVar('aes_iv');
+        if (trim($this->aes_iv) === '' || strlen($this->aes_iv) !== 16) {
+            throw new ScoutNetExceptionMissingConfVar('aes_iv');
         }
-        if (trim($this->login_url) == '') {
-            throw new ScoutnetException_MissingConfVar('login_url');
+        if (trim($this->login_url) === '') {
+            throw new ScoutNetExceptionMissingConfVar('login_url');
         }
-        if (trim($this->provider) == '') {
-            throw new ScoutnetException_MissingConfVar('provider');
+        if (trim($this->provider) === '') {
+            throw new ScoutNetExceptionMissingConfVar('provider');
         }
     }
 
-    public function loginUser($api_user, $api_key) {
+    public function loginUser($api_user, $api_key): void
+    {
         $this->api_user = $api_user;
         $this->api_key = $api_key;
     }
 
-    private function _check_login() {
-        if (trim($this->api_user) == '') {
-            throw new ScoutnetException_MissingConfVar('api_user', self::ERROR_MISSING_API_USER);
+    private function _check_login(): void
+    {
+        if (trim($this->api_user) === '') {
+            throw new ScoutNetExceptionMissingConfVar('api_user', self::ERROR_MISSING_API_USER);
         }
-        if (trim($this->api_key) == '' || strlen($this->api_key) != 32) {
-            throw new ScoutnetException_MissingConfVar('api_key', self::ERROR_MISSING_API_KEY);
+        if (trim($this->api_key) === '' || strlen($this->api_key) !== 32) {
+            throw new ScoutNetExceptionMissingConfVar('api_key', self::ERROR_MISSING_API_KEY);
         }
     }
 
@@ -142,7 +143,8 @@ class ScoutnetApi {
      *
      * @return mixed
      */
-    protected function load_data_from_scoutnet($ids, $query) {
+    protected function load_data_from_scoutnet($ids, $query): mixed
+    {
         $res = $this->SN->get_data_by_global_id($ids, $query);
 
         return $res;
@@ -156,16 +158,17 @@ class ScoutnetApi {
      *
      * @return  Event[]
      */
-    public function get_events_for_global_id_with_filter($ids, $filter) {
+    public function get_events_for_global_id_with_filter($ids, $filter): array
+    {
         $events = [];
 
-        foreach ($this->load_data_from_scoutnet($ids, array('events' => $filter)) as $record) {
+        foreach ($this->load_data_from_scoutnet($ids, ['events' => $filter]) as $record) {
             if ($record['type'] === 'user') {
                 // convert to User and save to cache
                 $this->converter->convertApiToUser($record['content']);
             } elseif ($record['type'] === 'stufe') {
                 // convert to Stufe and save to cache
-                $this->converter->convertApiToStufe($record['content']);
+                $this->converter->convertApiToSection($record['content']);
             } elseif ($record['type'] === 'kalender') {
                 // convert to Structure and save to cache
                 $this->converter->convertApiToStructure($record['content']);
@@ -182,12 +185,12 @@ class ScoutnetApi {
      * @param int[]|int $ids    SSIDs to find Index Elements for
      * @param array     $filter Filter for Elements
      *
-     * @return \ScoutNet\Api\Models\Index[]
+     * @return Index[]
      */
-    public function get_index_for_global_id_with_filter($ids, $filter) {
-        $indexes = array();
-        foreach ($this->load_data_from_scoutnet($ids, array('index' => $filter)) as $record) {
-
+    public function get_index_for_global_id_with_filter($ids, $filter)
+    {
+        $indexes = [];
+        foreach ($this->load_data_from_scoutnet($ids, ['index' => $filter]) as $record) {
             if ($record['type'] === 'index') {
                 $index = $this->converter->convertApiToIndex($record['content']);
 
@@ -204,10 +207,11 @@ class ScoutnetApi {
      * @param int[]|int $ids       SSIDs to load events for
      * @param int[]     $event_ids IDs of Events to load
      *
-     * @return \ScoutNet\Api\Models\Event[]
+     * @return Event[]
      */
-    public function get_events_with_ids($ids, $event_ids) {
-        return $this->get_events_for_global_id_with_filter($ids, array('event_ids' => $event_ids));
+    public function get_events_with_ids($ids, $event_ids)
+    {
+        return $this->get_events_for_global_id_with_filter($ids, ['event_ids' => $event_ids]);
     }
 
     /**
@@ -215,13 +219,14 @@ class ScoutnetApi {
      *
      * @param int[]|int $ids       IDs of Categories
      *
-     * @return \ScoutNet\Api\Models\Categorie[]
+     * @return Category[]
      */
-    public function get_categories_by_ids($ids) {
+    public function get_categories_by_ids($ids)
+    {
         $categories = [];
         foreach ($this->load_data_from_scoutnet([], ['categories' => ['uid' => $ids]]) as $record) {
             if ($record['type'] === 'categorie') {
-                $categories[] = $this->converter->convertApiToCategorie($record['content']);
+                $categories[] = $this->converter->convertApiToCategory($record['content']);
             }
         }
         return $categories;
@@ -230,11 +235,12 @@ class ScoutnetApi {
     /**
      * @param int[]|int $ids SSIDs to load Kalenders for
      *
-     * @return \ScoutNet\Api\Models\Structure[]
+     * @return Structure[]
      */
-    public function get_kalender_by_global_id($ids) {
-        $kalenders = array();
-        foreach ($this->load_data_from_scoutnet($ids, array('kalenders' => array())) as $record) {
+    public function get_kalender_by_global_id($ids)
+    {
+        $kalenders = [];
+        foreach ($this->load_data_from_scoutnet($ids, ['kalenders' => []]) as $record) {
             if ($record['type'] === 'kalender') {
                 $kalenders[] = $this->converter->convertApiToStructure($record['content']);
             }
@@ -250,7 +256,8 @@ class ScoutnetApi {
      *
      * @return mixed
      */
-    public function write_event(Event $event) {
+    public function write_event(Event $event)
+    {
         $type = 'event';
         $id = $event->getUid();
         $apiData = $this->converter->convertEventToApi($event);
@@ -265,13 +272,15 @@ class ScoutnetApi {
      *
      * @return mixed
      */
-    public function write_object($type, $id, $data) {
+    public function write_object($type, $id, $data)
+    {
         $auth = $this->_generate_auth($type . $id . serialize($data) . $this->api_user);
 
         return $this->SN->setData($type, $id, $data, $this->api_user, $auth);
     }
 
-    public function delete_event($ssid, $id) {
+    public function delete_event($ssid, $id)
+    {
         $type = 'event';
         $auth = $this->_generate_auth($type . $ssid . $id . $this->api_user);
 
@@ -285,7 +294,8 @@ class ScoutnetApi {
      *
      * @return int State of Write Rights
      */
-    public function has_write_permission_to_calender($ssid) {
+    public function has_write_permission_to_calender($ssid)
+    {
         $permission = $this->get_permissions_of_type_for_structure('event', $ssid);
 
         return $permission->getState();
@@ -295,10 +305,11 @@ class ScoutnetApi {
      * @param string $type    Type of Permissions
      * @param int    $ssid    SSID of Structure
      *
-     * @return \ScoutNet\Api\Models\Permission
+     * @return Permission
      */
-    public function get_permissions_of_type_for_structure($type, $ssid) {
-        $auth = $this->_generate_auth( $type . $ssid . $this->api_user);
+    public function get_permissions_of_type_for_structure($type, $ssid)
+    {
+        $auth = $this->_generate_auth($type . $ssid . $this->api_user);
 
         $right = $this->SN->checkPermission($type, $ssid, $this->api_user, $auth);
         $right['type'] = $type;
@@ -314,7 +325,8 @@ class ScoutnetApi {
      *
      * @return mixed
      */
-    public function request_write_permissions_for_calender($ssid) {
+    public function request_write_permissions_for_calender($ssid)
+    {
         $type = 'event';
 
         return $this->request_permissions_of_type_for_structure($type, $ssid);
@@ -328,12 +340,12 @@ class ScoutnetApi {
      *
      * @return mixed
      */
-    public function request_permissions_of_type_for_structure($type, $ssid) {
+    public function request_permissions_of_type_for_structure($type, $ssid)
+    {
         $auth = $this->_generate_auth($type . $ssid . $this->api_user);
 
         return $this->SN->requestPermission($type, $ssid, $this->api_user, $auth);
     }
-
 
     /**
      * returns the ScoutNet Connect Button in formated HTML
@@ -345,19 +357,20 @@ class ScoutnetApi {
      *
      * @return string
      */
-    public function get_scoutnet_connect_login_button($returnUrl = '', $requestApiKey = false, $imageURL = 'https://www.scoutnet.de/images/scoutnetConnect.png', $lang = 'de') {
+    public function get_scoutnet_connect_login_button($returnUrl = '', $requestApiKey = false, $imageURL = 'https://www.scoutnet.de/images/scoutnetConnect.png', $lang = 'de')
+    {
         $this->_check_for_all_configValues();
         $button = '<form action="' . $this->login_url . '" id="scoutnetLogin" method="post" target="_self">' . "\n";
 
-        $button .= $returnUrl == '' ? '' : "    " . '<input type="hidden" name="redirect_url" value="' . $returnUrl . '" />' . "\n";
-        $button .= "    " . '<input type="hidden" name="lang" value="' . $lang . '"/>' . "\n";
-        $button .= "    " . '<input type="hidden" name="provider" value="' . $this->provider . '" />' . "\n";
-        $button .= $requestApiKey ? ("    " . '<input type="hidden" name="createApiKey" value="1" />' . "\n") : '';
+        $button .= $returnUrl == '' ? '' : '    ' . '<input type="hidden" name="redirect_url" value="' . $returnUrl . '" />' . "\n";
+        $button .= '    ' . '<input type="hidden" name="lang" value="' . $lang . '"/>' . "\n";
+        $button .= '    ' . '<input type="hidden" name="provider" value="' . $this->provider . '" />' . "\n";
+        $button .= $requestApiKey ? ('    ' . '<input type="hidden" name="createApiKey" value="1" />' . "\n") : '';
 
-        $button .= "    " . '<a href="#" onclick="document.getElementById(\'scoutnetLogin\').submit(); return false;">' . "\n";
+        $button .= '    ' . '<a href="#" onclick="document.getElementById(\'scoutnetLogin\').submit(); return false;">' . "\n";
 
-        $button .= "        " . '<img src="' . $imageURL . '" title="Login with Scoutnet" alt="scoutnet Login"/>' . "\n";
-        $button .= "    " . '</a>' . "\n";
+        $button .= '        ' . '<img src="' . $imageURL . '" title="Login with Scoutnet" alt="scoutnet Login"/>' . "\n";
+        $button .= '    ' . '</a>' . "\n";
 
         $button .= '</form>';
 
@@ -368,9 +381,10 @@ class ScoutnetApi {
      * Extract the Api key from _GET variables. This Function is used in after the ScoutNet Connect Login.
      *
      * @return string[]|bool
-     * @throws \ScoutNet\Api\ScoutnetException
+     * @throws ScoutNetException
      */
-    public function getApiKeyFromData() {
+    public function getApiKeyFromData()
+    {
         // we already extracted the Data so do not do it twice
         if (isset($this->snData)) {
             return $this->snData;
@@ -384,14 +398,15 @@ class ScoutnetApi {
         // decode Input
         $base64 = base64_decode(strtr($_GET['auth'], '-_~', '+/='));
 
-        if (trim($base64) == "")
+        if (trim($base64) == '') {
             throw new ScoutnetException('AUTH is empty', self::ERROR_AUTH_EMPTY);
+        }
 
         // check if we have the apropiate Values Configed (AES_Key and AES_IV etc.)
         $this->_check_for_all_configValues();
 
         // Use AES with CBC and the set IV and KEY
-        $aes = new AESHelper($this->aes_key, "CBC", $this->aes_iv);
+        $aes = new AesHelper($this->aes_key, 'CBC', $this->aes_iv);
 
         // decrypt data and drop first Block, since it only contains Random to fix static IV
         $json = substr($aes->decrypt($base64), strlen($this->aes_iv));
@@ -421,8 +436,9 @@ class ScoutnetApi {
 
         $your_domain = $this->provider;
 
-        if ($data['your_domain'] !== $your_domain)
+        if ($data['your_domain'] !== $your_domain) {
             throw new ScoutnetException('AUTH for wrong provider', self::ERROR_WRONG_PROVIDER);
+        }
 
         $this->snData = $data;
 
@@ -435,18 +451,19 @@ class ScoutnetApi {
      * @param string $checkValue Value to sign with Api Key
      *
      * @return string
-     * @throws ScoutnetException_MissingConfVar
+     * @throws ScoutNetExceptionMissingConfVar
      */
-    private function _generate_auth($checkValue) {
+    private function _generate_auth($checkValue)
+    {
         $this->_check_login();
 
-        $aes = new AESHelper($this->api_key, "CBC", self::UNSECURE_START_IV);
+        $aes = new AesHelper($this->api_key, 'CBC', self::UNSECURE_START_IV);
 
-        $auth = array(
+        $auth = [
             'sha1' => sha1($checkValue),
             'md5' => md5($checkValue),
             'time' => time(),
-        );
+        ];
         $auth = json_encode($auth);
 
         // Generate random first block, which is deleted on the reciever side.
@@ -457,15 +474,5 @@ class ScoutnetApi {
         }
 
         return strtr(base64_encode($aes->encrypt($first_block . $auth)), '+/=', '-_~');
-    }
-
-}
-
-class ScoutnetException extends \Exception {
-}
-
-class ScoutnetException_MissingConfVar extends ScoutnetException {
-    public function __construct($var, $code = null) {
-        parent::__construct("Missing '$var'. Please Contact your Admin to enter a valid credentials for ScoutNet Connect. You can request them via <a href=\"mailto:scoutnetconnect@scoutnet.de\">scoutnetConnect@ScoutNet.de</a>.", $code);
     }
 }
