@@ -13,21 +13,9 @@ With this lib you can read and write ScoutNet Kalender Events and read ScoutNet 
 Install
 -------
 
-run 
-
 ```bash
 composer require "scoutnet/sn-webservice:^1.0"
 ```
-
-to install ScoutNet Api Webservice. 
-
-run
-
-```bash
-composer dumpautoload
-```
-
-to regenerate autoloader script.
 
 Use API
 -------

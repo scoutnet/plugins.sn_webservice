@@ -15,66 +15,66 @@ namespace ScoutNet\Api\Model;
 class Index extends AbstractModel
 {
     /**
-     * @var int internal number of Index Element
+     * @var string internal number of Index Element
      */
-    protected $number;
+    protected string $number = '';
 
     /**
      * @var string
      */
-    protected $ebene;
+    protected string $ebene = '';
 
     /**
      * @var string
      */
-    protected $name;
+    protected string $name = '';
 
     /**
      * @var string
      */
-    protected $ort;
+    protected string $ort = '';
     /**
      * @var string
      */
-    protected $plz;
+    protected string $plz = '';
 
     /**
      * @var string
      */
-    protected $url;
+    protected string $url = '';
 
     /**
      * @var float
      */
-    protected $latitude;
+    protected float $latitude = 0.0;
 
     /**
      * @var float
      */
-    protected $longitude;
+    protected float $longitude = 0.0;
 
     /**
-     * @var int
+     * @var int|null
      */
-    protected $parent_id;
+    protected ?int $parent_id = null;
 
     /**
-     * @var \ScoutNet\Api\Model\Index[]
+     * @var Index[]
      */
-    protected $children = [];
+    protected array $children = [];
 
     /**
-     * @return int
+     * @return string
      */
-    public function getNumber()
+    public function getNumber(): string
     {
         return $this->number;
     }
 
     /**
-     * @param int $number
+     * @param string $number
      */
-    public function setNumber($number)
+    public function setNumber(string $number): void
     {
         $this->number = $number;
     }
@@ -82,7 +82,7 @@ class Index extends AbstractModel
     /**
      * @return string
      */
-    public function getEbene()
+    public function getEbene(): string
     {
         return $this->ebene;
     }
@@ -90,7 +90,7 @@ class Index extends AbstractModel
     /**
      * @param string $ebene
      */
-    public function setEbene($ebene)
+    public function setEbene(string $ebene): void
     {
         $this->ebene = $ebene;
     }
@@ -98,7 +98,7 @@ class Index extends AbstractModel
     /**
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -106,7 +106,7 @@ class Index extends AbstractModel
     /**
      * @param string $name
      */
-    public function setName($name)
+    public function setName(string $name): void
     {
         $this->name = $name;
     }
@@ -114,7 +114,7 @@ class Index extends AbstractModel
     /**
      * @return string
      */
-    public function getOrt()
+    public function getOrt(): string
     {
         return $this->ort;
     }
@@ -122,7 +122,7 @@ class Index extends AbstractModel
     /**
      * @param string $ort
      */
-    public function setOrt($ort)
+    public function setOrt(string $ort): void
     {
         $this->ort = $ort;
     }
@@ -130,7 +130,7 @@ class Index extends AbstractModel
     /**
      * @return string
      */
-    public function getPlz()
+    public function getPlz(): string
     {
         return $this->plz;
     }
@@ -138,7 +138,7 @@ class Index extends AbstractModel
     /**
      * @param string $plz
      */
-    public function setPlz($plz)
+    public function setPlz(string $plz): void
     {
         $this->plz = $plz;
     }
@@ -146,7 +146,7 @@ class Index extends AbstractModel
     /**
      * @return string
      */
-    public function getUrl()
+    public function getUrl(): string
     {
         return $this->url;
     }
@@ -154,7 +154,7 @@ class Index extends AbstractModel
     /**
      * @param string $url
      */
-    public function setUrl($url)
+    public function setUrl(string $url): void
     {
         $this->url = $url;
     }
@@ -162,7 +162,7 @@ class Index extends AbstractModel
     /**
      * @return float
      */
-    public function getLatitude()
+    public function getLatitude(): float
     {
         return $this->latitude;
     }
@@ -170,7 +170,7 @@ class Index extends AbstractModel
     /**
      * @param float $latitude
      */
-    public function setLatitude($latitude)
+    public function setLatitude(float $latitude): void
     {
         $this->latitude = $latitude;
     }
@@ -178,7 +178,7 @@ class Index extends AbstractModel
     /**
      * @return float
      */
-    public function getLongitude()
+    public function getLongitude(): float
     {
         return $this->longitude;
     }
@@ -186,7 +186,7 @@ class Index extends AbstractModel
     /**
      * @param float $longitude
      */
-    public function setLongitude($longitude)
+    public function setLongitude(float $longitude): void
     {
         $this->longitude = $longitude;
     }
@@ -194,7 +194,7 @@ class Index extends AbstractModel
     /**
      * @return int
      */
-    public function getParentId()
+    public function getParentId(): ?int
     {
         return $this->parent_id;
     }
@@ -202,7 +202,7 @@ class Index extends AbstractModel
     /**
      * @param int $parent_id
      */
-    public function setParentId($parent_id)
+    public function setParentId(?int $parent_id): void
     {
         $this->parent_id = $parent_id;
     }
@@ -210,7 +210,7 @@ class Index extends AbstractModel
     /**
      * @return Index[]
      */
-    public function getChildren()
+    public function getChildren(): array
     {
         return $this->children;
     }
@@ -218,12 +218,12 @@ class Index extends AbstractModel
     /**
      * @param Index[] $children
      */
-    public function setChildren($children)
+    public function setChildren(array $children): void
     {
         $this->children = $children;
     }
 
-    public function addChild(&$child)
+    public function addChild(Index $child): void
     {
         $this->children[] = $child;
     }

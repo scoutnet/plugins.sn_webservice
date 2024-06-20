@@ -13,6 +13,7 @@
 namespace ScoutNet\Api\Helpers;
 
 use DateTime;
+use Exception;
 use ScoutNet\Api\Model\Category;
 use ScoutNet\Api\Model\Event;
 use ScoutNet\Api\Model\Index;
@@ -57,19 +58,20 @@ class ConverterHelper
             'Stufen' => [],
             'Keywords' => [],
             'Kalender' => $event->getStructure()->getUid(),
-            'Last_Modified_By' => $event->getChangedBy()->getUid(),
-            'Last_Modified_At' => $event->getChangedAt()->getTimestamp(),
-            'Created_By' => $event->getCreatedBy()->getUid(),
-            'Created_At' => $event->getCreatedAt()->getTimestamp(),
+            'Last_Modified_By' => $event->getChangedBy()?->getUid() ?? -1,
+            'Last_Modified_At' => $event->getChangedAt()?->getTimestamp() ?? -1,
+            'Created_By' => $event->getCreatedBy()?->getUid() ?? -1,
+            'Created_At' => $event->getCreatedAt()?->getTimestamp() ?? -1,
         ];
 
-        foreach ($event->getStufen() as $stufe) {
+        foreach ($event->getSections() as $stufe) {
             $array['Stufen'][] = $stufe->getUid();
         }
 
         $customKeywords = [];
         foreach ($event->getCategories() as $category) {
-            if ($category->getUid() == null) {
+            // TODO: not possible
+            if ($category->getUid() === null) {
                 $customKeywords[] = $category->getText();
             } else {
                 $array['Keywords'][$category->getUid()] = $category->getText();
@@ -83,6 +85,9 @@ class ConverterHelper
         return $array;
     }
 
+    /**
+     * @throws Exception
+     */
     public function convertApiToEvent($array): Event
     {
         $event = new Event();
@@ -135,12 +140,14 @@ class ConverterHelper
 
         // load event elements from cache
         if (isset($array['Last_Modified_By'])) {
+            /** @var User $last_modified_by */
             $last_modified_by = $this->cache->get(User::class, $array['Last_Modified_By']);
             if ($last_modified_by) {
                 $event->setChangedBy($last_modified_by);
             }
         }
         if (isset($array['Created_By'])) {
+            /** @var User $created_by */
             $created_by = $this->cache->get(User::class, $array['Created_By']);
             if ($created_by) {
                 $event->setCreatedBy($created_by);
@@ -148,6 +155,7 @@ class ConverterHelper
         }
 
         if (isset($array['Kalender'])) {
+            /** @var Structure $structure */
             $structure = $this->cache->get(Structure::class, (int)($array['Kalender']));
             if ($structure) {
                 $event->setStructure($structure);
@@ -156,6 +164,7 @@ class ConverterHelper
 
         if (isset($array['Stufen'])) {
             foreach ($array['Stufen'] as $stufenCategoryId) {
+                /** @var Section $stufe */
                 $stufe = $this->cache->get(Section::class, $stufenCategoryId);
                 if ($stufe !== null) {
                     $event->addSection($stufe);
@@ -171,7 +180,7 @@ class ConverterHelper
     {
         $user = new User();
 
-        $user->setUid($array['userid'] ?? -1);
+        $user->setUid($array['userid'] ?? '');
         $user->setUsername($array['userid'] ?? '');
         $user->setFirstName($array['firstname'] ?? '');
         $user->setLastName($array['surname'] ?? '');
@@ -183,29 +192,42 @@ class ConverterHelper
 
     public function convertApiToSection($array): Section
     {
-        $stufe = new Section();
+        $section = new Section();
 
-        $stufe->setUid($array['id'] ?? -1);
-        $stufe->setVerband($array['verband'] ?? '');
-        $stufe->setBezeichnung($array['bezeichnung'] ?? '');
-        $stufe->setFarbe($array['farbe'] ?? '');
-        $stufe->setStartalter(isset($array['startalter']) ? (int)($array['startalter']) : -1);
-        $stufe->setEndalter(isset($array['endalter']) ? (int)($array['endalter']) : -1);
-        $stufe->setCategoryId($array['Keywords_ID'] ?? -1);
+        $category = null;
 
-        $this->cache->add($stufe, $stufe->getCategoryId());
-        return $stufe;
+        if (isset($array['Keywords_ID'])) {
+            $category = $this->cache->get(Category::class, $array['Keywords_ID']);
+
+            if ($category === null) {
+                $category = $this->convertApiToCategory(['ID' => $array['Keywords_ID'], 'Text' => $array['bezeichnung'] ?? '']);
+            }
+        }
+
+        $section->setUid($array['id'] ?? -1);
+        $section->setVerband($array['verband'] ?? '');
+        $section->setBezeichnung($array['bezeichnung'] ?? '');
+        $section->setFarbe($array['farbe'] ?? '');
+        $section->setStartalter(isset($array['startalter']) ? (int)($array['startalter']) : -1);
+        $section->setEndalter(isset($array['endalter']) ? (int)($array['endalter']) : -1);
+
+        if ($category) {
+            $section->setCategory($category);
+        }
+
+        $this->cache->add($section, $section->getUid());
+        return $section;
     }
 
-    public function convertApiToStructure($array)
+    public function convertApiToStructure($array): Structure
     {
         $structure = new Structure();
-        $structure->setUid(isset($array['ID']) ? $array['ID'] : -1);
-        $structure->setEbene(isset($array['Ebene']) ? $array['Ebene'] : '');
-        $structure->setName(isset($array['Name']) ? $array['Name'] : '');
-        $structure->setVerband(isset($array['Verband']) ? $array['Verband'] : '');
-        $structure->setIdent(isset($array['Ident']) ? $array['Ident'] : '');
-        $structure->setEbeneId(isset($array['Ebene_Id']) ? $array['Ebene_Id'] : 0);
+        $structure->setUid($array['ID'] ?? -1);
+        $structure->setLevel($array['Ebene'] ?? '');
+        $structure->setName($array['Name'] ?? '');
+        $structure->setVerband($array['Verband'] ?? '');
+        $structure->setIdent($array['Ident'] ?? '');
+        $structure->setLevelId($array['Ebene_Id'] ?? 0);
 
         if (isset($array['Used_Kategories']) && is_array($array['Used_Kategories'])) {
             $used_categories = [];
@@ -235,13 +257,13 @@ class ConverterHelper
         return $structure;
     }
 
-    public function convertApiToPermission($array)
+    public function convertApiToPermission($array): Permission
     {
         $permission = new Permission();
 
-        $permission->setState(isset($array['code']) ? $array['code'] : Permission::AUTH_NO_RIGHT);
-        $permission->setText(isset($array['text']) ? $array['text'] : '');
-        $permission->setType(isset($array['type']) ? $array['type'] : '');
+        $permission->setState($array['code'] ?? Permission::AUTH_NO_RIGHT);
+        $permission->setText($array['text'] ?? '');
+        $permission->setType($array['type'] ?? '');
 
         return $permission;
     }
@@ -261,22 +283,22 @@ class ConverterHelper
     {
         $index = new Index();
 
-        $index->setUid(isset($array['id']) ? $array['id'] : -1);
-        $index->setNumber(isset($array['number']) ? $array['number'] : '');
-        $index->setEbene(isset($array['ebene']) ? $array['ebene'] : '');
-        $index->setName(isset($array['name']) ? $array['name'] : '');
-        $index->setOrt(isset($array['ort']) ? $array['ort'] : '');
-        $index->setPlz(isset($array['plz']) ? $array['plz'] : '');
-        $index->setUrl(isset($array['url']) ? $array['url'] : '');
-        $index->setLatitude(isset($array['latitude']) ? $array['latitude'] : 0.0);
-        $index->setLongitude(isset($array['longitude']) ? $array['longitude'] : 0.0);
-        $index->setParentId(isset($array['parent_id']) ? $array['parent_id'] : null);
+        $index->setUid($array['id'] ?? -1);
+        $index->setNumber($array['number'] ?? '');
+        $index->setEbene($array['ebene'] ?? '');
+        $index->setName($array['name'] ?? '');
+        $index->setOrt($array['ort'] ?? '');
+        $index->setPlz($array['plz'] ?? '');
+        $index->setUrl($array['url'] ?? '');
+        $index->setLatitude((float)($array['latitude'] ?? 0.0));
+        $index->setLongitude((float)($array['longitude'] ?? 0.0));
+        $index->setParentId($array['parent_id'] ?? null);
 
         // this only works, because the api returns the children after the parents
         /**
          * @var Index $parent
          */
-        if ($parent = $this->cache->get(Index::class, $index->getParentId())) {
+        if ($index->getParentId() !== null && $parent = $this->cache->get(Index::class, $index->getParentId())) {
             $parent->addChild($index);
         }
 

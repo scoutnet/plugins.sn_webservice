@@ -12,6 +12,7 @@
 
 namespace ScoutNet\Api\Tests\Unit\Helpers\Helpers;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use ScoutNet\Api\Helpers\CacheHelper;
 use ScoutNet\Api\Helpers\ConverterHelper;
@@ -213,40 +214,81 @@ class ConverterHelperTest extends TestCase
         self::assertEquals($structure, $is_structure);
     }
 
-    public function testConvertSectionValidArray(): void
+    public static function dataProviderConvertSectionValidArray(): array
+    {
+        $cat_generated = new Category();
+        $cat_generated->setUid(42);
+        $cat_generated->setText('Stufe 1');
+
+        $cat_cached = new Category();
+        $cat_cached->setUid(23);
+        $cat_cached->setText('Cached Stufe 1');
+
+        $expected_generated_section = new Section();
+        $expected_generated_section->setUid(23);
+        $expected_generated_section->setVerband('demoVerband');
+        $expected_generated_section->setBezeichnung('Stufe 1');
+        $expected_generated_section->setFarbe('#ffeeff');
+        $expected_generated_section->setStartalter(9);
+        $expected_generated_section->setEndalter(11);
+        $expected_generated_section->setCategory($cat_generated);
+
+        $expected_cached_section = new Section();
+        $expected_cached_section->setUid(23);
+        $expected_cached_section->setVerband('demoVerband');
+        $expected_cached_section->setBezeichnung('Stufe 1');
+        $expected_cached_section->setFarbe('#ffeeff');
+        $expected_cached_section->setStartalter(9);
+        $expected_cached_section->setEndalter(11);
+        $expected_cached_section->setCategory($cat_cached);
+
+        return [
+            'generated Category' => [
+                [
+                    'id' => 23,
+                    'verband' => 'demoVerband',
+                    'bezeichnung' => 'Stufe 1',
+                    'farbe' => '#ffeeff',
+                    'startalter' => 9,
+                    'endalter' => 11,
+                    'Keywords_ID' => 42,
+                ], $expected_generated_section, false,
+            ],
+            'cached Category' => [
+                [
+                    'id' => 23,
+                    'verband' => 'demoVerband',
+                    'bezeichnung' => 'Stufe 1',
+                    'farbe' => '#ffeeff',
+                    'startalter' => 9,
+                    'endalter' => 11,
+                    'Keywords_ID' => 23,
+                ], $expected_cached_section, true,
+            ],
+
+        ];
+    }
+
+    /**
+     * @param array $array
+     * @param Section $exp_section
+     * @param bool $cached
+     */
+    #[DataProvider('dataProviderConvertSectionValidArray')]
+    public function testConvertSectionValidArray(array $array, Section $exp_section, bool $cached): void
     {
         $cache = new CacheHelper();
         $converter = new ConverterHelper($cache);
 
-        $cat = new Category();
-        $cat->setUid(1);
-        $cat->setText('Sonstiges');
+        if ($cached) {
+            $cache->add($exp_section->getCategory());
+        }
 
-        $expected_stufe = new Section();
-
-        $expected_stufe->setUid(23);
-        $expected_stufe->setVerband('demoVerband');
-        $expected_stufe->setBezeichnung('Stufe 1');
-        $expected_stufe->setFarbe('#ffeeff');
-        $expected_stufe->setStartalter(9);
-        $expected_stufe->setEndalter(11);
-        // TODO: make work
-        //        $expected_stufe->setCategory($cat);
-
-        $array = [
-            'id' => 23,
-            'verband' => 'demoVerband',
-            'bezeichnung' => 'Stufe 1',
-            'farbe' => '#ffeeff',
-            'startalter' => 9,
-            'endalter' => 11,
-            'Keywords_ID' => 1,
-        ];
         $is_stufe = $converter->convertApiToSection($array);
-        $cached_stufe = $cache->get(Section::class, 23);
+        $cached_stufe = $cache->get(Section::class, $exp_section->getUid());
 
-        self::assertEquals($expected_stufe, $is_stufe);
-        self::assertEquals($expected_stufe, $cached_stufe);
+        self::assertEquals($exp_section, $is_stufe);
+        self::assertEquals($exp_section, $cached_stufe);
     }
 
     public function testConvertSectionEmptyArray(): void
@@ -303,7 +345,7 @@ class ConverterHelperTest extends TestCase
 
         $expected_user = new User();
 
-        $expected_user->setUid(-1);
+        $expected_user->setUid('');
         $expected_user->setUsername('');
         $expected_user->setFirstName('');
         $expected_user->setLastName('');
@@ -368,7 +410,7 @@ class ConverterHelperTest extends TestCase
         $expected_event->setChangedBy(null);
         $expected_event->setCreatedBy(null);
         //        $expected_event->setStructure(null);
-        $expected_event->setStufen([]);
+        $expected_event->setSections([]);
 
         $array = [
             'ID' => 23,
@@ -411,7 +453,7 @@ class ConverterHelperTest extends TestCase
         $expected_event->setChangedBy($changedBy);
         $expected_event->setCreatedBy($createdBy);
         $expected_event->setStructure($structure);
-        $expected_event->setStufen([$stufe]);
+        $expected_event->setSections([$stufe]);
 
         // with cache set
         $is_event = $converter->convertApiToEvent($array);
@@ -487,7 +529,7 @@ class ConverterHelperTest extends TestCase
         $stufe->setCategory($cat);
 
         $custom_cat = new Category();
-        $custom_cat->setUid(null);
+        //        $custom_cat->setUid();
         $custom_cat->setText('Custom1');
 
         $event = new Event();
@@ -512,7 +554,7 @@ class ConverterHelperTest extends TestCase
         $event->setChangedBy($changedBy);
         $event->setCreatedBy($createdBy);
         $event->setStructure($structure);
-        $event->setStufen([$stufe]);
+        $event->setSections([$stufe]);
 
         $expected_array = [
             'ID' => 23,

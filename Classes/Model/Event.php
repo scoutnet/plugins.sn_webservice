@@ -440,42 +440,6 @@ class Event extends AbstractModel
     }
 
     /**
-     * @return User|null
-     * @deprecated
-     */
-    public function getAuthor(): ?User
-    {
-        return $this->changedBy ?? $this->createdBy;
-    }
-
-    /**
-     * @return Section[]
-     * @deprecated
-     */
-    public function getStufen(): array
-    {
-        return $this->getSections();
-    }
-
-    /**
-     * @param Section[] $sections
-     * @deprecated
-     */
-    public function setStufen(array $sections): void
-    {
-        $this->setSections($sections);
-    }
-
-    /**
-     * @param Section $stufe
-     * @deprecated
-     */
-    public function addStufe(Section $stufe): void
-    {
-        $this->addSection($stufe);
-    }
-
-    /**
      * @return Section[]
      */
     public function getSections(): array
@@ -501,15 +465,6 @@ class Event extends AbstractModel
 
     /**
      * @return string
-     * @deprecated
-     */
-    public function getStufenImages(): string
-    {
-        return $this->getSectionImages();
-    }
-
-    /**
-     * @return string
      */
     public function getSectionImages(): string
     {
@@ -522,22 +477,13 @@ class Event extends AbstractModel
 
     /**
      * @return array
-     * @deprecated
-     */
-    public function getStufenCategories(): array
-    {
-        return $this->getSectionCategories();
-    }
-
-    /**
-     * @return array
      */
     public function getSectionCategories(): array
     {
         $categories = [];
         foreach ($this->getSections() as $section) {
             $cat = $section->getCategory();
-            $categories[$cat->getUid()] = $cat;
+            $categories[$cat?->getUid() ?? -1] = $cat;
         }
 
         return $categories;

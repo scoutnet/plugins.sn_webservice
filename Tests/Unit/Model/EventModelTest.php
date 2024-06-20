@@ -268,13 +268,6 @@ class EventModelTest extends TestCase
         self::assertEquals($createdAt, $event->getCreatedAt());
         self::assertEquals($changedAt, $event->getChangedAt());
 
-        // derived value
-        self::assertEquals($changedBy, $event->getAuthor());
-
-        // if changedBy is null return created By
-        $event->setChangedBy(null);
-        self::assertEquals($createdBy, $event->getAuthor());
-
         // check if these values are correctly copied
         $copiedProperties = ['title', 'organizer', 'targetGroup', 'startDate', 'startTime', 'endDate', 'endTime',
             'zip', 'location', 'urlText', 'url', 'description', 'structure', 'sections', 'categories'];

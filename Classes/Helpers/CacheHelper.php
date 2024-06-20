@@ -16,23 +16,23 @@ use ScoutNet\Api\Model\AbstractModel;
 
 class CacheHelper
 {
-    private $cache = [];
+    private array $cache = [];
 
     /**
      * @param AbstractModel $object
-     * @param int          $id
+     * @param int|string|null $id
      *
      * @return AbstractModel|false
      */
-    public function add(AbstractModel $object, $id = null)
+    public function add(AbstractModel $object, int|string $id = null): AbstractModel|bool
     {
         $class = get_class($object);
-        if ($id == null) {
+        if ($id === null) {
             $id = $object->getUid();
         }
 
         // we can only insert object with id
-        if ($id == null) {
+        if ($id === null) {
             return false;
         }
 
@@ -42,16 +42,13 @@ class CacheHelper
     }
 
     /**
-     * @param $class
-     * @param $id
+     * @param string $class
+     * @param string|int $id
      *
-     * @return mixed|null
+     * @return AbstractModel|null
      */
-    public function get($class, $id)
+    public function get(string $class, string|int $id): ?AbstractModel
     {
-        if (isset($this->cache[$class]) && isset($this->cache[$class][$id])) {
-            return $this->cache[$class][$id];
-        }
-        return null;
+        return $this->cache[$class][$id] ?? null;
     }
 }

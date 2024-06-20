@@ -626,7 +626,7 @@ final class ApiTest extends TestCase
         $event->setUrlText('');
         $event->setUrl('');
         $event->setDescription("im Diözesanzentrum Rolandstraße\n\n(Autor: Webteam (mfl))");
-        $event->setStufen([]);
+        $event->setSections([]);
         $event->setCategories([1 => $cat]);
         $event->setStructure($structure);
         $event->setChangedBy($kalenderUser);
@@ -667,7 +667,7 @@ final class ApiTest extends TestCase
         $event->setUrlText('');
         $event->setUrl('');
         $event->setDescription("im Diözesanzentrum Rolandstraße\n\n(Autor: Webteam (mfl))");
-        $event->setStufen([]);
+        $event->setSections([]);
         $event->setCategories([1 => $cat]);
         $event->setStructure($structure);
         $event->setChangedBy($kalenderUser);
@@ -717,7 +717,7 @@ final class ApiTest extends TestCase
         $event->setUrlText('');
         $event->setUrl('');
         $event->setDescription("im Diözesanzentrum Rolandstraße\n\n(Autor: Webteam (mfl))");
-        $event->setStufen([]);
+        $event->setSections([]);
         $event->setCategories([1 => $cat]);
         $event->setStructure($structure);
         $event->setChangedBy($kalenderUser);

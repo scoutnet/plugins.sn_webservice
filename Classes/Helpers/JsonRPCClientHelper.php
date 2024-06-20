@@ -191,13 +191,13 @@ class JsonRPCClientHelper
                 curl_setopt($ch, CURLOPT_COOKIE, 'XDEBUG_SESSION=' . urlencode($_COOKIE['XDEBUG_SESSION']));
             }
 
-            if ($this->curlProxyServer != null) {
+            if ($this->curlProxyServer !== null) {
                 curl_setopt($ch, CURLOPT_PROXY, $this->curlProxyServer);
 
-                if ($this->curlProxyTunnel != null) {
+                if ($this->curlProxyTunnel !== null) {
                     curl_setopt($ch, CURLOPT_HTTPPROXYTUNNEL, $this->curlProxyTunnel);
                 }
-                if ($this->curlProxyUserPass != null) {
+                if ($this->curlProxyUserPass !== null) {
                     curl_setopt($ch, CURLOPT_PROXYUSERPWD, $this->curlProxyUserPass);
                 }
             }
@@ -218,7 +218,7 @@ class JsonRPCClientHelper
             }
             $context  = stream_context_create($opts);
 
-            if ($fp = @fopen($this->url, 'r', false, $context)) {
+            if ($fp = @fopen($this->url, 'rb', false, $context)) {
                 $response = '';
                 while ($row = fgets($fp)) {
                     $response .= trim($row) . "\n";

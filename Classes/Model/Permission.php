@@ -19,58 +19,58 @@ class Permission
     public const AUTH_REQUESTED = 0;
     public const AUTH_REQUEST_PENDING = 2;
 
-    protected $state = self::AUTH_NO_RIGHT;
-    protected $text = '';
-    protected $type = '';
+    protected int $state = self::AUTH_NO_RIGHT;
+    protected string $text = '';
+    protected string $type = '';
 
-    public function setState($state)
+    public function setState(int $state): void
     {
         $this->state = $state;
     }
 
-    public function getState()
+    public function getState(): int
     {
         return $this->state;
     }
 
-    public function hasWritePermissionsPending()
+    public function hasWritePermissionsPending(): bool
     {
-        return $this->state == self::AUTH_REQUEST_PENDING;
+        return $this->state === self::AUTH_REQUEST_PENDING;
     }
 
-    public function hasWritePermissions()
+    public function hasWritePermissions(): bool
     {
-        return $this->state == self::AUTH_WRITE_ALLOWED;
+        return $this->state === self::AUTH_WRITE_ALLOWED;
     }
 
     /**
-     * @return mixed|string
+     * @return string
      */
-    public function getText()
+    public function getText(): string
     {
         return $this->text;
     }
 
     /**
-     * @param mixed|string $text
+     * @param string $text
      */
-    public function setText($text)
+    public function setText(string $text): void
     {
         $this->text = $text;
     }
 
     /**
-     * @return mixed|string
+     * @return string
      */
-    public function getType()
+    public function getType(): string
     {
         return $this->type;
     }
 
     /**
-     * @param mixed|string $type
+     * @param string $type
      */
-    public function setType($type)
+    public function setType(string $type): void
     {
         $this->type = $type;
     }

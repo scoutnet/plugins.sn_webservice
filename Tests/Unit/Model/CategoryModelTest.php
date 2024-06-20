@@ -17,28 +17,31 @@ use ScoutNet\Api\Model\Category;
 
 class CategoryModelTest extends TestCase
 {
-    public function testCanBeCreated()
+    public function testCanBeCreated(): void
     {
         self::assertInstanceOf(Category::class, new Category());
     }
 
-    public function testDefaultParameters()
+    public function testDefaultParameters(): void
     {
-        $Category = new Category();
+        $category = new Category();
 
-        self::assertNull($Category->getUid());
-        self::assertEquals('', $Category->getText());
+        self::assertNull($category->getUid());
+        self::assertEquals('', $category->getText());
+        self::assertFalse($category->getAvailable());
     }
 
-    public function testSetParameter()
+    public function testSetParameter(): void
     {
-        $Category = new Category();
+        $category = new Category();
 
-        // first set then read to see sideefects
-        $Category->setUid(23);
-        $Category->setText('demo');
+        // first set then read to see side effects
+        $category->setUid(23);
+        $category->setText('demo');
+        $category->setAvailable(true);
 
-        self::assertEquals(23, $Category->getUid());
-        self::assertEquals('demo', $Category->getText());
+        self::assertEquals(23, $category->getUid());
+        self::assertEquals('demo', $category->getText());
+        self::assertTrue($category->getAvailable());
     }
 }

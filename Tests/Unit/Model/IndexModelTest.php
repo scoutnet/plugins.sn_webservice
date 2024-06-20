@@ -10,36 +10,36 @@
  * Authors: Stefan (Mütze) Horst <muetze@scoutnet.de>
  */
 
-namespace ScoutNet\Api\Tests\Unit\Helpers\Helpers\Helpers\Helpers\Helpers\Unit\Model;
+namespace ScoutNet\Api\Tests\Unit\Model;
 
 use PHPUnit\Framework\TestCase;
 use ScoutNet\Api\Model\Index;
 
 class IndexModelTest extends TestCase
 {
-    public function testCanBeCreated()
+    public function testCanBeCreated(): void
     {
         self::assertInstanceOf(Index::class, new Index());
     }
 
-    public function testDefaultParameters()
+    public function testDefaultParameters(): void
     {
         $index = new Index();
 
         self::assertNull($index->getUid());
-        self::assertNull($index->getNumber());
-        self::assertNull($index->getEbene());
-        self::assertNull($index->getName());
-        self::assertNull($index->getOrt());
-        self::assertNull($index->getPlz());
-        self::assertNull($index->getUrl());
-        self::assertNull($index->getLatitude());
-        self::assertNull($index->getLongitude());
+        self::assertEquals('', $index->getNumber());
+        self::assertEquals('', $index->getEbene());
+        self::assertEquals('', $index->getName());
+        self::assertEquals('', $index->getOrt());
+        self::assertEquals('', $index->getPlz());
+        self::assertEquals('', $index->getUrl());
+        self::assertEquals(0.0, $index->getLatitude());
+        self::assertEquals(0.0, $index->getLongitude());
         self::assertNull($index->getParentId());
         self::assertEquals([], $index->getChildren());
     }
 
-    public function testSetParameter()
+    public function testSetParameter(): void
     {
         $child1 = new Index();
         $child1->setUid(1);

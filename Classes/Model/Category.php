@@ -17,19 +17,19 @@ class Category extends AbstractModel
     /**
      * @var string
      */
-    protected string $text;
+    protected string $text = '';
 
     /**
      * @var bool
      */
-    protected bool $available;
+    protected bool $available = false;
 
     /**
      * @return string
      */
     public function getText(): string
     {
-        return $this->text ?? '';
+        return $this->text;
     }
 
     /**
@@ -45,7 +45,7 @@ class Category extends AbstractModel
      */
     public function getAvailable(): bool
     {
-        return $this->available ?? false;
+        return $this->available;
     }
 
     /**

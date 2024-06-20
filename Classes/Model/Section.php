@@ -144,12 +144,12 @@ class Section extends AbstractModel
     }
 
     /**
-     * @return string
+     * @return int
      * @deprecated
      */
-    public function getCategoryId(): string
+    public function getCategoryId(): int
     {
-        return $this->category?->getUid() ?? '';
+        return $this->category?->getUid() ?? -1;
     }
 
     /**
