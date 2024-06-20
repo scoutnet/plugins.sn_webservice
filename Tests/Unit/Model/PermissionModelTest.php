@@ -10,19 +10,19 @@
  * Authors: Stefan (Mütze) Horst <muetze@scoutnet.de>
  */
 
-namespace ScoutNet\Api\Tests\Unit\Helpers\Helpers\Helpers\Helpers\Helpers\Unit\Model;
+namespace ScoutNet\Api\Tests\Unit\Model;
 
 use PHPUnit\Framework\TestCase;
 use ScoutNet\Api\Model\Permission;
 
 class PermissionModelTest extends TestCase
 {
-    public function testCanBeCreated()
+    public function testCanBeCreated(): void
     {
         self::assertInstanceOf(Permission::class, new Permission());
     }
 
-    public function testDefaultParameters()
+    public function testDefaultParameters(): void
     {
         $permission = new Permission();
 
@@ -31,7 +31,7 @@ class PermissionModelTest extends TestCase
         self::assertEquals('', $permission->getType());
     }
 
-    public function testSetParameters()
+    public function testSetParameters(): void
     {
         $permission = new Permission();
 
