@@ -1,5 +1,5 @@
 EXT_NAME=sn_webservice
-EXT_VERSION=1.0.4
+EXT_VERSION=1.0.5
 
 GIT_VERSION=$(shell git log --format='%h %D' | grep 'tag: ' | sed 's/.*tag: //g' | head -n 1)
 
