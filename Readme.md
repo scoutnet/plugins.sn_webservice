@@ -1,5 +1,5 @@
 [![Codecov](https://img.shields.io/codecov/c/github/scoutnet/plugins.sn_webservice.svg)]()
-[![Build Status](https://jenkins.scoutnet.eu/buildStatus/icon?job=scoutnet/plugins.sn_webservice/master)](https://jenkins.scoutnet.eu/job/scoutnet/job/plugins.sn_webservice/job/master/)
+[![Build Status](https://jenkins.scoutnet.eu/buildStatus/icon?job=scoutnet/plugins.sn_webservice/main)](https://jenkins.scoutnet.eu/job/scoutnet/job/plugins.sn_webservice/job/main/)
 [![Packagist](https://img.shields.io/packagist/v/scoutnet/sn-webservice.svg)](https://packagist.org/packages/scoutnet/sn-webservice)
 [![Packagist](https://img.shields.io/packagist/dt/scoutnet/sn-webservice.svg?label=packagist%20downloads)](https://packagist.org/packages/scoutnet/sn-webservice)
 [![Packagist](https://img.shields.io/packagist/l/scoutnet/sn-webservice.svg)](https://packagist.org/packages/scoutnet/sn-webservice)
