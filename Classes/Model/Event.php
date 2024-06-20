@@ -18,26 +18,21 @@ class Event extends AbstractModel
 {
     /**
      * @var string
-     * @validate NotEmpty
-     * @validate StringLength(minimum=2, maximum=80)
      */
     protected string $title = 'new Event';
 
     /**
      * @var string
-     * @validate StringLength(minimum=2, maximum=255)
      */
     protected string $organizer = '';
 
     /**
      * @var string
-     * @validate StringLength(minimum=2, maximum=255)
      */
     protected string $targetGroup = '';
 
     /**
      * @var DateTime
-     * @validate NotEmpty
      */
     protected DateTime $startDate;
     /**
@@ -56,25 +51,21 @@ class Event extends AbstractModel
 
     /**
      * @var string
-     * @validate StringLength(minimum=3, maximum=255)
      */
     protected string $zip = '';
 
     /**
      * @var string
-     * @validate StringLength(minimum=2, maximum=255)
      */
     protected string $location = '';
 
     /**
      * @var string
-     * @validate StringLength(minimum=3, maximum=255)
      */
     protected string $urlText = '';
 
     /**
      * @var string
-     * @validate StringLength(minimum=3, maximum=255)
      */
     protected string $url = '';
 
@@ -98,8 +89,6 @@ class Event extends AbstractModel
      * Structure
      *
      * @var Structure
-     * validate NotEmpty
-     * @lazy
      */
     protected Structure $structure;
 

@@ -20,29 +20,21 @@ class User extends AbstractModel
 
     /**
      * @var string
-     * @validate NotEmpty
-     * @validate StringLength(minimum=2, maximum=80)
      */
     protected string $username = '';
 
     /**
      * @var string
-     * @validate NotEmpty
-     * @validate StringLength(minimum=2, maximum=80)
      */
     protected string $firstName = '';
 
     /**
      * @var string
-     * @validate NotEmpty
-     * @validate StringLength(minimum=2, maximum=80)
      */
     protected string $lastName = '';
 
     /**
      * @var string
-     * @validate NotEmpty
-     * @validate StringLength(minimum=1, maximum=80)
      */
     protected string $sex = '';
 
@@ -104,7 +96,10 @@ class User extends AbstractModel
      */
     public function setSex(string $sex): void
     {
-        $this->sex = $sex;
+        // only save, if valid
+        if (in_array($sex, [self::SEX_DIVERSE, self::SEX_MALE, self::SEX_FEMALE])) {
+            $this->sex = $sex;
+        }
     }
 
     /**
