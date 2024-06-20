@@ -94,14 +94,14 @@ class ConverterHelper
 
         // Time
         if (isset($array['Start'])) {
-            $event->setStartDate(
-                DateTime::createFromFormat('Y-m-d H:i:s', gmstrftime('%Y-%m-%d 00:00:00', $array['Start']))
-            );
-            $event->setStartTime((isset($array['All_Day']) && $array['All_Day']) ? null : gmstrftime('%H:%M:00', $array['Start']));
+            $start = DateTime::createFromFormat('U', $array['Start']);
+            $event->setStartDate(new DateTime($start->format('m/d/Y')));
+            $event->setStartTime((isset($array['All_Day']) && $array['All_Day']) ? null : $start->format('H:i'));
         }
         if (isset($array['End'])) {
-            $event->setEndDate($array['End'] === 0 ? null : DateTime::createFromFormat('Y-m-d H:i:s', gmstrftime('%Y-%m-%d 00:00:00', $array['End'])));
-            $event->setEndTime((isset($array['All_Day']) && $array['All_Day']) ? null : gmstrftime('%H:%M:00', $array['End']));
+            $end = DateTime::createFromFormat('U', $array['End']);
+            $event->setEndDate($array['End'] === 0 ? null : new DateTime($end->format('m/d/Y')));
+            $event->setEndTime((isset($array['All_Day']) && $array['All_Day']) ? null : $end->format('H:i'));
         }
 
         // Location

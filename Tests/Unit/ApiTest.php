@@ -618,9 +618,9 @@ final class ApiTest extends TestCase
         $event->setOrganizer('');
         $event->setTargetGroup('');
         $event->setStartDate(DateTime::createFromFormat('Y-m-d H:i:s', '2001-03-15 00:00:00'));
-        $event->setStartTime('19:30:00');
+        $event->setStartTime('19:30');
         $event->setEndDate(DateTime::createFromFormat('Y-m-d H:i:s', '2001-03-15 00:00:00'));
-        $event->setEndTime('19:30:00');
+        $event->setEndTime('19:30');
         $event->setZip('');
         $event->setLocation('');
         $event->setUrlText('');
@@ -659,9 +659,9 @@ final class ApiTest extends TestCase
         $event->setOrganizer('');
         $event->setTargetGroup('');
         // $event->setStartDate(DateTime::createFromFormat('Y-m-d H:i:s', '2001-03-15 00:00:00'));
-        $event->setStartTime('19:30:00');
+        $event->setStartTime('19:30');
         $event->setEndDate(DateTime::createFromFormat('Y-m-d H:i:s', '2001-03-15 00:00:00'));
-        $event->setEndTime('19:30:00');
+        $event->setEndTime('19:30');
         $event->setZip('');
         $event->setLocation('');
         $event->setUrlText('');
@@ -709,9 +709,9 @@ final class ApiTest extends TestCase
         $event->setOrganizer('');
         $event->setTargetGroup('');
         $event->setStartDate(DateTime::createFromFormat('Y-m-d H:i:s', '2001-03-15 00:00:00'));
-        $event->setStartTime('19:30:00');
+        $event->setStartTime('19:30');
         $event->setEndDate(DateTime::createFromFormat('Y-m-d H:i:s', '2001-03-15 00:00:00'));
-        $event->setEndTime('19:30:00');
+        $event->setEndTime('19:30');
         $event->setZip('');
         $event->setLocation('');
         $event->setUrlText('');

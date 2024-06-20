@@ -352,9 +352,9 @@ class ConverterHelperTest extends TestCase
         $expected_event->setTargetGroup('demoTargetGroup');
 
         $expected_event->setStartDate($startDate);
-        $expected_event->setStartTime('10:00:00');
+        $expected_event->setStartTime('10:00');
         $expected_event->setEndDate($endDate);
-        $expected_event->setEndTime('23:00:00');
+        $expected_event->setEndTime('23:00');
         $expected_event->setZip('12345');
         $expected_event->setLocation('demoLocation');
         $expected_event->setUrlText('demoUrlText');
