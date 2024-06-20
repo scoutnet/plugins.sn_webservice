@@ -8,7 +8,7 @@ NEXTMINORVERSION=$(shell php -r 'list($$a,$$b,$$c) = (explode(".","$(EXT_VERSION
 NEXTMAJORVERSION=$(shell php -r 'list($$a,$$b,$$c) = (explode(".","$(EXT_VERSION)", 3)); echo ($$a + 1).".0.0";')
 
 COMMIT_MESSAGE=$(shell git tag -l $(EXT_VERSION) -n99 | sed "s/^$(EXT_VERSION)[ ]*//g" | sed "s/^[ ]*//g" | sed -e ':a' -e 'N' -e '$$!ba' -e "s/\n/<br>/g")
-INTERNAL=true
+INTERNAL=1
 
 UNAME_S := $(shell uname -s)
 
