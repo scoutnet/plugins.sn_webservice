@@ -1,6 +1,7 @@
 // This file is a generic Scoutnet Jenkins file. The original is found in the dummy extension
 // https://github.com/scoutnet/plugins.typo3.scoutnet_dummy/blob/main/Jenkinsfile
 // Jenkinsfile Version: 3.0.3
+// changed to suite this non TYPO3 lib
 pipeline {
     agent any
 
@@ -36,7 +37,6 @@ pipeline {
                         }
                         parallel tests
 
-                        // we only test for php version 8.3, since this should execute the same way
                         sh 'rm -f auth.json'
                     }
                 }
@@ -50,17 +50,12 @@ pipeline {
             }
             steps {
                 withCredentials([string(credentialsId: 'GITHUB_TOKEN', variable: 'GITHUB_TOKEN'), usernamePassword(credentialsId: 'ac854e35-e62e-4aa1-b7ac-2ced736da9e6', passwordVariable: 'TYPO3_TER_PASSWORD', usernameVariable: 'TYPO3_TER_USER')]) {
-                    sh 'docker run --rm -e TYPO3_TER_PASSWORD -e TYPO3_TER_USER -e GITHUB_TOKEN -w /opt/data -v `pwd`:/opt/data -i scoutnet/buildhost:latest make checkVersion'
                     sh 'docker run --rm -e TYPO3_TER_PASSWORD -e TYPO3_TER_USER -e GITHUB_TOKEN -w /opt/data -v `pwd`:/opt/data -i scoutnet/buildhost:latest make release'
-                    sh 'docker run --rm -e TYPO3_TER_PASSWORD -e TYPO3_TER_USER -e GITHUB_TOKEN -w /opt/data -v `pwd`:/opt/data -i scoutnet/buildhost:latest make deploy'
                 }
             }
         }
         stage('Notify') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'REPO_AUTH', passwordVariable: 'REPO_AUTH_PASSWORD', usernameVariable: 'REPO_AUTH_USER')]) {
-                    sh 'curl -s -u ${REPO_AUTH_USER}:${REPO_AUTH_PASSWORD} https://repo.scoutnet.de/trigger.php'
-                }
                 withCredentials([string(credentialsId: 'CODECOV_TOKEN', variable: 'CODECOV_TOKEN')]) {
                     script {
                         def uploads = [:]

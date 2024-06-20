@@ -159,20 +159,6 @@ checkVersion:
 	@[ "$(GIT_VERSION)" = "$(EXT_VERSION)" ]
 	@echo "* All Versions correct"
 
-deploy: checkVersion $(RELEASE_BUILD_FOLDER)/$(EXT_NAME)_$(EXT_VERSION).zip
-ifeq ($(INTERNAL), 1)
-	@echo "This Plugin is internaly only, we do not upload it to TER."
-else
-	# clean build folder
-	-@[ -d $(RELEASE_BUILD_FOLDER)/$(EXT_NAME) ] && rm -rf $(RELEASE_BUILD_FOLDER)/$(EXT_NAME)
-	mkdir -p $(RELEASE_BUILD_FOLDER)/$(EXT_NAME)
-	unzip $(RELEASE_BUILD_FOLDER)/$(EXT_NAME)_$(EXT_VERSION).zip -d $(RELEASE_BUILD_FOLDER)/$(EXT_NAME)
-	# install ter uploader
-	cd $(RELEASE_BUILD_FOLDER) && composer require namelesscoder/typo3-repository-client
-	@cd $(RELEASE_BUILD_FOLDER) && vendor/bin/upload $(EXT_NAME) $(TYPO3_TER_USER) $(TYPO3_TER_PASSWORD) "$(shell git tag -l $(EXT_VERSION) -n99 | sed "s/^$(EXT_VERSION)[ ]*//g" | sed "s/^[ ]*//g")"
-	@echo "uploaded $(EXT_VERSION)"
-endif
-
 .PHONY: init
 init: clean composerInstall phpStormDockerDotEnv
 
