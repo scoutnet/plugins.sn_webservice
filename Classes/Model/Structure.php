@@ -61,24 +61,6 @@ class Structure extends AbstractModel
 
     /**
      * @return string
-     * @deprecated
-     */
-    public function getEbene(): string
-    {
-        return $this->getLevel();
-    }
-
-    /**
-     * @param string $ebene
-     * @deprecated
-     */
-    public function setEbene(string $ebene): void
-    {
-        $this->setLevel($ebene);
-    }
-
-    /**
-     * @return string
      */
     public function getVerband(): string
     {
@@ -123,24 +105,6 @@ class Structure extends AbstractModel
     public function setLevelId(int $levelId): void
     {
         $this->levelId = $levelId;
-    }
-
-    /**
-     * @return int
-     * @deprecated
-     */
-    public function getEbeneId(): int
-    {
-        return $this->getLevelId();
-    }
-
-    /**
-     * @param int $ebeneId
-     * @deprecated
-     */
-    public function setEbeneId(int $ebeneId): void
-    {
-        $this->setLevelId($ebeneId);
     }
 
     /**
@@ -197,23 +161,5 @@ class Structure extends AbstractModel
     public function getLongName(): string
     {
         return $this->getLevel() . (($this->getLevelId() >= 7) ? (' ' . $this->getName()) : '');
-    }
-
-    /**
-     * @return string
-     * @deprecated
-     */
-    public function get_long_Name()
-    {
-        return $this->getLongName();
-    }
-
-    /**
-     * @return string
-     * @deprecated
-     */
-    public function get_Name(): string
-    {
-        return $this->getLevel() . (($this->getLevelId() >= 7) ? '&nbsp;' . $this->getName() : '');
     }
 }

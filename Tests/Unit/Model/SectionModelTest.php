@@ -58,7 +58,6 @@ class SectionModelTest extends TestCase
         self::assertEquals(9, $stufe->getStartalter());
         self::assertEquals(23, $stufe->getEndalter());
         self::assertEquals($cat1, $stufe->getCategory());
-        self::assertEquals(1, $stufe->getCategoryId());
         self::assertEquals("<img src='https://kalender.scoutnet.de/2.0/images/23.gif' alt='demoName' />", $stufe->getImageURL());
     }
 }

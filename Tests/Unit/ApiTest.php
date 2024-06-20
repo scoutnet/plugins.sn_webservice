@@ -573,11 +573,11 @@ final class ApiTest extends TestCase
 
         $structure = new Structure();
         $structure->setUid('4');
-        $structure->setEbene('Diözese');
+        $structure->setLevel('Diözese');
         $structure->setName('Köln');
         $structure->setVerband('DPSG');
         $structure->setIdent('Diözesanverband Köln');
-        $structure->setEbeneId(7);
+        $structure->setLevelId(7);
         $structure->setUsedCategories([
             858 => $cat858,
             4 => $cat4,
@@ -908,11 +908,11 @@ final class ApiTest extends TestCase
 
         $structure = new Structure();
         $structure->setUid('4');
-        $structure->setEbene('Diözese');
+        $structure->setLevel('Diözese');
         $structure->setName('Köln');
         $structure->setVerband('DPSG');
         $structure->setIdent('Diözesanverband Köln');
-        $structure->setEbeneId(7);
+        $structure->setLevelId(7);
         $structure->setUsedCategories([
             4 => $cat4,
             7 => $cat7,

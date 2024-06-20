@@ -144,26 +144,6 @@ class Section extends AbstractModel
     }
 
     /**
-     * @return int
-     * @deprecated
-     */
-    public function getCategoryId(): int
-    {
-        return $this->category?->getUid() ?? -1;
-    }
-
-    /**
-     * @param int $categoryId
-     * @deprecated
-     */
-    public function setCategoryId(int $categoryId): void
-    {
-        // TODO: load from cache?
-        //        $categoryRepository = GeneralUtility::makeInstance(CategoryRepository::class);
-        //        $this->category = $categoryRepository->findByUid($categoryId);
-    }
-
-    /**
      * @return string
      */
     public function getImageURL(): string

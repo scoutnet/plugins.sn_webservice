@@ -14,10 +14,9 @@ namespace ScoutNet\Api\Helpers;
 
 use DateTime;
 use Exception;
+use JsonException;
 use ScoutNet\Api\Exceptions\ScoutNetException;
 use ScoutNet\Api\Exceptions\ScoutNetExceptionMissingConfVar;
-use TYPO3\CMS\Core\Crypto\Random;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * @author	Stefan Horst <muetze@scoutnet.de>
@@ -33,13 +32,14 @@ class AuthHelper
     public const UNSECURE_START_IV = '1234567890123456';
 
     /**
-     * @param string $data
-     *
+     * @param $extConfig
+     * @param string $dataString
      * @return array|mixed
+     * @throws ScoutNetException
      * @throws ScoutNetExceptionMissingConfVar
-     * @throws Exception
+     * @throws JsonException
      */
-    public function getApiKeyFromData($extConfig, string $data): ?array
+    public function getApiKeyFromData($extConfig, string $dataString): ?array
     {
         if (isset($this->snData)) {
             return $this->snData;
@@ -52,13 +52,13 @@ class AuthHelper
 
         $aes = new AesHelper($z, 'CBC', $iv);
 
-        $base64 = base64_decode(strtr($data, '-_~', '+/='));
+        $base64 = base64_decode(strtr($dataString, '-_~', '+/='));
 
         if (trim($base64) === '') {
             throw new ScoutNetException('the auth is empty', 1572191918);
         }
 
-        $data = json_decode(substr($aes->decrypt($base64), strlen($iv)), true);
+        $data = json_decode(substr($aes->decrypt($base64), strlen($iv)), true, 512, JSON_THROW_ON_ERROR);
 
         if (!is_array($data)) {
             throw new ScoutNetException('the auth is broken', 1608717350);
@@ -69,17 +69,16 @@ class AuthHelper
         $sha1 = $data['sha1'] ?? '';
         unset($data['sha1']);
 
-        if (md5(json_encode($data)) != $md5) {
+        if (md5(json_encode($data, JSON_THROW_ON_ERROR)) !== $md5) {
             throw new ScoutNetException('the auth is broken', 1572192280);
         }
 
-        if (sha1(json_encode($data)) != $sha1) {
+        if (sha1(json_encode($data, JSON_THROW_ON_ERROR)) !== $sha1) {
             throw new ScoutNetException('the auth is broken', 1572192281);
         }
 
         // use this so we can mock it
-        /** @var DateTime $now */
-        $now = GeneralUtility::makeInstance(DateTime::class);
+        $now = DateTime::createFromFormat('U', time());
 
         if ($now->getTimestamp() - $data['time'] > 3600) {
             throw new ScoutNetException('the auth is too old. Try again', 1572192282);
@@ -87,7 +86,7 @@ class AuthHelper
 
         $your_domain = $extConfig['ScoutnetProviderName'];
 
-        if ($data['your_domain'] != $your_domain) {
+        if ($data['your_domain'] !== $your_domain) {
             throw new ScoutNetException('the auth is for the wrong site!. Try again', 1572192283);
         }
 
@@ -106,7 +105,7 @@ class AuthHelper
         $configVars = ['AES_key', 'AES_iv', 'ScoutnetLoginPage', 'ScoutnetProviderName'];
 
         foreach ($configVars as $configVar) {
-            if (trim($extConfig[$configVar]) == '') {
+            if (trim($extConfig[$configVar]) === '') {
                 throw new ScoutNetExceptionMissingConfVar($configVar);
             }
         }
@@ -127,24 +126,24 @@ class AuthHelper
      */
     public function generateAuth(string $api_key, string $checkValue): string
     {
-        if ($api_key == '') {
+        if ($api_key === '') {
             throw new ScoutNetException('your Api Key is empty', 1572194190);
         }
 
         $aes = new AesHelper($api_key, 'CBC', self::UNSECURE_START_IV);
 
-        $now = GeneralUtility::makeInstance(DateTime::class);
+        // use this so we can mock it
+        $now = DateTime::createFromFormat('U', time());
 
         $auth = [
             'sha1' => sha1($checkValue),
             'md5' => md5($checkValue),
             'time' => $now->getTimestamp(),
         ];
-        $auth = json_encode($auth);
+        $auth = json_encode($auth, JSON_THROW_ON_ERROR);
 
         // this is done since we use the same iv all the time
-        $random = GeneralUtility::makeInstance(Random::class);
-        $first_block = $random->generateRandomBytes(16);
+        $first_block = random_bytes(16);
 
         return strtr(base64_encode($aes->encrypt($first_block . $auth)), '+/=', '-_~');
     }

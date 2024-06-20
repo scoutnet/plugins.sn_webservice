@@ -28,12 +28,10 @@ class StructureModelTest extends TestCase
 
         self::assertNull($structure->getUid());
         self::assertEquals('', $structure->getLevel());
-        self::assertEquals('', $structure->getEbene());
         self::assertEquals('', $structure->getName());
         self::assertEquals('', $structure->getVerband());
         self::assertEquals('', $structure->getIdent());
         self::assertEquals(-1, $structure->getLevelId());
-        self::assertEquals(-1, $structure->getEbeneId());
         self::assertEquals([], $structure->getUsedCategories());
         self::assertEquals([], $structure->getForcedCategories());
     }

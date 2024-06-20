@@ -18,12 +18,12 @@ use ScoutNet\Api\Helpers\JsonRPCClientHelper;
 
 class JsonRPCClientHelperTest extends TestCase
 {
-    public function testCanBeCreated()
+    public function testCanBeCreated(): void
     {
         self::assertInstanceOf(JsonRPCClientHelper::class, new JsonRPCClientHelper('demo'));
     }
 
-    public function testDebugLog()
+    public function testDebugLog(): void
     {
         $rpcClient = new JsonRPCClientHelper('demo');
 
@@ -198,7 +198,7 @@ function getMockedRequest($url, $content, $headers = [])
 
             foreach ($headers as $header) {
                 $header = explode(': ', $header, 2);
-                if (strtolower($header[0]) == 'cookie') {
+                if (strtolower($header[0]) === 'cookie') {
                     $cookies = $header[1];
                     // only first cookie header
                     break;
@@ -227,10 +227,10 @@ function fgets(&$fd)
         return \fgets($fd);
     }
 
-    if ($fd != null) {
+    if ($fd !== null) {
         $url = $fd['url'];
 
-        if ($url != 'demo') {
+        if ($url !== 'demo') {
             throw new Exception('Mock called with wrong url');
         }
         $stream_context = $fd['context'];

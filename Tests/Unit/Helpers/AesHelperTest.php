@@ -12,7 +12,6 @@
 
 namespace ScoutNet\Api\Tests\Unit\Helpers;
 
-use Exception;
 use PHPUnit\Framework\TestCase;
 use ReflectionObject;
 use ScoutNet\Api\Helpers\AesHelper;
@@ -27,11 +26,62 @@ class AesHelperTest extends TestCase
         self::assertInstanceOf(AesHelper::class, new AesHelper(self::AES_KEY));
     }
 
-    public function testWrongKeySize(): void
+    public function testEncryptDecrypt(): void
     {
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Key is 80 bits long. *not* 128, 192, or 256.');
-        new AesHelper('1234567890');
+        $key = [
+            'key' => '12345678901234567890123456789012',
+            'iv' => '1234567890123456',
+            'mode' => AesHelper::AES_MODE_CBC,
+        ];
+
+        $pt = 'testtest';
+
+        $aes = new AesHelper($key['key'], $key['mode'], $key['iv']);
+
+        $crypt = $aes->encrypt($pt);
+
+        $aes = new AesHelper($key['key'], $key['mode'], $key['iv']);
+
+        self::assertEquals($pt, $aes->decrypt($crypt));
+    }
+
+    public static function dataProviderCorrectKeyLength(): array
+    {
+        return [
+            'aes128' => [
+                '1234567890123456',
+            ],
+            'aes192' => [
+                '123456789012345678901234',
+            ],
+            'aes256' => [
+                '12345678901234567890123456789012',
+            ],
+            'empty' => [
+                '',
+                [1572194460],
+            ],
+            'wrong length' => [
+                '123',
+                [1572194460],
+            ],
+        ];
+    }
+
+    /**
+     * @param string $key
+     * @param array $expExceptions
+     *
+     * @dataProvider dataProviderCorrectKeyLength
+     */
+    public function testCorrectKeyLength(string $key, array $expExceptions = []): void
+    {
+        if ($expExceptions && count($expExceptions) > 0) {
+            foreach ($expExceptions as $expExc) {
+                $this->expectExceptionCode($expExc);
+            }
+        }
+        new AesHelper($key);
     }
 
     public function testWrongIvSize(): void
@@ -55,39 +105,170 @@ class AesHelperTest extends TestCase
         self::assertEquals($plaintext_padded, $plaintext_unpadded);
     }
 
-    public function testEncryptionECBPKCS7Padding(): void
+    public static function dataProviderEncrypt(): array
     {
-        $aes = new AesHelper(self::AES_KEY, AesHelper::AES_MODE_ECB);
-
-        $ciphertext = $aes->encrypt('dies ist ein sehr langer test mit sehr viel text..');
-
-        self::assertEquals('FinfuxuBJA6LrPr226ldeZwPFpGLvQqih/3CTH/6k1vqbO4VTuptsCVCKe1gwnZnMYEABJau5z7IvUiaJ7cjtw==', base64_encode($ciphertext));
+        return [
+            'short iv' => [ // should be padded with 0x00
+                [
+                    'key' => '12345678901234567890123456789012',
+                    'iv' => '1234567890123', // will be padded by 0x00
+                    'mode' => AesHelper::AES_MODE_CBC,
+                ],
+                'testtest',
+                'CZSjsb+lRidyF3vAYKbbzA==', // pkcs#7
+                // 'zckkIjpRYuWW19m0QtvxTw==', // zero padded
+            ],
+            'short block' => [ // should be padded with 0x00
+                [
+                    'key' => '12345678901234567890123456789012',
+                    'iv' => '1234567890123456',
+                    'mode' => AesHelper::AES_MODE_CBC,
+                ],
+                'testtest',
+                'FCbM1hpe5vAbYvq3LQv5yg==', // pkcs#7
+                // 'ruIH7F3mHozAP9aU5cZD1A==', // zero padded
+            ],
+            'no padding' => [
+                [
+                    'key' => '12345678901234567890123456789012',
+                    'iv' => '1234567890123456',
+                    'mode' => AesHelper::AES_MODE_CBC,
+                ],
+                'testtesttesttest',
+                'O4p8xIJFm5/EHinKjrB/U5WyJAFMhVe4NbeHe514eOw=', // pkcs#7
+                // 'O4p8xIJFm5/EHinKjrB/Uw==', // no padding
+            ],
+            'more than one block' => [
+                [
+                    'key' => '12345678901234567890123456789012',
+                    'iv' => '1234567890123456',
+                    'mode' => AesHelper::AES_MODE_CBC,
+                ],
+                'testtesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttest',
+                'O4p8xIJFm5/EHinKjrB/U8ySfWjP9s0J3fTbi3/0LcXmNVWbRvcvaCin63IuFcOE9Cg6nQylpSabUfW9m/WO+8r87PO7U2P/JcqN8lSzoErLoVmPjYF3YM0AgAGTCk6ns5JWKJ/gvJC3FhmA8Tmw8OpbXuKosGDU2kZRrzHKMkk=', // pkcs#7
+                // 'O4p8xIJFm5/EHinKjrB/U8ySfWjP9s0J3fTbi3/0LcXmNVWbRvcvaCin63IuFcOE9Cg6nQylpSabUfW9m/WO+8r87PO7U2P/JcqN8lSzoErLoVmPjYF3YM0AgAGTCk6ns5JWKJ/gvJC3FhmA8Tmw8LYp1olEN+pE8rhBu5yG328=', // zero padding
+            ],
+            'testEncryptionECBPKCS7Padding' => [
+                [
+                    'key' => '12345678901234567890123456789012',
+                    'iv' => '1234567890123456',
+                    'mode' => AesHelper::AES_MODE_ECB,
+                ],
+                'dies ist ein sehr langer test mit sehr viel text..',
+                'FinfuxuBJA6LrPr226ldeZwPFpGLvQqih/3CTH/6k1vqbO4VTuptsCVCKe1gwnZnMYEABJau5z7IvUiaJ7cjtw==',
+            ],
+            'testEncryptionCBCPKCS7Padding' => [
+                [
+                    'key' => '12345678901234567890123456789012',
+                    'iv' => '1234567890123456',
+                    'mode' => AesHelper::AES_MODE_CBC,
+                ],
+                'dies ist ein sehr langer test mit sehr viel text..',
+                'aKRxFwuhKcfJ4kNprkJQPoMkOUDYrEOKKGe4olQqFc0YjLF2d5P1/FV+qz/K4I1RiqvgKpCGGqvKn3uP9FC90Q==',
+            ],
+        ];
     }
 
-    public function testEncryptionCBCPKCS7Padding(): void
+    /**
+     * @dataProvider dataProviderEncrypt
+     *
+     * @param array $key
+     * @param string $plainText
+     * @param string $cypherText
+     */
+    public function testEncrypt(array $key, string $plainText, string $cypherText): void
     {
-        $aes = new AesHelper(self::AES_KEY, AesHelper::AES_MODE_CBC);
+        $aes = new AESHelper($key['key'], $key['mode'], $key['iv']);
+        $crypt = base64_encode($aes->encrypt($plainText));
 
-        $ciphertext = $aes->encrypt('dies ist ein sehr langer test mit sehr viel text..');
-
-        self::assertEquals('aKRxFwuhKcfJ4kNprkJQPoMkOUDYrEOKKGe4olQqFc0YjLF2d5P1/FV+qz/K4I1RiqvgKpCGGqvKn3uP9FC90Q==', base64_encode($ciphertext));
+        self::assertEquals($cypherText, $crypt);
     }
 
-    public function testDecryptionECBPKCS7Padding(): void
+    public static function dataProviderDecrypt(): array
     {
-        $aes = new AesHelper(self::AES_KEY, AesHelper::AES_MODE_ECB);
-
-        $plaintext = $aes->decrypt(base64_decode('FinfuxuBJA6LrPr226ldeZwPFpGLvQqih/3CTH/6k1vqbO4VTuptsCVCKe1gwnZnMYEABJau5z7IvUiaJ7cjtw=='));
-
-        self::assertEquals('dies ist ein sehr langer test mit sehr viel text..', $plaintext);
+        return [
+            'less than one block' => [
+                [
+                    'key' => '12345678901234567890123456789012',
+                    'iv' => '1234567890123456',
+                    'mode' => AesHelper::AES_MODE_CBC,
+                ],
+                'FCbM1hpe5vAbYvq3LQv5yg==', // pkcs#7
+                // 'ruIH7F3mHozAP9aU5cZD1A==', // zero padded
+                'testtest',
+            ],
+            'not aligned - less than one block' => [
+                [
+                    'key' => '12345678901234567890123456789012',
+                    'iv' => '1234567890123456',
+                    'mode' => AesHelper::AES_MODE_CBC,
+                ],
+                'ruIH7F3mHozAP9aU5cZD', // missing chars
+                '', // error in decoding
+                // base64_decode('bih5rTSfnoaUeGjstwajBA=='),
+            ],
+            'exact one block' => [
+                [
+                    'key' => '12345678901234567890123456789012',
+                    'iv' => '1234567890123456',
+                    'mode' => AesHelper::AES_MODE_CBC,
+                ],
+                'O4p8xIJFm5/EHinKjrB/U5WyJAFMhVe4NbeHe514eOw=', // pkcs#7
+                // 'O4p8xIJFm5/EHinKjrB/Uw==', // no padding
+                'testtesttesttest',
+            ],
+            'more than one block' => [
+                [
+                    'key' => '12345678901234567890123456789012',
+                    'iv' => '1234567890123456',
+                    'mode' => AesHelper::AES_MODE_CBC,
+                ],
+                'O4p8xIJFm5/EHinKjrB/U8ySfWjP9s0J3fTbi3/0LcXmNVWbRvcvaCin63IuFcOE9Cg6nQylpSabUfW9m/WO+8r87PO7U2P/JcqN8lSzoErLoVmPjYF3YM0AgAGTCk6ns5JWKJ/gvJC3FhmA8Tmw8OpbXuKosGDU2kZRrzHKMkk=', // pkcs#7 padding
+                // 'O4p8xIJFm5/EHinKjrB/U8ySfWjP9s0J3fTbi3/0LcXmNVWbRvcvaCin63IuFcOE9Cg6nQylpSabUfW9m/WO+8r87PO7U2P/JcqN8lSzoErLoVmPjYF3YM0AgAGTCk6ns5JWKJ/gvJC3FhmA8Tmw8LYp1olEN+pE8rhBu5yG328=', // zero padding
+                'testtesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttest',
+            ],
+            //            'broken length' => [
+            //                [
+            //                    'key' => '12345678901234567890123456789012',
+            //                    'iv' => '1234567890123456',
+            //                    'mode' => AesHelper::AES_MODE_CBC,
+            //                ],
+            //                'O4p8xIJFm5/EHinKjrB/U8ySfWjP9s0J3fTbi3/0LcXmNVWbRvcvaCin63IuFcOE9Cg6nQylpSabUfW9m/WO+8r87PO7U2P/JcqN8lSzoErLoVmPjYF3YM0AgAGTCk6ns5JWKJ/gvJC3FhmA8Tmw8OpbXuKosGDU2kZRrzHKMk',
+            //                false,
+            //            ],
+            'testDecryptionECBPKCS7Padding' => [
+                [
+                    'key' => '12345678901234567890123456789012',
+                    'iv' => '1234567890123456',
+                    'mode' => AesHelper::AES_MODE_ECB,
+                ],
+                'FinfuxuBJA6LrPr226ldeZwPFpGLvQqih/3CTH/6k1vqbO4VTuptsCVCKe1gwnZnMYEABJau5z7IvUiaJ7cjtw==',
+                'dies ist ein sehr langer test mit sehr viel text..',
+            ],
+            'testDecryptionCBCPKCS7Padding' => [
+                [
+                    'key' => '12345678901234567890123456789012',
+                    'iv' => '1234567890123456',
+                    'mode' => AesHelper::AES_MODE_CBC,
+                ],
+                'aKRxFwuhKcfJ4kNprkJQPoMkOUDYrEOKKGe4olQqFc0YjLF2d5P1/FV+qz/K4I1RiqvgKpCGGqvKn3uP9FC90Q==',
+                'dies ist ein sehr langer test mit sehr viel text..',
+            ],
+        ];
     }
 
-    public function testDecryptionCBCPKCS7Padding(): void
+    /**
+     * @dataProvider dataProviderDecrypt
+     *
+     * @param array $key
+     * @param string $cypherText
+     * @param string $plainText
+     */
+    public function testDecrypt(array $key, string $cypherText, string $plainText): void
     {
-        $aes = new AesHelper(self::AES_KEY, AesHelper::AES_MODE_CBC);
+        $aes = new AESHelper($key['key'], $key['mode'], $key['iv']);
+        $plain = $aes->decrypt(base64_decode($cypherText));
 
-        $plaintext = $aes->decrypt(base64_decode('aKRxFwuhKcfJ4kNprkJQPoMkOUDYrEOKKGe4olQqFc0YjLF2d5P1/FV+qz/K4I1RiqvgKpCGGqvKn3uP9FC90Q=='));
-
-        self::assertEquals('dies ist ein sehr langer test mit sehr viel text..', $plaintext);
+        self::assertEquals($plainText, $plain);
     }
 }
