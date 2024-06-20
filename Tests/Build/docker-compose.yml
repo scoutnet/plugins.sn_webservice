@@ -173,7 +173,7 @@ services:
         echo Database is up;
         php -v | grep '^PHP'
         if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
-          echo disable XDEBUG; 
+          echo disable XDEBUG;
           XDEBUG_MODE=coverage vendor/phpunit/phpunit/phpunit -c ${ROOT_DIR}/Tests/Build/FunctionalTests.xml ${EXTRA_TEST_OPTIONS} ${TEST_FILE};
         else
           echo Using XDEBUG;
@@ -199,7 +199,7 @@ services:
           set -x
         fi
         php -v | grep '^PHP';
-        find . -name \\*.php ! -path "./.Build/\\*" -print0 | xargs -0 -n1 -P4 php -n -l >/dev/null
+        find . -name \\*.php -not -path ./.Build/\\* -print0 | xargs -0 -n1 -P4 php -n -l >/dev/null
       "
 
   cgl:

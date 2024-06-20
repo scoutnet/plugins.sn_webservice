@@ -24,7 +24,7 @@ class CacheHelper
      *
      * @return AbstractModel|false
      */
-    public function add(AbstractModel &$object, $id = null)
+    public function add(AbstractModel $object, $id = null)
     {
         $class = get_class($object);
         if ($id == null) {
