@@ -2,74 +2,9 @@
 # https://github.com/scoutnet/plugins.typo3.scoutnet_dummy/blob/main/Tests/Build/docker-compose.yml
 # DOCKER_COMPOSE Version: 1.0.8
 
+# modified to work without typo3
+
 services:
-  chrome:
-    image: selenium/standalone-chrome:3.12
-    extra_hosts:
-    - "repo.scoutnet.de:${REPO_IP}"
-    - "www.scoutnet.de:${WWW_IP}"
-
-  mariadb10:
-    image: mariadb:10
-    environment:
-      MYSQL_ROOT_PASSWORD: funcp
-    tmpfs:
-    - /var/lib/mysql/:rw,noexec,nosuid
-    extra_hosts:
-    - "repo.scoutnet.de:${REPO_IP}"
-    - "www.scoutnet.de:${WWW_IP}"
-
-  web:
-    image: scoutnet/${DOCKER_PHP_IMAGE}:latest
-    user: ${HOST_UID}
-    stop_grace_period: 1s
-    volumes:
-    - ${ROOT_DIR}:${ROOT_DIR}
-    - /etc/passwd:/etc/passwd:ro
-    - /etc/group:/etc/group:ro
-    extra_hosts:
-    - "repo.scoutnet.de:${REPO_IP}"
-    - "www.scoutnet.de:${WWW_IP}"
-    environment:
-      TYPO3_PATH_ROOT: ${ROOT_DIR}/.Build/Web/typo3temp/var/tests/acceptance
-      TYPO3_PATH_APP: ${ROOT_DIR}/.Build/Web/typo3temp/var/tests/acceptance
-    command: php -n -S web:8000 -t ${ROOT_DIR}/.Build/Web
-
-  acceptance_backend_mariadb10:
-    image: scoutnet/${DOCKER_PHP_IMAGE}:latest
-    user: ${HOST_UID}
-    links:
-    - mariadb10
-    - chrome
-    - web
-    environment:
-      typo3DatabaseName: func_test
-      typo3DatabaseUsername: root
-      typo3DatabasePassword: funcp
-      typo3DatabaseHost: mariadb10
-    volumes:
-    - ${ROOT_DIR}:${ROOT_DIR}
-    - ${HOST_HOME}:${HOST_HOME}
-    - /etc/passwd:/etc/passwd:ro
-    - /etc/group:/etc/group:ro
-    extra_hosts:
-    - "repo.scoutnet.de:${REPO_IP}"
-    - "www.scoutnet.de:${WWW_IP}"
-    working_dir: ${ROOT_DIR}/.Build
-    command: >
-      /bin/sh -c "
-        if [ ${SCRIPT_VERBOSE} -eq 1 ]; then
-          set -x
-        fi
-        echo Waiting for database start...;
-        while ! nc -z mariadb10 3306; do
-          sleep 1;
-        done;
-        echo Database is up;
-        mkdir -p Web/typo3temp/var/tests/ \
-          && vendor/codeception/codeception/codecept run Backend -d -c Web/typo3conf/ext/${EXT_NAME}/Tests/codeception.yml ${TEST_FILE}
-      "
-
   composer_install:
     image: scoutnet/${DOCKER_PHP_IMAGE}:latest
     user: ${HOST_UID}
@@ -140,46 +75,6 @@ services:
           set -x
         fi
         composer validate;
-      "
-
-  functional_mariadb10:
-    image: scoutnet/${DOCKER_PHP_IMAGE}:latest
-    user: ${HOST_UID}
-    links:
-    - mariadb10
-    volumes:
-    - ${ROOT_DIR}:${ROOT_DIR}
-    - ${HOST_HOME}:${HOST_HOME}
-    - /etc/passwd:/etc/passwd:ro
-    - /etc/group:/etc/group:ro
-    extra_hosts:
-    - "repo.scoutnet.de:${REPO_IP}"
-    - "www.scoutnet.de:${WWW_IP}"
-    environment:
-      typo3DatabaseName: func_test
-      typo3DatabaseUsername: root
-      typo3DatabasePassword: funcp
-      typo3DatabaseHost: mariadb10
-    working_dir: ${ROOT_DIR}/.Build
-    command: >
-      /bin/sh -c "
-        if [ ${SCRIPT_VERBOSE} -eq 1 ]; then
-          set -x
-        fi
-        echo Waiting for database start...;
-        while ! nc -z mariadb10 3306; do
-          sleep 1;
-        done;
-        echo Database is up;
-        php -v | grep '^PHP'
-        if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
-          echo disable XDEBUG;
-          XDEBUG_MODE=coverage vendor/phpunit/phpunit/phpunit -c ${ROOT_DIR}/Tests/Build/FunctionalTests.xml ${EXTRA_TEST_OPTIONS} ${TEST_FILE};
-        else
-          echo Using XDEBUG;
-          DOCKER_HOST=`route -n | awk '/^0.0.0.0/ { print $$2 }'`
-          XDEBUG_CONFIG=\"remote_port=${PHP_XDEBUG_PORT} remote_enable=1 remote_host=$${DOCKER_HOST}\" vendor/phpunit/phpunit/phpunit -c  ${ROOT_DIR}/Tests/Build/FunctionalTests.xml ${EXTRA_TEST_OPTIONS} ${TEST_FILE};
-        fi
       "
 
   lint:
