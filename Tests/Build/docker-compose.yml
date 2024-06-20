@@ -195,9 +195,6 @@ services:
     working_dir: ${ROOT_DIR}
     command: >
       /bin/sh -c "
-        if [ ${SCRIPT_VERBOSE} -eq 1 ]; then
-          set -x
-        fi
         php -v | grep '^PHP';
         find . -name \\*.php -not -path ./.Build/\\* -print0 | xargs -0 -n1 -P4 php -n -l >/dev/null
       "
@@ -213,15 +210,8 @@ services:
     working_dir: ${ROOT_DIR}
     command: >
       /bin/sh -c "
-        if [ ${SCRIPT_VERBOSE} -eq 1 ]; then
-          set -x
-        fi
         php -v | grep '^PHP';
-        if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
-          php -dxdebug.mode=off .Build/bin/php-cs-fixer fix -v ${CGLCHECK_DRY_RUN} --config=.Build/vendor/typo3/coding-standards/templates/extension_php-cs-fixer.dist.php  --using-cache=no Classes/ Tests/;
-        else
-          XDEBUG_MODE=\"debug,develop\" XDEBUG_TRIGGER=\"foo\" XDEBUG_CONFIG=\"client_host=host.docker.internal\" PHP_CS_FIXER_ALLOW_XDEBUG=1 .Build/bin/php-cs-fixer fix -v ${CGLCHECK_DRY_RUN} --config=.Build/vendor/typo3/coding-standards/templates/extension_php-cs-fixer.dist.php  --using-cache=no Classes/ Tests/;
-        fi
+        php .Build/bin/php-cs-fixer fix -v ${CGLCHECK_DRY_RUN} --using-cache=no;
       "
 
   unit:
