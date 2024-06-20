@@ -1,10 +1,4 @@
 {
-	"repositories": [
-		{
-			"type": "composer",
-			"url": "https://composer.typo3.org/"
-		}
-	],
 	"name": "scoutnet/sn-webservice",
 	"description" : "This class is needed to comunicate with the scoutnet.de server.",
 	"homepage": "https://github.com/scoutnet/plugins.sn_webservice",
@@ -21,26 +15,20 @@
 	"support": {
 		"issues": "https://github.com/scoutnet/plugins.sn_webservice/issues"
 	},
+	"require": {
+		"ext-openssl": "*"
+	},
 	"config": {
 		"vendor-dir": ".Build/vendor",
-		"bin-dir": ".Build/bin",
-		"allow-plugins": {
-			"typo3/cms-composer-installers": true,
-			"typo3/class-alias-loader": true
-		}
+		"bin-dir": ".Build/bin"
 	},
 	"require-dev": {
 		"roave/security-advisories": "dev-latest",
-		"composer/composer": "^2.7",
-		"zbateson/mail-mime-parser": "^2.4",
+		"phpunit/phpunit": "^10.5",
 		"phpspec/prophecy": "~1.18",
 		"phpspec/prophecy-phpunit": "~2.1",
 		"phpstan/phpstan": "^1.7.0",
 		"phpstan/phpstan-phpunit": "^1.1.1",
-		"codeception/codeception": "^5.1",
-		"codeception/module-webdriver": "^4.0",
-		"codeception/module-asserts": "^3.0",
-		"doctrine/inflector": "^2.0",
 		"typo3/coding-standards": "^0.7.1",
 		"ext-curl": "*"
 	},
@@ -58,8 +46,5 @@
 		"branch-alias": {
 			"dev-main": "1.0.x-dev"
 		}
-	},
-	"require": {
-		"ext-openssl": "*"
 	}
 }

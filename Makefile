@@ -1,7 +1,3 @@
-# This file is a generic Scoutnet Makefile file. The original is found in the dummy extension
-# https://github.com/scoutnet/plugins.typo3.scoutnet_dummy/blob/main/Makefile
-# MAKEFILE Version: 3.0.1
-
 EXT_NAME=sn_webservice
 
 GIT_VERSION=$(shell git log --format='%h %D' | grep 'tag: ' | sed 's/.*tag: //g' | head -n 1)
@@ -38,7 +34,7 @@ SCRIPT_VERBOSE ?= 0
 
 PHP_VERSIONS ?= 8.1 8.2 8.3
 
-COMPOSE_PROJECT_NAME_PREFIX=typo3-local-$(JOB_NAME)-$(BUILD_ID)-$(EXT_NAME)-
+COMPOSE_PROJECT_NAME_PREFIX=local-$(JOB_NAME)-$(BUILD_ID)-$(EXT_NAME)-
 
 export GITHUB_USER=scoutnet
 export GITHUB_REPO=plugins.$(EXT_NAME)
@@ -258,10 +254,4 @@ ifneq ($(strip $(HAS_UNIT_TESTS)),)
 	@cd $(TEST_ROOT_FOLDER)/docker-php$*-unit && export COMPOSE_PROJECT_NAME=$(COMPOSE_PROJECT_NAME_PREFIX)php$*-unit; docker-compose run unit
 	@cd $(TEST_ROOT_FOLDER)/docker-php$*-unit && export COMPOSE_PROJECT_NAME=$(COMPOSE_PROJECT_NAME_PREFIX)php$*-unit; docker-compose down
 endif
-
-updateDockerImages:
-	# pull typo3gmbh/phpXY:latest versions of those ones that exist locally
-	@docker images typo3gmbh/php*:latest --format "{{.Repository}}:latest" | xargs -I {} docker pull {}
-	# remove "dangling" typo3gmbh/phpXY images (those tagged as <none>)
-	@docker images typo3gmbh/php* --filter "dangling=true" --format "{{.ID}}" | xargs -I {} docker rmi {}
 

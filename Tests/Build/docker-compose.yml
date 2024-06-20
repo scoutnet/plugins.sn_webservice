@@ -221,9 +221,9 @@ services:
         fi
         php -v | grep '^PHP';
         if [ ${PHP_XDEBUG_ON} -eq 0 ]; then
-          php -dxdebug.mode=off .Build/bin/php-cs-fixer fix -v ${CGLCHECK_DRY_RUN} --config=.Build/vendor/typo3/coding-standards/templates/extension_php-cs-fixer.dist.php  --using-cache=no Classes/ Resources/ Tests/;
+          php -dxdebug.mode=off .Build/bin/php-cs-fixer fix -v ${CGLCHECK_DRY_RUN} --config=.Build/vendor/typo3/coding-standards/templates/extension_php-cs-fixer.dist.php  --using-cache=no Classes/ Tests/;
         else
-          XDEBUG_MODE=\"debug,develop\" XDEBUG_TRIGGER=\"foo\" XDEBUG_CONFIG=\"client_host=host.docker.internal\" PHP_CS_FIXER_ALLOW_XDEBUG=1 .Build/bin/php-cs-fixer fix -v ${CGLCHECK_DRY_RUN} --config=.Build/vendor/typo3/coding-standards/templates/extension_php-cs-fixer.dist.php  --using-cache=no Classes/ Resources/ Tests/;
+          XDEBUG_MODE=\"debug,develop\" XDEBUG_TRIGGER=\"foo\" XDEBUG_CONFIG=\"client_host=host.docker.internal\" PHP_CS_FIXER_ALLOW_XDEBUG=1 .Build/bin/php-cs-fixer fix -v ${CGLCHECK_DRY_RUN} --config=.Build/vendor/typo3/coding-standards/templates/extension_php-cs-fixer.dist.php  --using-cache=no Classes/ Tests/;
         fi
       "
 
