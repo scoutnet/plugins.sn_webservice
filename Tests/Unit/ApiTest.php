@@ -10,7 +10,7 @@
  * Authors: Stefan (Mütze) Horst <muetze@scoutnet.de>
  */
 
-namespace ScoutNet\Api\Tests\Unit\Helpers\Helpers\Helpers\Helpers\Helpers\Unit;
+namespace ScoutNet\Api\Tests\Unit;
 
 use DateTime;
 use Exception;
@@ -1026,7 +1026,7 @@ class JsonRPCClientHelperMock extends JsonRPCClientHelper
 
 namespace ScoutNet\Api;
 
-use ScoutNet\Api\Tests\Unit\Helpers\Helpers\Helpers\Helpers\Helpers\Unit\ApiTest;
+use ScoutNet\Api\Tests\Unit\ApiTest;
 
 /**
  * mock time

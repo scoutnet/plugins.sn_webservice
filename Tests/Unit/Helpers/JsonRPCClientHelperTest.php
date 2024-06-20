@@ -10,7 +10,7 @@
  * Authors: Stefan (Mütze) Horst <muetze@scoutnet.de>
  */
 
-namespace ScoutNet\Api\Tests\Unit\Helpers\Helpers\Helpers;
+namespace ScoutNet\Api\Tests\Unit\Helpers;
 
 use PHPUnit\Framework\TestCase;
 use ScoutNet\Api\Exceptions\ScoutNetException;
