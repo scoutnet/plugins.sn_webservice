@@ -23,13 +23,10 @@
       "ScoutNet\\Api\\": "Classes/"
     }
   },
-  "replace": {
-    "sn_webservice": "self.version"
-  },
   "extra": {
     "branch-alias": {
-      "dev-master": "1.0.x-dev",
-      "dev-development": "1.0.x-dev"
+      "dev-main": "2.0.x-dev",
+      "dev-v1.0": "1.0.x-dev"
     }
   }
 }
