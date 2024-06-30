@@ -106,7 +106,7 @@ final class ApiTest extends TestCase
         );
     }
 
-    public function testGetEventsForGlobalId()
+    public function testGetEventsForGlobalId(): void
     {
         $events = $this->sn->get_events_for_global_id_with_filter(4, ['limit' => '1', 'before' => '12.01.2012']);
 
@@ -114,10 +114,43 @@ final class ApiTest extends TestCase
         self::assertEquals(4, $events[0]->getStructure()->getUid(), 'wrong kalender id for event');
     }
 
-    public function testGetKalenderElements()
+    public function testGetCategoryForGlobalId(): void
+    {
+        $cat23 = new Category();
+        $cat23->setUid(23);
+        $cat23->setText('Baustein 1a (alt)');
+
+        $cat42 = new Category();
+        $cat42->setUid(42);
+        $cat42->setText('pl');
+
+        $categories = $this->sn->get_categories_by_ids([23, 42]);
+
+        self::assertCount(2, $categories, 'got more or less than two event');
+        self::assertEquals($cat23, $categories[0], 'wrong Category 1');
+        self::assertEquals($cat42, $categories[1], 'wrong Category 2');
+    }
+
+    public function testGetAllCategories(): void
+    {
+        $categories = $this->sn->get_all_categories();
+
+        self::assertCount(987, $categories, 'got wrong number of categories');
+        // TODO: check categories
+    }
+
+    public function testGetAllCategoriesForKalenderAndEvent(): void
+    {
+        $categories = $this->sn->get_all_categories_for_kalender_and_event(4, 123);
+
+        self::assertCount(22, $categories, 'got wrong number of categories');
+        // TODO check the categories
+    }
+
+    public function testGetKalenderElements(): void
     {
         $kalender = $this->sn->get_kalender_by_global_id('4');
-        self::assertEquals(1, count($kalender), 'got more than one kalender');
+        self::assertCount(1, $kalender, 'got more than one kalender');
         self::assertEquals(4, $kalender[0]->getUid(), 'wrong kalender id returned');
     }
 
@@ -654,7 +687,7 @@ final class ApiTest extends TestCase
         $kalenderUser->setUid('kalender-1.0');
 
         $event = new Event('Bezirksvorständetreffen', new DateTime('2001-03-15'));
-        $event->setUid(null);
+        $event->setUid(-1);
         $event->setTitle('Bezirksvorständestreffen');
         $event->setOrganizer('');
         $event->setTargetGroup('');
