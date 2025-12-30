@@ -336,7 +336,7 @@ class ScoutnetApi
      */
     public function delete_event(int $ssid, int $id)
     {
-        $type = 'event';
+        $type = 'events';
         $auth = $this->_generate_auth($type . $ssid . $id . $this->api_user);
 
         return $this->SN->deleteObject($type, $ssid, $id, $this->api_user, $auth);
