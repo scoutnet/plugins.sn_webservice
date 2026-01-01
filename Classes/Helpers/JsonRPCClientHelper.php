@@ -44,6 +44,11 @@ class JsonRPCClientHelper
     private array $debugLog = [];
 
     /**
+     * @var string|array
+     */
+    private mixed $printDebugLogCb = null;
+
+    /**
      * The server URL
      *
      * @var string
@@ -89,21 +94,36 @@ class JsonRPCClientHelper
      *
      * @param string $url
      * @param bool $debug
+     * @param $printDbgLogCb
      */
-    public function __construct(string $url, bool $debug = false)
+    public function __construct(string $url, bool $debug = false, $printDbgLogCb = null)
     {
         // server URL
         $this->url = $url;
         // debug state
         $this->debugOutput = $debug;
+        /** @var mixed $callableName */
+        if(\is_callable($printDbgLogCb, false, $callableName)) {
+            $this->printDebugLogCb = $callableName;
+        }
+        else {
+            $this->printDebugLogCb = null;
+        }
 
         // message id
         $this->request_id = 1;
     }
 
-    public function setDebug($debug): void
+    public function setDebug($debug, $printDbgLogCb = null): void
     {
         $this->debugOutput = $debug;
+        /** @var mixed $callableName */
+        if(\is_callable($printDbgLogCb, false, $callableName)) {
+            $this->printDebugLogCb = $callableName;
+        }
+        else {
+            $this->printDebugLogCb = null;
+        }
     }
 
     private function debugLog($msg): void
@@ -120,7 +140,12 @@ class JsonRPCClientHelper
     private function printDebugLog(): void
     {
         if ($this->debugOutput) {
-            echo implode("\n", $this->getDebugLog());
+            if (null !== $this->printDebugLogCb) {
+                call_user_func($this->printDebugLogCb, $this->debugLog);
+            }
+            else {
+                echo implode("\n", $this->getDebugLog());
+            }
         }
     }
 
@@ -228,7 +253,7 @@ class JsonRPCClientHelper
             }
         }
 
-        $this->debugLog('***** Server response *****' . "\n" . $response . '***** End of server response *****' . "\n");
+        $this->debugLog('***** Server response *****' . "\n" . $response . "\n" . '***** End of server response *****' . "\n");
         $response = json_decode($response, true);
 
         $this->printDebugLog();
