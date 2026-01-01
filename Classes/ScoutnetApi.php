@@ -309,7 +309,7 @@ class ScoutnetApi
      */
     public function write_event(Event $event): Event
     {
-        $type = 'event';
+        $type = 'events';
         $id = $event->getUid();
         $apiData = $this->converter->convertEventToApi($event);
 
@@ -326,7 +326,7 @@ class ScoutnetApi
      */
     public function write_object(string $type, int $id, array $data): mixed
     {
-        $auth = $this->_generate_auth($type . $id . serialize($data) . $this->api_user);
+        $auth = $this->_generate_auth($type . $id . json_encode($data) . $this->api_user);
 
         return $this->SN->setData($type, $id, $data, $this->api_user, $auth);
     }
@@ -381,7 +381,7 @@ class ScoutnetApi
      */
     public function request_write_permissions_for_calender(int $ssid): mixed
     {
-        $type = 'event';
+        $type = 'events';
 
         return $this->request_permissions_of_type_for_structure($type, $ssid);
     }
