@@ -216,6 +216,10 @@ class ConverterHelper
         }
 
         $this->cache->add($section, $section->getUid());
+        //TODO: Workaround
+        if (isset($array['Keywords_ID'])) {
+            $this->cache->add($section, $array['Keywords_ID']);
+        }
         return $section;
     }
 
