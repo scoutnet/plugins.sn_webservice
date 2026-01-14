@@ -105,7 +105,7 @@ class ConverterHelper
         }
         if (isset($array['End'])) {
             $end = DateTime::createFromFormat('U', $array['End']);
-            $event->setEndDate($array['End'] === 0 ? null : new DateTime($end->format('m/d/Y')));
+            $event->setEndDate($array['End'] === '' ? null : new DateTime($end->format('m/d/Y')));
             $event->setEndTime((isset($array['All_Day']) && $array['All_Day']) ? null : $end->format('H:i'));
         }
 
@@ -119,10 +119,10 @@ class ConverterHelper
         $event->setDescription($array['Description'] ?? '');
 
         if (isset($array['Last_Modified_At'])) {
-            $event->setChangedAt($array['Last_Modified_At'] === 0 ? null : DateTime::createFromFormat('U', $array['Last_Modified_At']));
+            $event->setChangedAt(($array['Last_Modified_At'] === '') ? null : DateTime::createFromFormat('U', $array['Last_Modified_At']));
         }
         if (isset($array['Created_At'])) {
-            $event->setCreatedAt($array['Created_At'] === 0 ? null : DateTime::createFromFormat('U', $array['Created_At']));
+            $event->setCreatedAt(($array['Created_At'] === '') ? null : DateTime::createFromFormat('U', $array['Created_At']));
         }
 
         if (isset($array['Keywords'])) {
@@ -216,6 +216,10 @@ class ConverterHelper
         }
 
         $this->cache->add($section, $section->getUid());
+        //TODO: Workaround
+        if (isset($array['Keywords_ID'])) {
+            $this->cache->add($section, $array['Keywords_ID']);
+        }
         return $section;
     }
 

@@ -42,6 +42,10 @@ class ScoutnetApi
 
     public $snData;
 
+    private const SN_CONNECT_IMAGE_URL  = 'https://www.scoutnet.de/fileadmin/user_upload/scoutnetConnect.png';
+    private const SN_CONNECT_LOGIN_URL  = 'https://www.scoutnet.de/community/scoutnetConnect';
+    private const SN_JSONRPC_SERVER_URL = 'https://www.scoutnet.de/jsonrpc/server.php';
+
     private string $provider;
     private string $aes_key;
     private string $aes_iv;
@@ -66,7 +70,7 @@ class ScoutnetApi
      *
      * @throws ScoutNetExceptionMissingConfVar
      */
-    public function __construct(string $api_url = 'https://www.scoutnet.de/jsonrpc/server.php', string $login_url = 'https://www.scoutnet.de/community/scoutnetConnect.html', string $provider = '', string $aes_key = '', string $aes_iv = '')
+    public function __construct(string $api_url = self::SN_JSONRPC_SERVER_URL, string $login_url = self::SN_CONNECT_LOGIN_URL, string $provider = '', string $aes_key = '', string $aes_iv = '')
     {
         $this->SN = new JsonRPCClientHelper($api_url);
 
@@ -90,7 +94,7 @@ class ScoutnetApi
     public function set_scoutnet_connect_data(string $login_url = '', string $provider = '', string $aes_key = '', string $aes_iv = ''): void
     {
         if ($login_url === '') {
-            $login_url = 'https://www.scoutnet.de/community/scoutnetConnect.html';
+            $login_url = self::SN_CONNECT_LOGIN_URL;
         }
         $provider = trim($provider);
 
@@ -305,7 +309,7 @@ class ScoutnetApi
      */
     public function write_event(Event $event): Event
     {
-        $type = 'event';
+        $type = 'events';
         $id = $event->getUid();
         $apiData = $this->converter->convertEventToApi($event);
 
@@ -322,7 +326,7 @@ class ScoutnetApi
      */
     public function write_object(string $type, int $id, array $data): mixed
     {
-        $auth = $this->_generate_auth($type . $id . serialize($data) . $this->api_user);
+        $auth = $this->_generate_auth($type . $id . json_encode($data) . $this->api_user);
 
         return $this->SN->setData($type, $id, $data, $this->api_user, $auth);
     }
@@ -332,7 +336,7 @@ class ScoutnetApi
      */
     public function delete_event(int $ssid, int $id)
     {
-        $type = 'event';
+        $type = 'events';
         $auth = $this->_generate_auth($type . $ssid . $id . $this->api_user);
 
         return $this->SN->deleteObject($type, $ssid, $id, $this->api_user, $auth);
@@ -377,7 +381,7 @@ class ScoutnetApi
      */
     public function request_write_permissions_for_calender(int $ssid): mixed
     {
-        $type = 'event';
+        $type = 'events';
 
         return $this->request_permissions_of_type_for_structure($type, $ssid);
     }
@@ -409,10 +413,10 @@ class ScoutnetApi
      * @return string
      * @throws ScoutNetExceptionMissingConfVar
      */
-    public function get_scoutnet_connect_login_button(string $returnUrl = '', bool $requestApiKey = false, string $imageURL = 'https://www.scoutnet.de/images/scoutnetConnect.png', string $lang = 'de'): string
+    public function get_scoutnet_connect_login_button(string $returnUrl = '', bool $requestApiKey = false, string $imageURL = self::SN_CONNECT_IMAGE_URL, string $lang = 'de'): string
     {
         $this->_check_for_all_configValues();
-        $button = '<form action="' . $this->login_url . '" id="scoutnetLogin" method="post" target="_self">' . "\n";
+        $button = '<form action="' . $this->login_url . '" id="scoutnetLogin" method="get" target="_self">' . "\n";
 
         $button .= $returnUrl === '' ? '' : '    ' . '<input type="hidden" name="redirect_url" value="' . $returnUrl . '" />' . "\n";
         $button .= '    ' . '<input type="hidden" name="lang" value="' . $lang . '"/>' . "\n";
